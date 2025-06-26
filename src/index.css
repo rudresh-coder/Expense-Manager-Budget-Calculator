@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css?family=Exo:700,900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+body {
+  font-family: 'Exo', 'Inter','Roboto', 'Segoe UI', Arial, sans-serif;
+  font-size: 1rem;
+  background: #fff;
+  color: #222;
+}
+
+html {
+  font-size: 16px;
+  box-sizing: border-box;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+body.dark {
+  background: #1d061a;
+  color: #fff;
+}

@@ -1,0 +1,274 @@
+@import url('https://fonts.googleapis.com/css?family=Exo:700,900&display=swap');
+
+body {
+  overflow-x: hidden;
+  /* background: linear-gradient(
+  180deg,
+  #7729aa -13.13%,
+  #170a2c 10%,
+  #2a1746 35%,
+  #3a235c 60%,
+  #170a2c 85%,
+  #1a1333 98.59%
+)  */
+}
+
+.landing-cards-grid {
+  width: 100%;
+  position: static;
+  transform: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2.5rem;
+  justify-content: center;
+  justify-items: center;
+  align-items: start;
+  padding: 2.5rem;
+  /* background: linear-gradient(45deg, rgba(22, 1, 104, 1) 0%, rgba(58, 3, 135, 1) 29%, rgba(91, 9, 147, 1) 64%, rgba(50, 6, 142, 1) 100%); */
+  box-sizing: border-box;
+}
+    
+.landing-card {
+  width: 190px;
+  height: 254px;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0,113,227,0.10);
+  padding: 1.2rem 1.5rem;
+  cursor: pointer;
+  text-align: left;
+  will-change: transform, box-shadow;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  background-color: #fff;
+  margin: 0;
+}
+
+body.dark .landing-card {
+  background-color: #23143a; 
+  color: #fff;
+}
+
+body.dark .landing-card h3,
+body.dark .landing-card-modal p,
+body.dark .landing-card-modal ul,
+body.dark .landing-card-modal ol,
+body.dark .landing-card-modal li {
+  color: #fff;
+}
+
+.landing-main {
+  padding: 2rem 1rem;
+}
+
+@media (max-width: 700px) {
+  .landing-cards-grid {
+    grid-template-columns: 1fr;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 1.2rem;
+    padding-bottom: 1.2rem;
+    gap: 1.2rem;
+    justify-items: center; 
+    width: 100%;
+    left: 0;
+    right: 0;
+    transform: none;
+    padding: 1.2rem 0.2rem;
+  }
+
+  .landing-main {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.landing-card:hover {
+    box-shadow: 0 8px 32px #2997ff33;
+    transform: perspective(600px) rotateX(8deg) rotateY(8deg) scale(1.03);
+}
+
+.landing-card-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 1rem;
+    align-self: center;
+}
+
+.landing-card-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.35);
+    z-index: 6000;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 4vh;
+    justify-content: center;
+    padding-bottom: 110px;
+    animation: overlayFadeIn 0.4s;
+}
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.landing-card-modal {
+  background-color: #f5f7fa;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(35, 126, 253, 0.12);
+  padding: 2.5rem 2rem 2rem 2rem;
+  max-width: 95vw;
+  width: 700px;
+  max-height: calc(90vh - 110px);
+  overflow-y: auto;
+  position: relative;
+  animation: modalFadeInUp 0.6s cubic-bezier(0.23,1.01,0.32,1);
+  transition: opacity 0.4s, transform 0.4s;
+  opacity: 1;
+  transform: scale(1);
+  z-index: 6001;
+  border: 2.5px solid #237efd;
+
+}
+
+.landing-card-modal::before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  border-radius: 20px 20px 0 0;
+  background: #237efd;
+}
+
+.landing-card-modal h2 {
+  color: #ec8252;
+  font-family: 'Exo', 'Inter','Roboto', 'Segoe UI', Arial, sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-top: 0.5em;
+  margin-bottom: 0.7em;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 12px #e4b97544;
+  opacity: 0;
+  transform: translateY(24px) scale(0.95) rotateX(20deg);
+  animation: modalTextFadeIn 0.8s cubic-bezier(.23,1.01,.32,1) forwards;
+}
+
+.landing-card-modal h3 {
+  color: #237efd;
+  font-family: 'Exo', 'Inter','Roboto', 'Segoe UI', Arial, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 8px #61d88733;
+  opacity: 0;
+  transform: translateY(24px) scale(0.95) rotateX(20deg);
+  animation: modalTextFadeIn 0.8s cubic-bezier(.23,1.01,.32,1) forwards;
+}
+
+.landing-card-modal h2 { animation-delay: 0.1s; font-size: 2rem; }
+.landing-card-modal h3 { animation-delay: 0.2s; font-size: 1.25rem; }
+
+.landing-card-modal p,
+.landing-card-modal ul,
+.landing-card-modal ol {
+  color: #101010;
+  font-family: 'Exo', 'Inter','Roboto', 'Segoe UI', Arial, sans-serif;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  margin-bottom: 1em;
+  opacity: 0;
+  animation: modalTextFadeIn 0.9s cubic-bezier(.23,1.01,.32,1) forwards;  
+}
+
+.landing-card-modal ul, .landing-card-modal ol {
+  margin-left: 1.2em;
+  margin-bottom: 1.2em;
+}
+
+.landing-card-modal li {
+  margin-bottom: 0.5em;
+  color: #101010;
+  font-size: 1.05em;
+  font-family: 'Exo', 'Inter','Roboto', 'Segoe UI', Arial, sans-serif;
+  opacity: 0;
+  animation: modalTextFadeIn 0.7s 0.15s cubic-bezier(.23,1.01,.32,1) forwards;
+}
+
+
+.landing-card-modal b, .landing-card-modal strong {
+  color: #ec8252;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.85) translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+ @keyframes modalTextFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.95) rotateX(20deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+  }
+}
+
+.close-btn {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.5rem;
+  background: #e4b975;
+  border: none;
+  font-size: 1.2rem;
+  color: #101010;
+  cursor: pointer;
+  font-weight: bold;
+  line-height: 1;
+  box-shadow: 0 2px 8px #237efd33;
+  transition: background 0.2s, color 0.2s;
+  border-radius: 50%;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.close-btn:hover {
+  background: #ec8252;
+  color: #fff;
+}
+
+  @media (max-width: 700px) {
+    .landing-cards-grid {
+      grid-template-columns: 1fr;
+      gap: 1.2rem;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .landing-cards-grid {
+      width: 100%;
+      left: 0;
+      right: 0;
+      transform: none;
+      padding: 1.2rem 0.2rem;
+      gap: 1.2rem;
+    }
+  }

@@ -1,0 +1,331 @@
+@import url('https://fonts.googleapis.com/css?family=Exo:700,900&display=swap');
+
+.info-carousel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    margin: 2.5rem auto;
+    max-width: 1200px;
+    width: 100%;
+    background: rgba(143, 55, 255, 0.15);
+    border: 3px solid rgba(143, 55, 255, 0.4);
+    box-shadow: 0 0px 90px rgba(143, 55, 255, 0.1);
+    border-radius: 24px;
+    min-height: 450px;
+    padding: 2rem 1.5rem;
+    box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .info-carousel {
+    max-width: 98vw;
+    min-height: 340px;
+    padding: 1.2rem 0.7rem;
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 700px) {
+  .info-carousel {
+    max-width: 100vw;
+    min-width: 0;
+    min-height: 260px;
+    padding: 1rem 0.3rem;
+    border-radius: 14px;
+  }
+  .carousel-slide {
+    min-height: 180px;
+  }
+  .carousel-title {
+    font-size: 1.1rem;
+  }
+  .carousel-content {
+    font-size: 0.98rem;
+  }
+  .carousel-title-big {
+    font-size: 2.2rem;
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 500px) {
+  .info-carousel {
+    padding: 0.7rem 0.1rem;
+    min-height: 180px;
+    border-radius: 10px;
+  }
+  .carousel-slide {
+    min-height: 120px;
+  }
+  .carousel-title {
+    font-size: 1rem;
+  }
+  .carousel-content {
+    font-size: 0.92rem;
+  }
+  .carousel-title-big {
+    font-size: 1.3rem;
+    min-height: 70px;
+  }
+}
+
+.carousel-slide.floating-fade {
+  will-change: opacity, transform;
+  transition: none;
+}
+
+.fade-in-float {
+  animation: fadeInFloat 1.3s cubic-bezier(.23,1.01,.32,1) both;
+}
+
+.fade-out-up {
+  animation: fadeOutUp 1.3s cubic-bezier(.23,1.01,.32,1) both;
+}
+
+.fade-out-down {
+  animation: fadeOutDown 1.3s cubic-bezier(.23,1.01,.32,1) both;
+}
+
+@keyframes fadeInFloat {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.97);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes fadeOutUp {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.97);
+    filter: blur(8px);
+  }
+}
+
+@keyframes fadeOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(40px) scale(0.97);
+    filter: blur(8px);
+  }
+}
+
+.carousel-arrow {
+    background: none;
+    border: 2px solid transparent;
+    color: #8f37ff;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+    padding: 0.5rem;
+    border-radius: 50%;
+}
+.carousel-arrow:hover {
+    background-color: rgba(143, 55, 255, 0.15);
+    border-color: rgba(143, 55, 255, 0.4);
+    box-shadow: 0 12px 40px rgba(143, 55, 255, 0.3);
+  }
+
+.carousel-slide {
+    position: relative;
+    z-index: 1;  
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: left;
+}
+
+.carousel-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background-image: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
+    /* background: linear-gradient(270deg, #00c2ff, #33ff8c, #ffc640, #e54cff, #00c2ff); */
+  background-size: 1200% 1200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: animatedGradient 6s ease-in-out infinite;
+  font-family: 'Exo', 'Inter','Roboto', 'Segoe UI' Arial, sans-serif;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(143,55,255,0.08);
+}
+
+.carousel-title-big {
+  font-size: 3.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  margin: 0 auto 1.2rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  background-image: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
+  /* background: linear-gradient(270deg, #00c2ff, #33ff8c, #ffc640, #e54cff, #00c2ff); */
+  background-size: 1200% 1200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: animatedGradient 6s ease-in-out infinite;
+  font-family: 'Exo', 'Inter','Roboto', 'Segoe UI' Arial, sans-serif;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 12px rgba(143,55,255,0.12);
+}
+
+.carousel-h1 {
+  font-size: 1.18rem;
+  font-weight: 800;
+  margin-bottom: 0.7rem;
+  text-align: center;
+  background-image: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);  
+  background-size: 1200% 1200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: animatedGradient 6s ease-in-out infinite;
+  font-family: 'Exo', 'Inter','Roboto', 'Segoe UI', Arial, sans-serif;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 6px rgba(143,55,255,0.10);
+}
+
+@media (max-width: 700px) {
+  .carousel-h1 {
+    font-size: 1rem;
+  }
+}
+
+.carousel-content {
+  font-size: 1.08rem;
+  color: #2d1a4d; 
+  margin-bottom: 1.2rem;
+  line-height: 1.7;
+  font-family: 'Exo', 'Inter','Roboto', 'Segoe UI' Arial, sans-serif;
+  background-image: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
+   background-size: 1200% 1200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: animatedGradient 5s ease-in-out infinite;
+}
+
+.carousel-content b,
+.carousel-content strong {
+    color: #8f37ff;
+    font-weight: 700;
+}
+
+.carousel-content ol,
+.carousel-content ul {
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    -webkit-text-fill-color: #fff !important;
+    background-clip: initial !important;
+    color: #fff !important;
+}
+
+.carousel-content ol li,
+.carousel-content ul li {
+    position: relative;
+    padding-left: 1.7em;
+    margin-bottom: 0.7em;
+    list-style: none;
+    /* Animated gradient for text */
+    background-image: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
+    background-size: 800% 800%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    animation: animatedGradient 6s ease-in-out infinite;
+    font-family: 'Exo', 'Inter','Roboto', 'Segoe UI' Arial, sans-serif;
+  }
+
+.carousel-content ol li::before,
+.carousel-content ul li::before {
+  content: "•";
+  margin-right: 0.7em;
+  font-size: 1.2em;
+  vertical-align: middle;
+  /* Animated gradient for bullet */
+  background-image: linear-gradient(144deg, #af40ff, #5b42f3 50%, #00ddeb);
+    background-size: 800% 800%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: animatedGradient 5s ease-in-out infinite;
+  font-family: 'Exo', 'Inter','Roboto', 'Segoe UI' Arial, sans-serif;
+}
+
+.carousel-dot.active {
+    background: #8f37ff;
+    transform: scale(1.2);
+}
+
+.carousel-indicators {
+    display: flex;
+    gap: 0.3rem;
+    margin-top: 1.2rem;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 180px;
+    height: 10px;
+    background: rgba(143, 55, 255, 0.15);
+    border: 2px solid rgba(143, 55, 255, 0.4);
+    box-shadow: 0 12px 40px rgba(143, 55, 255, 0.3);
+    border-radius: 8px;
+    position: relative;
+}
+
+.carousel-indicator-segment {
+  flex: 1 1 0;
+  height: 100%;
+  background: rgba(143, 55, 255, 0.25);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.25s, box-shadow 0.25s;
+  position: relative;
+  z-index: 1;
+  border-radius: 16px;
+}
+
+.carousel-indicator-segment.active {
+  background: #8f37ff;
+  box-shadow: 0 2px 8px #8f37ff33;
+  border-radius: 24px;
+}
+
+.carousel-indicator-segment:hover:not(.active) {
+  background: rgba(143, 55, 255, 0.45);
+  opacity: 0.7;
+  border-radius: 16px;
+}
+
+@keyframes animatedGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

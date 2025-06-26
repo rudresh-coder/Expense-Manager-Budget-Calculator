@@ -1,0 +1,115 @@
+.reveal-hidden {
+    opacity: 0;
+    transform: translateY(48px) scale(0.97) skewY(2deg);
+    transition: opacity 1.1s cubic-bezier(.23,1.01,.32,1), transform 1.1s cubic-bezier(.23,1.01,.32,1);
+    will-change: opacity, transform;
+}
+
+.reveal-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1) skewY(0deg);
+    transition: opacity 1.1s cubic-bezier(.23,1.01,.32,1), transform 1.1s cubic-bezier(.23,1.01,.32,1);
+  }
+
+  .budgeting-heading.reveal-hidden {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 1.1s 0.2s cubic-bezier(.23,1.01,.32,1), transform 1.1s 0.2s cubic-bezier(.23,1.01,.32,1);
+}
+.budgeting-heading.reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 1.1s 0.2s cubic-bezier(.23,1.01,.32,1), transform 1.1s 0.2s cubic-bezier(.23,1.01,.32,1);
+}
+
+.budgeting-description.reveal-hidden {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 1.1s 0.5s cubic-bezier(.23,1.01,.32,1), transform 1.1s 0.5s cubic-bezier(.23,1.01,.32,1);
+}
+.budgeting-description.reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 1.1s 0.5s cubic-bezier(.23,1.01,.32,1), transform 1.1s 0.5s cubic-bezier(.23,1.01,.32,1);
+}
+
+/* Card-specific reveal animation */
+.card-reveal.reveal-hidden {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+    transition:
+      opacity 0.8s cubic-bezier(.23,1.01,.32,1),
+      transform 0.8s cubic-bezier(.23,1.01,.32,1);
+    will-change: opacity, transform;
+  }
+  
+  .card-reveal.reveal-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition:
+      opacity 0.8s cubic-bezier(.23,1.01,.32,1),
+      transform 0.8s cubic-bezier(.23,1.01,.32,1);
+  }
+  
+/* Section-specific staggered delays */
+.automate-section.reveal-visible {
+  transition-delay: 0.2s;
+}
+.roundup-section.reveal-visible {
+  transition-delay: 0.7s;
+}
+.emergency-section.reveal-visible {
+  transition-delay: 1.2s;
+}
+
+/* Animate each child text with a slight stagger */
+.automate-info > *,
+.roundup-info > *,
+.emergency-info > *,
+.automate-image-outer,
+.roundup-image-outer,
+.emergency-image-outer {
+  opacity: 0;
+  transform: translateY(32px) scale(0.97);
+  transition:
+    opacity 0.7s cubic-bezier(.23,1.01,.32,1),
+    transform 0.7s cubic-bezier(.23,1.01,.32,1);
+  will-change: opacity, transform;
+}
+
+.automate-info > .reveal-visible,
+.roundup-info > .reveal-visible,
+.emergency-info > .reveal-visible,
+.automate-image-outer.reveal-visible,
+.roundup-image-outer.reveal-visible,
+.emergency-image-outer.reveal-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Staggered delays for each text element in the info blocks */
+.automate-info > *:nth-child(1).reveal-visible,
+.roundup-info > *:nth-child(1).reveal-visible,
+.emergency-info > *:nth-child(1).reveal-visible { transition-delay: 0.2s; }
+.automate-info > *:nth-child(2).reveal-visible,
+.roundup-info > *:nth-child(2).reveal-visible,
+.emergency-info > *:nth-child(2).reveal-visible { transition-delay: 0.35s; }
+.automate-info > *:nth-child(3).reveal-visible,
+.roundup-info > *:nth-child(3).reveal-visible,
+.emergency-info > *:nth-child(3).reveal-visible { transition-delay: 0.5s; }
+.automate-info > *:nth-child(4).reveal-visible,
+.roundup-info > *:nth-child(4).reveal-visible,
+.emergency-info > *:nth-child(4).reveal-visible { transition-delay: 0.65s; }
+.automate-info > *:nth-child(5).reveal-visible,
+.roundup-info > *:nth-child(5).reveal-visible,
+.emergency-info > *:nth-child(5).reveal-visible { transition-delay: 0.8s; }
+
+/* Remove box-shadows for all images and sections */
+.automate-image,
+.roundup-image,
+.emergency-image,
+.automate-section,
+.roundup-section,
+.emergency-section {
+  box-shadow: none !important;
+}
