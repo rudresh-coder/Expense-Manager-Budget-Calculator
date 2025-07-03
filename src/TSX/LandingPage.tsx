@@ -13,6 +13,10 @@ import cardImg3 from "../assets/Envolop.png";
 import budgetingIllustration from "../assets/BudgetTexhniques.png";
 import { FaRegMoneyBillAlt, FaQuestionCircle, FaHeart, FaListOl, FaCheckCircle, FaArrowRight, FaLightbulb, FaBalanceScale, FaCalculator, FaTags, FaRedo, FaRupeeSign, FaEnvelopeOpenText, FaEye, FaBan, FaBrain, FaWallet, FaMoneyBillWave, FaStopCircle } from "react-icons/fa";
 import InfoCircles from "../components/InfoCards";
+import onlineAdsAnimate from "../assets/online-ads-animate.svg";
+// import img1 from "../assets/Main.jpg";
+// import img2 from "../assets/Main1.jpg";
+// import img3 from "../assets/Main2.jpg";
 
 export default function LandingPage() {
   const [open, setOpen] = useState<number | null>(null);
@@ -189,14 +193,20 @@ export default function LandingPage() {
   return (
     <div className="landing-main">
       <section className="landing-hero">
-        <h1 className="landing-title">
-          Take Control of your Money. Master Your Budget. Build Your Wealth.
-        </h1>
-        <p className="landing-subtitle">
-          From free budgeting tools to advanced expense tracking — everything you need in one powerful app.
-        </p>
-        <div className="landing-hero-divider"></div>
+        <div className="hero-content">
+          <h1 className="landing-title">
+            Take Control of your Money. Master Your Budget. Build Your Wealth.
+          </h1>
+          <p className="landing-subtitle">
+            From free budgeting tools to advanced expense tracking — everything you need in one powerful app.
+          </p>
+        </div>
+        <div className="hero-svg">
+          <img src={onlineAdsAnimate} alt="Online Ads Animation" style={{ width: "400px", height: "400px" }} />
+        </div>
       </section>
+
+      <div className="landing-hero-divider"></div>
 
       <section className="budgeting-section">
         <div className="budgeting-illustration">

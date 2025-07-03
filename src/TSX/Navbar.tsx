@@ -1,83 +1,111 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import {
-  FaHome, FaCalculator, FaWallet, FaMoon, FaSun
-} from "react-icons/fa";
+import { FaMoon, FaSun, FaBars, FaTimes } from "react-icons/fa";
+import logo from "../assets/Expense1.png";
 import "../CSS/Navbar.css";
-import loginIcon from "../assets/login.png";
-import signupIcon from "../assets/signup.png";
 
 const navItems = [
-  {
-    label: "Home",
-    to: "/",
-    icon: <FaHome />,
-    gradient: ["#a955ff", "#ea51ff"],
-  },
-  {
-    label: "Budget Calculator",
-    to: "/calculator",
-    icon: <FaCalculator />,
-    gradient: ["#56CCF2", "#2F80ED"],
-  },
-  {
-    label: "Expense Manager",
-    to: "/premium",
-    icon: <FaWallet />,
-    gradient: ["#FF9966", "#FF5E62"],
-  },
-  {
-    label: "Login",
-    to: "/signin",
-    icon: <img src={loginIcon} alt="Login" style={{ width: 24, height: 24, display: "block" }} />,
-    gradient: ["#80FF72", "#7EE8FA"],
-  },
-  {
-    label: "Sign Up",
-    to: "/signup",
-    icon: <img src={signupIcon} alt="Sign Up" style={{ width: 24, height: 24, display: "block" }} />,
-    gradient: ["#ffa9c6", "#f434e2"],
-  },
+  { label: "Home", to: "/" },
+  { label: "Budget Calculator", to: "/calculator" },
+  { label: "Expense Manager", to: "/premium" },
+  { label: "Login", to: "/signin" },
+  { label: "Sign Up", to: "/signup" },
 ];
 
 export default function Navbar() {
   const [dark, setDark] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const menuRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
     document.body.classList.toggle("dark", dark);
   }, [dark]);
 
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+
+      if (e.key === "Tab" && menuRef.current) {
+        const focusableEls = menuRef.current.querySelectorAll<HTMLElement>(
+          "a, button"
+        );
+        const firstEl = focusableEls[0];
+        const lastEl = focusableEls[focusableEls.length - 1];
+        if (!e.shiftKey && document.activeElement === lastEl) {
+          e.preventDefault();
+          firstEl.focus();
+        }
+        if (e.shiftKey && document.activeElement === firstEl) {
+          e.preventDefault();
+          lastEl.focus();
+        }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [menuOpen]);
+
   return (
-    <nav className="animated-navbar">
-      <ul>
+    <nav className="modern-navbar">
+      <div className="navbar-logo">
+        <Link to="/">
+          <img src={logo} alt="Expense Manager Logo" />
+        </Link>
+      </div>
+      <button
+        className="navbar-toggle"
+        onClick={() => setDark((d) => !d)}
+        aria-label="Toggle dark mode"
+        tabIndex={0}
+      >
+        {dark ? <FaMoon /> : <FaSun />}
+        <span style={{ marginLeft: "0.5em", fontSize: "1rem" }}>
+          {dark ? "Dark" : "Light"}
+        </span>
+      </button>
+      <button
+        className="navbar-menu-btn"
+        onClick={() => setMenuOpen((open) => !open)}
+        aria-label="Toggle menu"
+        tabIndex={0}
+      >
+        {menuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+      <ul
+        className={`navbar-list ${menuOpen ? "open" : ""}`}
+        ref={menuRef}
+        aria-label="Main navigation"
+      >
         {navItems.map((item) => (
-          <li
-            key={item.label}
-            style={{ "--i": item.gradient[0], "--j": item.gradient[1] } as React.CSSProperties}
-            className={location.pathname === item.to ? "active" : ""}
-          >
-            <Link to={item.to} tabIndex={0}>
-              <span className="icon">{item.icon}</span>
-              <span className="title">{item.label}</span>
+          <li key={item.label}>
+            <Link
+              to={item.to}
+              className={location.pathname === item.to ? "active" : ""}
+              tabIndex={menuOpen || window.innerWidth > 1010 ? 0 : -1}
+            >
+              {item.label}
             </Link>
           </li>
         ))}
-        {/* Dark/Light mode toggle */}
-        <li
-          style={{ "--i": "#ffe259", "--j": "#ffa751" } as React.CSSProperties}
-        >
-          <button
-            className="icon-btn"
-            onClick={() => setDark((d) => !d)}
-            aria-label="Toggle dark mode"
-            tabIndex={0}
-          >
-            <span className="icon">{dark ? <FaMoon /> : <FaSun />}</span>
-            <span className="title">{dark ? "Dark" : "Light"}</span>
-          </button>
-        </li>
       </ul>
+      {/* Overlay for mobile menu */}
+      {menuOpen && (
+        <div
+          className="navbar-overlay"
+          tabIndex={0}
+          aria-label="Close menu"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
     </nav>
   );
 }

@@ -1,0 +1,226 @@
+.site-footer {
+    width: 100vw;
+    background: #f7f7fa;
+    color: #222;
+    padding: 2rem 1rem 1rem 1rem;
+    text-align: center;
+    font-size: 1rem;
+    margin-top: 3rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.footer-logo-img {
+    height: 74px;
+    width: auto;
+    margin-bottom: 0.2rem;
+    margin-right: 0;
+    vertical-align: middle;
+}
+
+.footer-logo {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+.footer-desc {
+    display: block;
+    font-size: 1rem;
+    font-weight: 400;
+    margin-top: 0.2rem;
+    color: #555;
+}
+
+.footer-links-home {
+    margin-bottom: 1.2rem;
+}
+
+.footer-links-home a {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #237efd;
+    text-decoration: none;
+    margin-bottom: 0.7rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.footer-links-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem 2.2rem;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 700px;
+    margin: 0 auto 1.2rem auto;
+    text-align: left;
+}
+
+.footer-social-col,
+.footer-links-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.footer-social-col a {
+    color: #111 !important;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: color 0.2s;
+}
+
+.footer-social-col a:hover {
+    color: #8f37ff !important;
+}
+
+body.dark .footer-social-col a {
+    color: #fff !important;
+}
+body.dark .footer-social-col a:hover {
+    color: #00ddeb !important;
+}
+
+.footer-links-col a {
+    color: #237efd;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: color 0.2s;
+}
+
+.footer-links-col a:hover {
+    color: #8f37ff;
+}
+
+.footer-copyright {
+    font-size: 0.95rem;
+    color: #888;
+    margin-top: 0.5rem;
+    margin-bottom: 5rem;
+}
+
+body.dark .site-footer {
+    background: #1d061a;
+    color: #fff;
+    border-top: 2px solid #333;
+}
+
+body.dark .footer-links-col a {
+    color: #b482ff;
+}
+
+body.dark .footer-links-col a:hover {
+    color: #00ddeb;
+}
+
+.footer-dropdowns {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.footer-dropdown {
+    width: 100%;
+    max-width: 320px;
+}
+
+.footer-dropdown-btn {
+    width: 100%;
+    background: #e9eef5;
+    color: #222;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 0.7em 1em;
+    font-size: 1.05rem;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    margin-bottom: 0.2rem;
+    transition: background 0.2s;
+}
+
+.footer-dropdown-btn:hover {
+    background: #d1c4e9;
+}
+
+.footer-dropdown-content {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px #0001;
+    padding: 0.7em 0.5em;
+    margin-bottom: 0.5em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7em;
+}
+
+.footer-dropdown-content a,
+.footer-dropdown-content .footer-link {
+    color: #237efd;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    transition: color 0.2s;
+}
+
+.footer-dropdown-content a:hover,
+.footer-dropdown-content .footer-link:hover {
+    color: #8f37ff;
+}
+
+body.dark .footer-dropdown-btn {
+    background: #23143a;
+    color: #fff;
+}
+
+body.dark .footer-dropdown-content {
+    background: #1d061a;
+    color: #fff;
+}
+
+body.dark .footer-dropdown-content a,
+body.dark .footer-dropdown-content .footer-link {
+    color: #b482ff;
+}
+
+body.dark .footer-dropdown-content a:hover,
+body.dark .footer-dropdown-content .footer-link:hover {
+    color: #00ddeb;
+}
+
+@media (max-width: 700px) {
+    .footer-links-3col {
+        grid-template-columns: 1fr;
+        gap: 0.7rem 0;
+        text-align: center;
+    }
+    .footer-social-col,
+    .footer-links-col {
+        align-items: center;
+    }
+}

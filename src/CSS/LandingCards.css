@@ -1,16 +1,7 @@
 @import url('https://fonts.googleapis.com/css?family=Exo:700,900&display=swap');
 
 body {
-  overflow-x: hidden;
-  /* background: linear-gradient(
-  180deg,
-  #7729aa -13.13%,
-  #170a2c 10%,
-  #2a1746 35%,
-  #3a235c 60%,
-  #170a2c 85%,
-  #1a1333 98.59%
-)  */
+  overflow-x: hidden; 
 }
 
 .landing-cards-grid {
@@ -117,7 +108,7 @@ body.dark .landing-card-modal li {
 }
 
 .landing-card-modal {
-  background-color: #f5f7fa;
+  background-color: rgba(245, 247, 250, 0.8);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(35, 126, 253, 0.12);
   padding: 2.5rem 2rem 2rem 2rem;
@@ -130,19 +121,19 @@ body.dark .landing-card-modal li {
   transition: opacity 0.4s, transform 0.4s;
   opacity: 1;
   transform: scale(1);
-  z-index: 6001;
+  z-index: 1;
   border: 2.5px solid #237efd;
-
 }
 
-.landing-card-modal::before {
-  content: "";
-  display: block;
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 6px;
-  border-radius: 20px 20px 0 0;
-  background: #237efd;
+.landing-card-modal > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.dark .landing-card-modal {
+  background: rgba(29, 6, 26, 0.93);
+  border: 2.5px solid #5b42f3;
+  box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18);
 }
 
 .landing-card-modal h2 {
