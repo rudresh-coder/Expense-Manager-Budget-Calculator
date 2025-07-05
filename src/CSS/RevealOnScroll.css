@@ -113,3 +113,25 @@
 .emergency-section {
   box-shadow: none !important;
 }
+
+/* Staggered reveal for budget-explanation */
+.budget-explanation .reveal-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1) skewY(0deg);
+}
+
+.budget-explanation h1.reveal-visible { transition-delay: 0.1s; }
+.budget-explanation h2.reveal-visible { transition-delay: 0.25s; }
+.budget-explanation h3.reveal-visible { transition-delay: 0.4s; }
+.budget-explanation ul.reveal-visible { transition-delay: 0.55s; }
+.budget-explanation p.reveal-visible { transition-delay: 0.7s; }
+.budget-explanation b.reveal-visible,
+.budget-explanation .budget-gradient-text.reveal-visible { transition-delay: 0.85s; }
+
+/* Optionally, for multiple elements of the same type, stagger by nth-child */
+.budget-explanation > *:nth-child(1).reveal-visible { transition-delay: 0.1s; }
+.budget-explanation > *:nth-child(2).reveal-visible { transition-delay: 0.25s; }
+.budget-explanation > *:nth-child(3).reveal-visible { transition-delay: 0.4s; }
+.budget-explanation > *:nth-child(4).reveal-visible { transition-delay: 0.55s; }
+.budget-explanation > *:nth-child(5).reveal-visible { transition-delay: 0.7s; }
+.budget-explanation > *:nth-child(6).reveal-visible { transition-delay: 0.85s; }

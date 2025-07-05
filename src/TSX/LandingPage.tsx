@@ -14,9 +14,6 @@ import budgetingIllustration from "../assets/BudgetTexhniques.png";
 import { FaRegMoneyBillAlt, FaQuestionCircle, FaHeart, FaListOl, FaCheckCircle, FaArrowRight, FaLightbulb, FaBalanceScale, FaCalculator, FaTags, FaRedo, FaRupeeSign, FaEnvelopeOpenText, FaEye, FaBan, FaBrain, FaWallet, FaMoneyBillWave, FaStopCircle } from "react-icons/fa";
 import InfoCircles from "../components/InfoCards";
 import onlineAdsAnimate from "../assets/online-ads-animate.svg";
-// import img1 from "../assets/Main.jpg";
-// import img2 from "../assets/Main1.jpg";
-// import img3 from "../assets/Main2.jpg";
 
 export default function LandingPage() {
   const [open, setOpen] = useState<number | null>(null);
