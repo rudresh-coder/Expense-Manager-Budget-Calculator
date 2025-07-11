@@ -69,7 +69,7 @@ export default function SignUp() {
       <p className="title">Sign Up</p>
       <form onSubmit={handleSubmit} className="form">
         <div className="input-group">
-          <label htmlFor="fullName">Full Name</label>
+          <label htmlFor="fullName">Username</label>
           <input
             type="text"
             id="fullName"

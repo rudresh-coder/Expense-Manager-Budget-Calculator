@@ -48,11 +48,11 @@ export default function LogIn() {
       <p className="title">Login</p>
       <form className="form" onSubmit={handleSubmit}>
         <div className="input-group">
-          <label htmlFor="username">Username</label>
+          <label htmlFor="email">Email Address</label>
           <input
-            type="text"
-            name="username"
-            id="username"
+            type="email"
+            name="email"
+            id="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             autoComplete="off"
