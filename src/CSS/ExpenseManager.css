@@ -1,17 +1,17 @@
 .expense-manager-bg {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f7f4ff 60%, #f0e7ff 100%);
+  background: #f7f4ff;
   display: block; 
   padding: 2rem 0 0 0;
 }
 
 .expense-manager-card {
-  width: 540px;
+  width: 900px;
   max-width: 98vw;
   border-radius: 1rem;
   background: linear-gradient(135deg, #f7f4ff 60%, #f0e7ff 100%);
   box-shadow: 0 8px 32px rgba(91, 66, 243, 0.10), 0 1.5px 6px rgba(0,0,0,0.06);
-  padding: 2.2rem 2rem 1.5rem 2rem;
+  padding: 2.8rem 2.5rem 2rem 2.5rem;
   color: #222;
   margin: 3rem auto 2.5rem auto; 
   transition: 0.4s ease-in-out;
@@ -56,15 +56,11 @@
   min-width: 0;
 }
 
-.expense-section {
-  margin-bottom: 1.5rem;
-}
-
 .expense-subtitle {
   font-size: 1.18rem;
   font-weight: 700;
   color: #7c4dff;
-  margin-bottom: 0.7rem;
+  margin-top: 0.7rem;
 }
 
 .expense-input,
@@ -115,6 +111,25 @@
   color: #fff;
 }
 
+.expense-btn-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  justify-content: center;
+  margin: 2rem 0 2rem 0;
+  padding: 0.5rem 0;
+  width: 100%;
+}
+
+.expense-btn-group .expense-btn {
+  width: auto;
+  min-width: 160px;
+  max-width: 240px;
+  margin-top: 0;
+  font-size: 1.08rem;
+}
+
 .expense-splits-list {
   list-style: none;
   padding: 0;
@@ -148,6 +163,7 @@
   font-weight: 700;
   color: #4b267d;
   margin-bottom: 1.2rem;
+  margin-top: 0.5rem;
 }
 
 .expense-table-wrapper {
@@ -185,6 +201,14 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
+.expense-table tr.bank-sync-row {
+  background: #f5f5fa;
+}
+
+.expense-table tr.manual-row {
+  background: #fff;
+}
+
 .expense-type-add {
   color: #237efd;
   font-weight: 700;
@@ -196,12 +220,19 @@
 
 .expense-transactions-bg {
   width: 100vw;
-  background: linear-gradient(135deg, #f7f4ff 60%, #f0e7ff 100%);
+  background: #f7f4ff;
   padding: 0 0 3.5rem 0; 
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 340px;
+}
+
+.expense-transactions-header .expense-input {
+  font-size: 1rem;
+  padding: 0.4rem 1rem;
+  border-radius: 0.5rem;
+  margin-left: 1rem;
 }
 
 .expense-transactions-container {
@@ -222,6 +253,144 @@
   text-align: left;
 }
 
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 1.5rem 0 0.5rem 0;
+  padding: 0.7rem 0;
+  border-radius: 12px;
+  background: #f7f4ff;
+}
+
+.pagination-controls button {
+  background: none;
+  color: #7c4dff;
+  border: none;
+  font-size: 1.08rem;
+  font-weight: 700;
+  padding: 0.3em 0.7em;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.2s, text-decoration 0.2s;
+  text-decoration: underline;
+  box-shadow: none;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  color: #a78bfa;
+  text-decoration: underline;
+  background: none;
+}
+
+.pagination-controls button:disabled {
+  color: #aaa;
+  text-decoration: none;
+  cursor: not-allowed;
+  background: none;
+  opacity: 0.7;
+}
+
+.pagination-controls span {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #4b267d;
+  margin: 0 0.5em;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 700px) {
+  .pagination-controls {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+  }
+  .pagination-controls button {
+    width: 100%;
+    padding: 0.5em 0;
+    font-size: 0.98rem;
+  }
+  .pagination-controls span {
+    margin: 0.5em 0;
+    font-size: 1rem;
+  }
+}
+
+.expense-explanation {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+  gap: 1rem;
+  margin: 3rem auto 2rem auto;
+  padding: 2rem 2rem 1.5rem 2rem;
+  font-size: 1.18rem;
+  line-height: 1.7;
+}
+
+.expense-explanation-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 1.2rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(90deg, #5b42f3 0%, #00ddeb 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: gradientFlow 4s linear infinite;
+  letter-spacing: 1px;
+}
+
+.expense-explanation h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #a78bfa;
+}
+
+.expense-explanation ul {
+  font-size: 1.08rem;
+  margin: 0 0 0.8rem 1.2rem;
+  padding: 0;
+}
+
+.expense-explanation li {
+  margin-bottom: 0.3rem;
+  line-height: 1.6;
+}
+
+.expense-explanation b {
+  color: #5b42f3;
+  font-size: 1.15rem;
+}
+
+.expense-explanation h1,
+.expense-explanation h2,
+.expense-explanation h3,
+.expense-explanation b,
+.expense-gradient-text {
+  background: linear-gradient(90deg, #5b42f3 0%, #00ddeb 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 @media (max-width: 900px) {
     .expense-transactions-container {
       padding: 1.2rem 0.5rem;
@@ -232,12 +401,73 @@
     }
   }
   
-  body.dark .expense-manager-bg {
-    background: linear-gradient(135deg, #25102a 60%, #1d061a 100%);
+@media (max-width: 700px) {
+  .expense-table th,
+  .expense-table td {
+    padding: 0.5rem 0.3rem;
+    font-size: 0.92rem;
+  }
+  .expense-transactions-title {
+    font-size: 1rem;
+  }
+  .expense-transactions-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+  .expense-table-wrapper {
+    margin-top: 0.7rem;
+  }
+  .expense-table {
+    min-width: 520px;
+  }
+  .expense-table th,
+  .expense-table td {
+    white-space: nowrap;
+  }
+  .expense-table {
+    font-size: 0.92rem;
+  }
+  .expense-btn,
+  .expense-btn-gradient {
+    font-size: 0.98rem;
+    padding: 0.6rem;
+  }
+  .expense-input {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.7rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .expense-transactions-header > div,
+  .expense-transactions-header > select {
+    width: 100%;
+    margin-left: 0;
+    margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .expense-btn-group {
+    flex-direction: column;
+    gap: 1rem;
+    margin: 1.2rem 0;
+    padding: 0.3rem 0;
+  }
+  .expense-btn-group .expense-btn {
+    width: 100%;
+    min-width: 120px;
+    font-size: 1rem;
+  }
+}
+  
+body.dark .expense-manager-bg {
+    background: #25102a;
   }
   
   body.dark .expense-manager-card {
-    background: linear-gradient(135deg, #25102a 60%, #1d061a 100%);
+    background: #25102a;;
     color: #fff;
     border: 1.5px solid #a78bfa;
     box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
@@ -255,15 +485,16 @@
     background-clip: unset;
   }
   
-  body.dark .expense-subtitle,
-  body.dark .expense-split-name,
-  body.dark .expense-table th {
-    color: #bfa3e6;
+  body.dark .expense-subtitle {
+    color: #fff;
+  }
+  
+  body.dark .expense-split-name {
+    color: #fff;
   }
   
   body.dark .expense-input,
-  body.dark .expense-splits-list li,
-  body.dark .expense-table-wrapper {
+  body.dark .expense-splits-list li {
     background-color: #25102a;
     color: #fff;
     border-color: #44225a;
@@ -286,6 +517,17 @@
     color: #fff;
   }
   
+  body.dark .expense-table-wrapper {
+    background: #25102a;
+    box-shadow: 0 2px 8px rgba(91, 66, 243, 0.12);
+  }
+  
+  body.dark .expense-table th {
+    background: #1d061a;
+    color: #bfa3e6;
+    border-bottom: 2px solid #a78bfa;
+  }
+  
   body.dark .expense-table td {
     color: #fff;
     border-bottom: 1px solid #44225a;
@@ -300,11 +542,11 @@
   }
 
   body.dark .expense-transactions-bg {
-    background: linear-gradient(135deg, #25102a 60%, #1d061a 100%);
+    background: #25102a;
   }
   
   body.dark .expense-transactions-container {
-    background: linear-gradient(135deg, #25102a 60%, #1d061a 100%);
+    background: #25102a;
     color: #fff;
     border: 1.5px solid #a78bfa;
     box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
@@ -313,3 +555,42 @@
   body.dark .expense-transactions-title {
     color: #bfa3e6;
   }
+  
+  body.dark .expense-split-amount {
+    color: #fff;
+  }
+  
+  body.dark .expense-total {
+    color: #fff;
+  }
+
+  body.dark .expense-table tr.bank-sync-row {
+    background: #1d061a;
+  }
+  
+  body.dark .expense-table tr.manual-row {
+    background: #25102a;
+  }
+
+body.dark .pagination-controls {
+  background: #25102a;
+  border: none;
+}
+
+body.dark .pagination-controls button {
+  color: #bfa3e6;
+  background: none;
+  text-decoration: underline;
+}
+
+body.dark .pagination-controls button:hover:not(:disabled) {
+  color: #00ddeb;
+  text-decoration: underline;
+  background: none;
+}
+
+body.dark .pagination-controls button:disabled {
+  color: #fff;
+  text-decoration: none;
+  opacity: 0.7;
+}

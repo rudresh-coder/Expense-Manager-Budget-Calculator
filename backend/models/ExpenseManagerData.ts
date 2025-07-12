@@ -11,6 +11,8 @@ const transactionSchema = new mongoose.Schema({
     amount: Number,
     description: String,
     date: Date,
+    source: { type: String, enum: ["manual", "bank"], default: "manual" },
+    bankName: { type: String },
 });
 
 const expenseManagerDataSchema = new mongoose.Schema({

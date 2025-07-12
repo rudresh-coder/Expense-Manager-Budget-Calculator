@@ -208,7 +208,7 @@ body.dark .budget-bg {
 }
 
 body.dark .budget-card {
-    background: linear-gradient(135deg, #25102a 60%, #1d061a 100%);
+    background: #25102a;
     color: #fff;
     border: 1.5px solid #a78bfa;
     box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
@@ -250,7 +250,7 @@ body.dark .budget-btn:hover {
 }
   
 body.dark .budget-summary {
-  color: #bfa3e6;
+  color: #fff;
 }
   
 body.dark .budget-explanation h2 {

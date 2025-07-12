@@ -128,10 +128,31 @@
 .budget-explanation b.reveal-visible,
 .budget-explanation .budget-gradient-text.reveal-visible { transition-delay: 0.85s; }
 
-/* Optionally, for multiple elements of the same type, stagger by nth-child */
+/* for multiple elements of the same type, stagger by nth-child */
 .budget-explanation > *:nth-child(1).reveal-visible { transition-delay: 0.1s; }
 .budget-explanation > *:nth-child(2).reveal-visible { transition-delay: 0.25s; }
 .budget-explanation > *:nth-child(3).reveal-visible { transition-delay: 0.4s; }
 .budget-explanation > *:nth-child(4).reveal-visible { transition-delay: 0.55s; }
 .budget-explanation > *:nth-child(5).reveal-visible { transition-delay: 0.7s; }
 .budget-explanation > *:nth-child(6).reveal-visible { transition-delay: 0.85s; }
+
+.expense-explanation .reveal-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1) skewY(0deg);
+}
+
+.expense-explanation h1.reveal-visible { transition-delay: 0.1s; }
+.expense-explanation h2.reveal-visible { transition-delay: 0.25s; }
+.expense-explanation h3.reveal-visible { transition-delay: 0.4s; }
+.expense-explanation ul.reveal-visible { transition-delay: 0.55s; }
+.expense-explanation p.reveal-visible { transition-delay: 0.7s; }
+.expense-explanation b.reveal-visible,
+.expense-explanation .expense-gradient-text.reveal-visible { transition-delay: 0.85s; }
+
+/* for multiple elements of the same type, stagger by nth-child */
+.expense-explanation > *:nth-child(1).reveal-visible { transition-delay: 0.1s; }
+.expense-explanation > *:nth-child(2).reveal-visible { transition-delay: 0.25s; }
+.expense-explanation > *:nth-child(3).reveal-visible { transition-delay: 0.4s; }
+.expense-explanation > *:nth-child(4).reveal-visible { transition-delay: 0.55s; }
+.expense-explanation > *:nth-child(5).reveal-visible { transition-delay: 0.7s; }
+.expense-explanation > *:nth-child(6).reveal-visible { transition-delay: 0.85s; }

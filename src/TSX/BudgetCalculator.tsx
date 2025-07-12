@@ -45,10 +45,11 @@ export default function BudgetCalculator() {
                 className="budget-scroll-link"
                 style={{
                     textAlign: "center",
-                    marginBottom: "1.2rem",
+                    marginBottom: "1.5rem",
                     color: "#7c4dff",
                     fontWeight: 600,
                     cursor: "pointer",
+                    fontSize: "1.2rem",
                     textDecoration: "none"
                 }}
                 onClick={() => {
