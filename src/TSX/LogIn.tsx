@@ -32,6 +32,7 @@ export default function LogIn() {
       localStorage.setItem("token", data.token);//stores JWT
       localStorage.setItem("isPremium", JSON.stringify(data.isPremium));
       localStorage.setItem("fullName", data.fullName);
+      localStorage.setItem("trialExpiresAt", data.trialExpiresAt);
       alert("Welcome Back!");
       setEmail("");
       setPassword("");

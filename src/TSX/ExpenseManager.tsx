@@ -46,31 +46,76 @@ export default function ExpenseManager() {
   const [splitNameError, setSplitNameError] = useState("");
   const explanationRef = React.useRef<HTMLDivElement>(null);
   const [sortType, setSortType] = useState<"date-asc" | "date-desc" | "input-asc" | "input-desc">("date-desc");
-  const [isPremium] = useState(false); 
   const [filterSource, setFilterSource] = useState<"all" | "manual" | "bank">("all");
   const [page, setPage] = useState(1);
   const pageSize = 50;
 
+  const [trialExpiresAt, setTrialExpiresAt] = useState(localStorage.getItem("trialExpiresAt"));
+  const [isPremium, setIsPremium] = useState(JSON.parse(localStorage.getItem("isPremium") || "false"));
+
+  const isTrialActive = trialExpiresAt && Date.now() < new Date(trialExpiresAt).getTime();
+  const hasPremium = isPremium || isTrialActive;
+
   useEffect(() => {
-    const savedAccounts = sessionStorage.getItem("expenseManagerAccounts");
-    const savedTransactions = sessionStorage.getItem("expenseManagerTransactions");
-    const savedActiveAccountId = sessionStorage.getItem("expenseManagerActiveAccountId");
-    if (savedAccounts) setAccounts(JSON.parse(savedAccounts));
-    if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
-    if (savedActiveAccountId) setActiveAccountId(savedActiveAccountId);
+    const handleStorage = () => {
+      setTrialExpiresAt(localStorage.getItem("trialExpiresAt"));
+      setIsPremium(JSON.parse(localStorage.getItem("isPremium") || "false"));
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
+
+  useEffect(() => {
+    if (hasPremium) {
+      // Fetch from backend
+      fetch("/api/expense", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          setAccounts(data.accounts || []);
+          setTransactions(data.transactions || []);
+          setActiveAccountId(data.accounts?.[0]?.id || "");
+        });
+    } else {
+      // Load from sessionStorage
+      const savedAccounts = sessionStorage.getItem("expenseManagerAccounts");
+      const savedTransactions = sessionStorage.getItem("expenseManagerTransactions");
+      const savedActiveAccountId = sessionStorage.getItem("expenseManagerActiveAccountId");
+      if (savedAccounts) setAccounts(JSON.parse(savedAccounts));
+      if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
+      if (savedActiveAccountId) setActiveAccountId(savedActiveAccountId);
+    }
+  }, [hasPremium]);
   
   useEffect(() => {
-    sessionStorage.setItem("expenseManagerAccounts", JSON.stringify(accounts));
-  }, [accounts]);
+    if (hasPremium) {
+      // Save to backend
+      fetch("/api/expense", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ accounts, transactions })
+      });
+    } else {
+      // Save to sessionStorage
+      sessionStorage.setItem("expenseManagerAccounts", JSON.stringify(accounts));
+    }
+  }, [accounts, transactions, hasPremium]);
   
   useEffect(() => {
-    sessionStorage.setItem("expenseManagerTransactions", JSON.stringify(transactions));
-  }, [transactions]);
+    if (!hasPremium) {
+      sessionStorage.setItem("expenseManagerTransactions", JSON.stringify(transactions));
+    }
+  }, [transactions, hasPremium]);
   
   useEffect(() => {
-    sessionStorage.setItem("expenseManagerActiveAccountId", activeAccountId);
-  }, [activeAccountId]);
+    if (!hasPremium) {
+      sessionStorage.setItem("expenseManagerActiveAccountId", activeAccountId);
+    }
+  }, [activeAccountId, hasPremium]);
 
   useEffect (() => {
     if (transactions.length === 0) return;
@@ -170,7 +215,7 @@ export default function ExpenseManager() {
         }
       }
     }
-    if (!isPremium && transactions.length >= 50) {
+    if (!hasPremium && transactions.length >= 50) {
       alert("Free users can only store up to 50 transactions. Please export or upgrade for unlimited history.");
       return;
     }
@@ -286,9 +331,18 @@ export default function ExpenseManager() {
       </div>
       <div className="expense-manager-card">
         <h1 className="expense-title">Expense Manager</h1>
-        {!isPremium && (
+        {hasPremium ? (
+          <div className="premium-features">
+            {/* Show premium features */}
+          </div>
+        ) : (
           <div className="upgrade-banner">
             <b>Upgrade to Premium</b> for unlimited history, cross-device sync, and permanent backup!
+          </div>
+        )}
+        {isTrialActive && (
+          <div className="upgrade-banner">
+            <b>Premium Trial:</b> You have free premium access until {new Date(trialExpiresAt).toLocaleDateString()}!
           </div>
         )}
         {/* Add/select bank */}
@@ -474,12 +528,12 @@ export default function ExpenseManager() {
         )}
       </div>
       <div className="expense-btn-group" style={{ display: "flex", gap: "1rem", justifyContent: "center", margin: "1.2rem 0" }}>
-          {!isPremium && (
+          {!hasPremium && (
             <button className="expense-btn" disabled title="Premium feature.">
               Connect Bank (Premium)
             </button>
           )}
-          {isPremium && (
+          {hasPremium && (
             <button className="expense-btn" onClick={goLinkBank}>
               Connect Bank Account
             </button>

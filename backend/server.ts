@@ -70,7 +70,8 @@ app.post("/api/auth/signup", async (req: express.Request, res: express.Response)
         fullName,
         email,
         password: hashedPassword,
-        isPremium: false
+        isPremium: true,
+        trialExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
   
       await user.save();
@@ -100,7 +101,7 @@ app.post("/api/auth/signup", async (req: express.Request, res: express.Response)
         process.env.JWT_SECRET || "default_secret",
         { expiresIn: "7d" }
       );
-      res.json({ token, isPremium: user.isPremium, fullName: user.fullName });
+      res.json({ token, isPremium: user.isPremium, fullName: user.fullName, trialExpiresAt: user.trialExpiresAt });
     } catch (err) {
       res.status(500).json({ error: "Login failed" });
     }

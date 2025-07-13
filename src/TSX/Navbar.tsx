@@ -10,6 +10,7 @@ const navItems = [
   { label: "Expense Manager", to: "/premium" },
   { label: "Login", to: "/signin" },
   { label: "Sign Up", to: "/signup" },
+  { label: "Premium", to: "/pricing" },
 ];
 
 export default function Navbar() {
@@ -21,7 +22,6 @@ export default function Navbar() {
   useEffect(() => {
     document.body.classList.toggle("dark", dark);
   }, [dark]);
-
 
   useEffect(() => {
     setMenuOpen(false);

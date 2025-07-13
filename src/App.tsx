@@ -12,6 +12,7 @@ import Footer from "./TSX/Footer";
 import ScrollToTop from "./ScrollToTop";
 import Terms from "./TSX/Terms";
 import Privacy from "./TSX/Privacy";
+import Pricing from "./TSX/Pricing";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/behavioralmindset" element={<BehavioralMindset />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/pricing" element={<Pricing />} />
       </Routes>
       <Footer />
     </Router>

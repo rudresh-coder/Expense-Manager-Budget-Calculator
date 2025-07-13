@@ -28,6 +28,7 @@ export default function Footer() {
       <nav className="footer-links">
         <div className="footer-links-home">
           <Link to="/"><FaHome style={{ marginRight: 6 }} />Home</Link>
+          <Link to="/pricing"><FaShieldAlt style={{ marginRight: 6 }} />Premium</Link>
         </div>
         {isMobile ? (
           <div className="footer-dropdowns">
@@ -56,7 +57,7 @@ export default function Footer() {
               {showLinks && (
                 <div className="footer-dropdown-content">
                   <Link to="/calculator"><FaCalculator style={{ marginRight: 6 }} />Budget Calculator</Link>
-                  <Link to="/premium"><FaWallet style={{ marginRight: 6 }} />Expense Manager</Link>
+                  <Link to="/expensemanager"><FaWallet style={{ marginRight: 6 }} />Expense Manager</Link>
                   <Link to="/signup"><FaUserPlus style={{ marginRight: 6 }} />Sign Up</Link>
                   <Link to="/signin"><FaSignInAlt style={{ marginRight: 6 }} />Login</Link>
                   <Link to="/privacy"><FaShieldAlt style={{ marginRight: 6 }} />Privacy</Link>
@@ -74,7 +75,7 @@ export default function Footer() {
             </div>
             <div className="footer-links-col">
               <Link to="/calculator"><FaCalculator style={{ marginRight: 6 }} />Budget Calculator</Link>
-              <Link to="/premium"><FaWallet style={{ marginRight: 6 }} />Expense Manager</Link>
+              <Link to="/expensemanager"><FaWallet style={{ marginRight: 6 }} />Expense Manager</Link>
               <Link to="/signup"><FaUserPlus style={{ marginRight: 6 }} />Sign Up</Link>
             </div>
             <div className="footer-links-col">

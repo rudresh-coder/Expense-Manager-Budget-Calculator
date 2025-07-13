@@ -8,9 +8,15 @@ export async function checkPremium(req: Request, res: Response, next: NextFuncti
     return;
   }
   const user = await User.findById(userId);
-  if (!user || !user.isPremium) {
+  const now = new Date();
+  const trialActive = user?.trialExpiresAt && now < user.trialExpiresAt;
+  if (!user || !user.isPremium && !trialActive) {
     res.status(403).json({ error: "Premium access required" });
     return;
+  }
+  if (user.isPremium && user.trialExpiresAt && now > user.trialExpiresAt) {
+    user.isPremium = false;
+    await user.save();
   }
   next();
 }
