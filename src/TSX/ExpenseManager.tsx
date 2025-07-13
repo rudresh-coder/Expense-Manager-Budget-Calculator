@@ -266,6 +266,28 @@ export default function ExpenseManager() {
     setForm({ splitId: "", type: "add", amount: "", description: "", date: "" });
   };
 
+  const handleUpgrade = async () => {
+    try {
+      const res = await fetch("/api/user/upgrade", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json"
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Upgraded to premium!");
+        localStorage.setItem("isPremium", "true");
+        setIsPremium(true);
+      } else {
+        alert(data.error || "Upgrade failed.");
+      }
+    } catch {
+      alert("Network error. Please try again.");
+    }
+  };
+  
   const exportCSV = () => {
     const rows = [
       ["Date", "Split", "Type", "Amount", "Description", "Source"],
@@ -344,6 +366,11 @@ export default function ExpenseManager() {
           <div className="upgrade-banner">
             <b>Premium Trial:</b> You have free premium access until {new Date(trialExpiresAt).toLocaleDateString()}!
           </div>
+        )}
+        {!hasPremium && (
+          <button className="expense-btn" onClick={handleUpgrade}>
+            Upgrade to Premium
+          </button>
         )}
         {/* Add/select bank */}
         <div className="expense-row">
