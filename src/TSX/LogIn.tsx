@@ -1,46 +1,44 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "../CSS/SignUp.css";
 
 export default function LogIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [generalError, setGeneralError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError("");
     setPasswordError("");
     setGeneralError("");
 
-    // Dummy credentials for demonstration
-    const validEmail = "test@example.com";
-    const validPassword = "password123";
-
-    let valid = true;
-    if (!email) {
-      setEmailError("Please enter your email.");
-      valid = false;
-    } else if (email !== validEmail) {
-      setEmailError("Incorrect email address.");
-      valid = false;
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setGeneralError(data.error || "Login failed.");
+        return;
+      }
+      localStorage.setItem("token", data.token);//stores JWT
+      localStorage.setItem("isPremium", JSON.stringify(data.isPremium));
+      localStorage.setItem("fullName", data.fullName);
+      alert("Welcome Back!");
+      setEmail("");
+      setPassword("");
+      navigate("/");
+    } catch {
+      setGeneralError("Network error. Please try again.");
     }
-
-    if (!password) {
-      setPasswordError("Please enter your password.");
-      valid = false;
-    } else if (password !== validPassword) {
-      setPasswordError("Incorrect password.");
-      valid = false;
-    }
-
-    if (!valid) return;
-
-    setGeneralError("");
-    alert("Welcome back!");
-    // Add real authentication logic here
   };
 
   return (
@@ -61,16 +59,35 @@ export default function LogIn() {
         </div>
         <div className="input-group">
           <label htmlFor="password">Password</label>
+          <div style={{ position: "relative" }}>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             name="password"
             id="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            style={{ paddingRight: "2.2rem" }}
           />
+          <span
+            style={{
+              position: "absolute",
+              right: "0.7rem",
+              top: "35%",
+              transform: "translateY(-50%)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              height: "1.5rem"
+            }}
+            onClick={() => setShowPassword(s => !s)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </span>
           {passwordError && <div className="error-message">{passwordError}</div>}
           <div className="forgot">
             <Link to="/forgot-password">Forgot Password?</Link>
+          </div>
           </div>
         </div>
         {generalError && <div className="error-message">{generalError}</div>}

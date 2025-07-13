@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "../CSS/SignUp.css";
-
-// Dummy existing users for demonstration
-const existingUsers = ["john doe", "jane smith", "alice"];
 
 function validateEmail(email: string) {
   // Simple email regex
@@ -19,19 +17,18 @@ export default function SignUp() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!fullName.trim()) {
       setError("Full Name is required");
-      return;
-    }
-    if (existingUsers.includes(fullName.trim().toLowerCase())) {
-      setError("This username is already taken");
       return;
     }
     if (!email) {
@@ -61,7 +58,27 @@ export default function SignUp() {
       return;
     }
     setError("");
-    alert(`Welcome, ${fullName}!`);
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fullName, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Signup failed.");
+        return;
+      }
+      alert("Signup seccessful! Please log in.");
+      setFullName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      setAgree(false);
+      navigate("/signin");
+    } catch {
+      setError("Network error. Please try again.");
+    }
   };
 
   return (
@@ -90,23 +107,55 @@ export default function SignUp() {
         </div>
         <div className="input-group">
           <label htmlFor="password">Password</label>
+          <div style={{ position: "relative" }}>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             id="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
+            style={{ paddingRight: "2.2rem" }}
           />
+            <span
+              style={{
+                position: "absolute",
+                right: "0.7rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer"
+              }}
+              onClick={() => setShowPassword(s => !s)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
         </div>
         <div className="input-group">
           <label htmlFor="confirmPassword">Confirm Password</label>
+          <div style={{ position: "relative" }}>
           <input
-            type="password"
+            type={showConfirm ? "text" : "password"}
             id="confirmPassword"
             value={confirmPassword}
             onChange={e => setConfirmPassword(e.target.value)}
             required
+            style={{ paddingRight: "2.2rem" }}
           />
+            <span
+              style={{
+                position: "absolute",
+                right: "0.7rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer"
+              }}
+              onClick={() => setShowConfirm(s => !s)}
+              aria-label={showConfirm ? "Hide password" : "Show password"}
+            >
+              {showConfirm ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
         </div>
         <label className="agreement-text">
           <input
