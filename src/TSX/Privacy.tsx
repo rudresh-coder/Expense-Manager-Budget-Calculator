@@ -17,6 +17,7 @@ export default function Privacy() {
       </RevealOnScroll>
 
       <RevealOnScroll as="h2">2. Information We Collect</RevealOnScroll>
+      <div>
       <RevealOnScroll as="ul">
         <li>
           <b>Personal Information:</b> Name, email address, and other information you provide when creating an account or contacting us.
@@ -31,8 +32,10 @@ export default function Privacy() {
           <b>Cookies & Tracking:</b> We use cookies and similar technologies to enhance your experience and analyze usage.
         </li>
       </RevealOnScroll>
+      </div>
 
       <RevealOnScroll as="h2">3. How We Use Your Information</RevealOnScroll>
+      <div>
       <RevealOnScroll as="ul">
         <li>To provide, operate, and maintain the Service.</li>
         <li>To personalize your experience and improve our offerings.</li>
@@ -40,8 +43,10 @@ export default function Privacy() {
         <li>To analyze usage and trends to improve the Service.</li>
         <li>To comply with legal obligations and protect our rights.</li>
       </RevealOnScroll>
+      </div>
 
       <RevealOnScroll as="h2">4. How We Share Your Information</RevealOnScroll>
+      <div>
       <RevealOnScroll as="ul">
         <li>
           <b>Service Providers:</b> We may share information with trusted third parties who assist us in operating the Service (e.g., hosting, analytics), subject to confidentiality agreements.
@@ -56,6 +61,7 @@ export default function Privacy() {
           <b>No Sale of Personal Data:</b> We do not sell your personal information to third parties.
         </li>
       </RevealOnScroll>
+      </div>
 
       <RevealOnScroll as="h2">5. Data Security</RevealOnScroll>
       <RevealOnScroll as="p">
@@ -63,6 +69,7 @@ export default function Privacy() {
       </RevealOnScroll>
 
       <RevealOnScroll as="h2">6. Your Choices</RevealOnScroll>
+      <div>
       <RevealOnScroll as="ul">
         <li>
           <b>Account Information:</b> You can review and update your account information at any time.
@@ -74,6 +81,7 @@ export default function Privacy() {
           <b>Marketing Communications:</b> You can opt out of marketing emails by following the unsubscribe instructions in those emails.
         </li>
       </RevealOnScroll>
+      </div>
 
       <RevealOnScroll as="h2">7. Children’s Privacy</RevealOnScroll>
       <RevealOnScroll as="p">

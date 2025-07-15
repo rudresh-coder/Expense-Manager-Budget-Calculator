@@ -55,6 +55,7 @@ export default function ExpenseManager() {
 
   const isTrialActive = trialExpiresAt && Date.now() < new Date(trialExpiresAt).getTime();
   const hasPremium = isPremium || isTrialActive;
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const handleStorage = () => {
@@ -67,15 +68,29 @@ export default function ExpenseManager() {
 
   useEffect(() => {
     if (hasPremium) {
+      console.log("Fetching data for premium user...");
+      setIsLoading(true);
       // Fetch from backend
-      fetch("/api/expense", {
+      fetch("http://localhost:5000/api/expense", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       })
         .then(res => res.json())
         .then(data => {
-          setAccounts(data.accounts || []);
-          setTransactions(data.transactions || []);
-          setActiveAccountId(data.accounts?.[0]?.id || "");
+          console.log("Received data from backend:", data);
+          if (data.hasData) {
+            setAccounts(data.accounts || []);
+            setTransactions(data.transactions || []);
+            if (data.accounts && data.accounts.length > 0) {
+              setActiveAccountId(data.accounts[0].id);
+            }
+          } else {
+            console.log("New user, no data to load")
+          }
+          setIsLoading(false);
+        })
+        .catch(err => {
+          console.error("Failed to fetch expense data:", err);
+          setIsLoading(false);
         });
     } else {
       // Load from sessionStorage
@@ -85,25 +100,46 @@ export default function ExpenseManager() {
       if (savedAccounts) setAccounts(JSON.parse(savedAccounts));
       if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
       if (savedActiveAccountId) setActiveAccountId(savedActiveAccountId);
+      setIsLoading(false);
     }
   }, [hasPremium]);
   
   useEffect(() => {
-    if (hasPremium) {
-      // Save to backend
-      fetch("/api/expense", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ accounts, transactions })
-      });
-    } else {
-      // Save to sessionStorage
-      sessionStorage.setItem("expenseManagerAccounts", JSON.stringify(accounts));
-    }
-  }, [accounts, transactions, hasPremium]);
+    // small delay to prevent immediate saving on load
+    const timeoutId = setTimeout(() => {
+      if (hasPremium && !isLoading) {
+        // Only saving if we have actual data OR if this is a deliberate deletion
+        if (accounts.length > 0 || transactions.length > 0) {
+          const saveData = async () => {
+            try {
+              console.log("Saving data to backend:", { accounts, transactions });
+              const res = await fetch("http://localhost:5000/api/expense", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify({ accounts, transactions })
+              });
+              if (!res.ok) {
+                const data = await res.json();
+                console.error("Save error:", data.error || "Unknown error");
+              } else {
+                console.log("Data saved successfully");
+              }
+            } catch (err) {
+              console.error("Network error while saving expense data:", err);
+            }
+          };
+          saveData();
+        }
+      } else if (!hasPremium) {
+        sessionStorage.setItem("expenseManagerAccounts", JSON.stringify(accounts));
+      }
+    }, 1000); // 1 second delay
+
+    return () => clearTimeout(timeoutId);
+  }, [accounts, transactions, hasPremium, isLoading]);
   
   useEffect(() => {
     if (!hasPremium) {
@@ -112,10 +148,25 @@ export default function ExpenseManager() {
   }, [transactions, hasPremium]);
   
   useEffect(() => {
-    if (!hasPremium) {
+    if (activeAccountId && hasPremium) {
+      localStorage.setItem("expenseManagerActiveAccountId", activeAccountId);
+    } else if (!hasPremium) {
       sessionStorage.setItem("expenseManagerActiveAccountId", activeAccountId);
     }
   }, [activeAccountId, hasPremium]);
+
+  useEffect(() => {
+    const savedActiveAccountId = hasPremium 
+      ? localStorage.getItem("expenseManagerActiveAccountId")
+      : sessionStorage.getItem("expenseManagerActiveAccountId");
+    
+    if (savedActiveAccountId && accounts.length > 0) {
+      const accountExists = accounts.find(acc => acc.id === savedActiveAccountId);
+      if (accountExists) {
+        setActiveAccountId(savedActiveAccountId);
+      }
+    }
+  }, [accounts, hasPremium]);
 
   useEffect (() => {
     if (transactions.length === 0) return;
@@ -268,7 +319,7 @@ export default function ExpenseManager() {
 
   const handleUpgrade = async () => {
     try {
-      const res = await fetch("/api/user/upgrade", {
+      const res = await fetch("http://localhost:5000/api/user/upgrade", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -393,10 +444,8 @@ export default function ExpenseManager() {
             onChange={(e) => setActiveAccountId(e.target.value)}
           >
             <option value="">Select Bank</option>
-            {accounts.map((acc) => (
-              <option key={acc.id} value={acc.id}>
-                {acc.name}
-              </option>
+            {accounts.map((acc, idx) => (
+              <option key={acc.id || idx} value={acc.id}>{acc.name}</option>
             ))}
           </select>
         </div>
@@ -724,6 +773,7 @@ export default function ExpenseManager() {
             track your spending and savings. The total balance updates
             automatically.
           </RevealOnScroll>
+          <div>
           <RevealOnScroll as="ul">
             <li>
               <b>Add Bank:</b> Create a new account for tracking.
@@ -740,6 +790,7 @@ export default function ExpenseManager() {
               your finances.
             </li>
           </RevealOnScroll>
+          </div>
           <RevealOnScroll as="h3" >What is a Split?</RevealOnScroll>
           <RevealOnScroll as="p">
             A <b>split</b> lets you divide your main account balance into
@@ -752,7 +803,9 @@ export default function ExpenseManager() {
             <RevealOnScroll as="p">
             Suppose you add a new bank account with ₹10,000 as your main
             balance. You want to set aside ₹3,000 for Groceries.
-            <ul>
+            </RevealOnScroll>
+            <div>
+            <RevealOnScroll as="ul">
               <li>Your <b>Main</b> balance starts at ₹10,000.</li>
               <li>
                 You create a <b>Groceries split</b> and allocate ₹3,000 from
@@ -766,7 +819,9 @@ export default function ExpenseManager() {
                 Your <b>Total</b> money tracked is still ₹10,000 (₹7,000 main +
                 ₹3,000 split).
               </li>
-            </ul>
+            </RevealOnScroll>
+            </div>
+          <RevealOnScroll as="p">
             When you spend ₹500 on groceries, you record it under the Groceries
             split. The split balance drops to ₹2,500, and your main balance
             stays at ₹7,000.

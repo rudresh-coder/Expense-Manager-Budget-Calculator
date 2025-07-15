@@ -31,18 +31,22 @@ export default function LandingPage() {
             Ever open your banking app and wonder, “Where did it all go?” Zero‑Based Budgeting acts like your personal financial detective. You assign every rupee a job, leaving no mystery expenses behind.
           </p>
           <h3><FaHeart style={{ color: "#e4b975", marginRight: 6 }} /> Why You’ll Love It</h3>
+          <div>
           <ul>
             <li><FaCheckCircle style={{ color: "#61d887", marginRight: 6 }} /><b>Total Control:</b> Eliminate surprise shortfalls—know exactly where each rupee goes.</li>
             <li><FaCheckCircle style={{ color: "#61d887", marginRight: 6 }} /><b>Stress‑Free:</b> No more guessing or guilt over untracked spending.</li>
             <li><FaCheckCircle style={{ color: "#61d887", marginRight: 6 }} /><b>Goal‑Driven:</b> Every rupee pushes you forward—toward debt freedom, an emergency fund, or your next big purchase.</li>
           </ul>
+          </div>
           <h3><FaListOl style={{ color: "#5b6eae", marginRight: 6 }} /> How It Works in 4 Simple Steps</h3>
+          <div>
           <ol>
             <li><FaArrowRight style={{ color: "#b88c6e", marginRight: 6 }} /><b>Tally Your Take‑Home:</b> Calculate your total monthly income after taxes.</li>
             <li><FaArrowRight style={{ color: "#b88c6e", marginRight: 6 }} /><b>Map Your Categories:</b> List every expense category you have: rent, groceries, utilities, dining out, entertainment—everything.</li>
             <li><FaArrowRight style={{ color: "#b88c6e", marginRight: 6 }} /><b>Allocate ‘Til Zero:</b> Assign specific amounts to each category until your income minus allocations equals ₹0.</li>
             <li><FaArrowRight style={{ color: "#b88c6e", marginRight: 6 }} /><b>Track & Tweak:</b> Log every spend, compare it to your budget allocations, and adjust your plan for next month.</li>
           </ol>
+          </div>
           <p>
             <FaLightbulb style={{ color: "#e4b975", marginRight: 6 }} /><b>Example:</b> If you earn ₹50,000: allocate ₹20,000 rent, ₹10,000 groceries, ₹5,000 utilities, ₹5,000 entertainment, ₹10,000 savings/debt.<br />
             Spend only what you’ve assigned—no more, no less.
@@ -68,6 +72,7 @@ export default function LandingPage() {
             <FaCheckCircle style={{ color: "#7bbfae", marginRight: 6 }} />
             Why Try It?
           </h3>
+          <div>
           <ul>
             <li>
               <FaCheckCircle style={{ color: "#b88c6e", marginRight: 6 }} />
@@ -82,10 +87,12 @@ export default function LandingPage() {
               Flexible & forgiving: Adjust the percentages slightly as your life changes.
             </li>
           </ul>
+          </div>
           <h3>
             <FaCalculator style={{ color: "#237efd", marginRight: 6 }} />
             How It Works in 4 Easy Steps
           </h3>
+          <div>
           <ol>
             <li>
               <FaRupeeSign style={{ color: "#b88c6e", marginRight: 6 }} />
@@ -104,6 +111,7 @@ export default function LandingPage() {
               <b>Review Monthly:</b> Track your actual spend versus your caps and tweak next month’s plan.
             </li>
           </ol>
+          </div>
           <h3>
             <FaLightbulb style={{ color: "#e4b975", marginRight: 6 }} />
             Real‑Life Example
@@ -139,6 +147,7 @@ export default function LandingPage() {
             <FaEye style={{ color: "#7bbfae", marginRight: 6 }} />
             Why It Works
           </h3>
+          <div>
           <ul>
             <li>
               <FaEye style={{ color: "#5b6eae", marginRight: 6 }} />
@@ -153,10 +162,12 @@ export default function LandingPage() {
               Behavior‑shaping: Physical limits make you rethink every purchase.
             </li>
           </ul>
+          </div>
           <h3>
             <FaListOl style={{ color: "#237efd", marginRight: 6 }} />
             How to Set It Up in 4 Simple Steps
           </h3>
+          <div>
           <ol>
             <li>
               <FaEnvelopeOpenText style={{ color: "#5b6eae", marginRight: 6 }} />
@@ -175,6 +186,7 @@ export default function LandingPage() {
               <b>Spend Only What’s Inside:</b> When an envelope hits zero, that category’s spending stops until next month.
             </li>
           </ol>
+          </div>
           <h3>
             <FaLightbulb style={{ color: "#e4b975", marginRight: 6 }} />
             Example in Action
@@ -313,11 +325,13 @@ export default function LandingPage() {
           <RevealOnScroll as="h3" className="automate-how-title">
             How to set it up:
           </RevealOnScroll>
+          <div>
           <RevealOnScroll as="ul" className="automate-how">
             <li>Schedule a recurring transfer on payday from your checking to savings or an investment SIP.</li>
             <li>Use your bank’s auto‑debit feature or sign up for a mutual fund SIP.</li>
             <li>Treat that transfer like a fixed expense—just like rent or groceries.</li>
           </RevealOnScroll>
+          </div>
           <RevealOnScroll as="p" className="automate-example">
             <b>Real-Life Example:</b> On the 1st of every month, ₹2,000 automatically debits into your favorite equity fund, so you never have to remember to save.
           </RevealOnScroll>
@@ -342,11 +356,13 @@ export default function LandingPage() {
           <RevealOnScroll as="h3" className="roundup-how-title">
             How to set it up:
           </RevealOnScroll>
+          <div>
           <RevealOnScroll as="ul" className="roundup-how">
             <li>Link your spending account to our app (or a dedicated round‑up service).</li>
             <li>After every purchase, the app rounds up to the nearest ₹10 or ₹50.</li>
             <li>It then transfers that difference into your savings envelope or account.</li>
           </RevealOnScroll>
+          </div>
           <RevealOnScroll as="p" className="roundup-example">
             <b>Real‑Life Example:</b> You buy coffee for ₹123; the app rounds to ₹130 and deposits ₹7 into your savings—so you save while you sip.
           </RevealOnScroll>
@@ -371,12 +387,14 @@ export default function LandingPage() {
           <RevealOnScroll as="h3" className="emergency-how-title">
             How to set it up:
           </RevealOnScroll>
+          <div>
           <RevealOnScroll as="ul" className="emergency-how">
             <li>Calculate your total monthly essentials (rent, bills, groceries).</li>
             <li>Multiply by 3–6 to set your target (3 months, 6 months, whatever gives you peace of mind).</li>
             <li>Automate transfers each pay period until you hit that target.</li>
             <li>Store the fund in a high‑yield or liquid savings account so you can grab it instantly if needed.</li>
           </RevealOnScroll>
+          </div>
           <RevealOnScroll as="p" className="emergency-example">
             <b>Real‑Life Example:</b> If you spend ₹15,000 monthly on essentials, aim to stash away ₹45,000–₹90,000—your safety net is ready.
           </RevealOnScroll>
@@ -397,12 +415,12 @@ export default function LandingPage() {
         <InfoCircles />
 
       {/* Sticky Ad Banner */}
-      <div className="sticky-ad">
+      {/* <div className="sticky-ad">
         <div className="ad-placeholder">
           <strong>Ad Space</strong>
           <div style={{ fontSize: "0.95rem" }}>Your ad could be here!</div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

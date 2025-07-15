@@ -6,7 +6,7 @@ const splitSchema = new mongoose.Schema({
 });
 
 const transactionSchema = new mongoose.Schema({
-    splitId: { type: mongoose.Schema.Types.ObjectId, ref: "Split" },
+    splitId: { type: String },
     type: { type: String, enum: ["add", "spend"] },
     amount: Number,
     description: String,

@@ -143,12 +143,15 @@ export default function BudgetCalculator() {
                     Enter your monthly income sources and expenses below. The calculator will show your total income, expenses, and net savings. Use custom categories for anything not listed.
                 </RevealOnScroll>
                 <RevealOnScroll as="h3" style={{fontSize:"1.8rem"}}>Income Streams :</RevealOnScroll>
+                <div>
                 <RevealOnScroll as="ul">
                     <li><span className="budget-gradient-text"><b>Salary:</b></span> Your main job’s income (enter your take-home pay after tax deductions).</li>
                     <li><span className="budget-gradient-text"><b>Freelance:</b></span> Side gigs, contract work, or any irregular income.</li>
                     <li><span className="budget-gradient-text"><b>Passive:</b></span> Money you earn regularly without active work (e.g., rent, dividends).</li>
                 </RevealOnScroll>
+                </div>
                 <RevealOnScroll as="h3" style={{fontSize:"1.8rem"}}>Expense Categories :</RevealOnScroll>
+                <div>
                 <RevealOnScroll as="ul">
                     <li><span className="budget-gradient-text"><b>Essentials:</b></span> Must-haves like Rent/Mortgage, Utilities, and Groceries.</li>
                     <li><span className="budget-gradient-text"><b>Discretionary:</b></span> Wants such as Dining Out, Entertainment, Shopping, and Travel.</li>
@@ -157,6 +160,7 @@ export default function BudgetCalculator() {
                     <li><span className="budget-gradient-text"><b>Transport:</b></span> Daily commuting (bus, fuel, metro).</li>
                     <li><span className="budget-gradient-text"><b>Custom Categories:</b></span> Add your own (e.g., Pet Care, Gifts) for anything not covered above.</li>
                 </RevealOnScroll>
+                </div>
                 <RevealOnScroll as="p">
                     <span className="budget-gradient-text"><b>Tip:</b></span> Your net savings will update automatically as you enter your details.
                 </RevealOnScroll>

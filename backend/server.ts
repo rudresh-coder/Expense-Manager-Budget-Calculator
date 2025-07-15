@@ -109,33 +109,53 @@ app.post("/api/auth/signup", async (req: express.Request, res: express.Response)
 
 //Get expense data (premium only)
 app.get("/api/expense", auth, checkPremium, async (req, res) => {
-    try {
-      const data = await ExpenseManagerData.findOne({ userId: req.user?.id });
-      res.json(data || {});
-    } catch (err) {
-      res.status(500).json({ error: "Failed to fetch expense data" });
+  try {
+    const data = await ExpenseManagerData.findOne({ userId: req.user?.id });
+    
+    if (!data) {
+      // Return consistent structure for new users
+      res.json({ hasData: false, accounts: [], transactions: [] });
+    } else {
+      // Return existing data with hasData flag
+      res.json({ 
+        hasData: true, 
+        accounts: data.accounts || [], 
+        transactions: data.transactions || [],
+        _id: data._id,
+        userId: data.userId,
+        updatedAt: data.updatedAt
+      });
     }
-  });
+  } catch (err) {
+    console.error("Fetch expense data error:", err);
+    res.status(500).json({ error: "Failed to fetch expense data" });
+  }
+});
 
 //Save/Update expense data (premium only)
 app.post("/api/expense", auth, checkPremium, async (req, res) => {
-    const { accounts, transactions } = req.body;
-    let data = await ExpenseManagerData.findOne({ userId: req.user?.id });
-    if (data) {
-      data.accounts = accounts;
-      data.transactions = transactions;
-      data.updatedAt = new Date();
-      await data.save();
-    } else {
-      data = await ExpenseManagerData.create({
-        userId: req.user?.id,
-        accounts,
-        transactions,
-        updatedAt: new Date(),
-      });
-    }
-    res.json({ message: "Expense data saved" });
-  });
+  try {
+      const { accounts, transactions } = req.body;
+      
+      console.log("Saving data for user:", req.user?.id, { accountsCount: accounts?.length, transactionsCount: transactions?.length });
+      
+      const filter = { userId: req.user?.id };
+      const update = {
+          accounts: accounts || [],
+          transactions: transactions || [],
+          updatedAt: new Date(),
+      };
+      const options = { upsert: true, new: true, setDefaultsOnInsert: true };
+
+      const result = await ExpenseManagerData.findOneAndUpdate(filter, update, options);
+      console.log("Save successful for user:", req.user?.id);
+
+      res.json({ message: "Expense data saved", data: result });
+  } catch (err) {
+      console.error("Expense save error:", err);
+      res.status(500).json({ error: "Failed to save expense data" });
+  }
+});
 
 //Example: Upgrade to premium (demo)
 app.post("/api/user/upgrade", auth, async (req: express.Request, res: express.Response) => {

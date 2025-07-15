@@ -22,11 +22,13 @@ export default function Terms() {
       </RevealOnScroll>
 
       <RevealOnScroll as="h2">3. Use of the Service</RevealOnScroll>
+      <div>
       <RevealOnScroll as="ul">
         <li>You must be at least 13 years old to use this Service.</li>
         <li>You agree to use the Service only for lawful purposes and in accordance with these Terms.</li>
         <li>You are responsible for maintaining the confidentiality of your account and password.</li>
       </RevealOnScroll>
+      </div>
 
       <RevealOnScroll as="h2">4. User Content</RevealOnScroll>
       <RevealOnScroll as="p">
@@ -39,12 +41,14 @@ export default function Terms() {
       </RevealOnScroll>
 
       <RevealOnScroll as="h2">6. Prohibited Activities</RevealOnScroll>
+      <div>
       <RevealOnScroll as="ul">
         <li>Do not use the Service for any unlawful or fraudulent purpose.</li>
         <li>Do not attempt to gain unauthorized access to any part of the Service.</li>
         <li>Do not upload viruses, malware, or other harmful code.</li>
         <li>Do not harass, abuse, or harm other users.</li>
       </RevealOnScroll>
+      </div>
 
       <RevealOnScroll as="h2">7. Third-Party Links</RevealOnScroll>
       <RevealOnScroll as="p">

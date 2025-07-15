@@ -26,11 +26,13 @@ export default function SmartInvesting() {
             What it is: A SIP lets you invest a fixed sum each month into a mutual fund, smoothing out market highs and lows.
           </RevealOnScroll>
           <RevealOnScroll as="h3" className="a-how-title">How to get started:</RevealOnScroll>
+          <div>
           <RevealOnScroll as="ul" className="a-how">
             <li>Pick a well-diversified equity or hybrid fund (look for low expense ratios).</li>
             <li>Decide on an amount—say, ₹1,000—and your SIP date (e.g., the 5th of each month).</li>
             <li>Automate the transfer from your bank or broker.</li>
           </RevealOnScroll>
+          </div>
           <RevealOnScroll as="p" className="a-example">
             <b>Why it works:</b> You buy more units when prices are low and fewer when they’re high, averaging your cost over time.<br />
             <b>Example:</b> A ₹1,000 SIP in a broad-market index fund builds discipline and wealth steadily—no timing the market needed.
@@ -53,11 +55,13 @@ export default function SmartInvesting() {
             What they are: These funds simply track a market index (like the Nifty 50 or Sensex), offering instant diversification at rock-bottom fees.
           </RevealOnScroll>
           <RevealOnScroll as="h3" className="b-how-title">How to invest:</RevealOnScroll>
+          <div>
           <RevealOnScroll as="ul" className="b-how">
             <li>Choose an ETF or index fund that matches your target index.</li>
             <li>Decide whether to invest a lump sum (e.g., ₹10,000) or set up an SIP.</li>
             <li>Sit back and hold—these are built for the long haul.</li>
           </RevealOnScroll>
+          </div>
           <RevealOnScroll as="p" className="b-example">
             <b>Why it works:</b> Low costs + broad exposure = a simple, reliable way to match market returns over decades.<br />
             <b>Example:</b> A one-time ₹10,000 purchase in a Nifty 50 ETF gives you a tiny slice of India’s 50 largest companies—instantly diversified.
@@ -80,11 +84,13 @@ export default function SmartInvesting() {
             What it is: Over time, some assets will outperform others, skewing your intended mix of stocks vs. debt. A review brings you back in balance.
           </RevealOnScroll>
           <RevealOnScroll as="h3" className="c-how-title">How to rebalance:</RevealOnScroll>
+          <div>
           <RevealOnScroll as="ul" className="c-how">
             <li>Once a year, check your portfolio’s breakdown (e.g., 70% equity, 30% debt).</li>
             <li>If equity has grown to 80%, sell a portion to bring it back to your target (say, 60%).</li>
             <li>Buy debt funds or safer assets with the proceeds to restore your ideal mix.</li>
           </RevealOnScroll>
+          </div>
           <RevealOnScroll as="p" className="c-example">
             <b>Why it works:</b> Keeps your risk level consistent and enforces “buy low, sell high” discipline.<br />
             <b>Example:</b> If a bull run pushes your equity allocation to 70% but your goal is 60%, shifting 10% into debt helps lock in gains and protect you from a downturn.
