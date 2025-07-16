@@ -77,29 +77,39 @@ export default function ExpenseManager() {
         .then(res => res.json())
         .then(data => {
           console.log("Received data from backend:", data);
-          if (data.hasData) {
+          setIsLoading(false);
+          if (data && data.hasData) {
             setAccounts(data.accounts || []);
             setTransactions(data.transactions || []);
-            if (data.accounts && data.accounts.length > 0) {
+            const savedActiveAccountId = localStorage.getItem("expenseManagerActiveAccountId");
+            if (
+              savedActiveAccountId &&
+              data.accounts.some((acc: Account) => acc.id === savedActiveAccountId)
+            ) {
+              setActiveAccountId(savedActiveAccountId);
+            } else if (data.accounts.length > 0) {
               setActiveAccountId(data.accounts[0].id);
+            } else {
+              setActiveAccountId("");
             }
           } else {
-            console.log("New user, no data to load")
+            setAccounts([]);
+            setTransactions([]);
+            setActiveAccountId("");
           }
-          setIsLoading(false);
         })
         .catch(err => {
-          console.error("Failed to fetch expense data:", err);
           setIsLoading(false);
-        });
+          console.log("failed to fetch expense data", err);
+        })
     } else {
-      // Load from sessionStorage
+      // SessionStorage logic for free users
       const savedAccounts = sessionStorage.getItem("expenseManagerAccounts");
       const savedTransactions = sessionStorage.getItem("expenseManagerTransactions");
       const savedActiveAccountId = sessionStorage.getItem("expenseManagerActiveAccountId");
-      if (savedAccounts) setAccounts(JSON.parse(savedAccounts));
-      if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
-      if (savedActiveAccountId) setActiveAccountId(savedActiveAccountId);
+      setAccounts(savedAccounts ? JSON.parse(savedAccounts) : []);
+      setTransactions(savedTransactions ? JSON.parse(savedTransactions) : []);
+      setActiveAccountId(savedActiveAccountId || "");
       setIsLoading(false);
     }
   }, [hasPremium]);
@@ -179,6 +189,18 @@ export default function ExpenseManager() {
       sessionStorage.removeItem("expenseManagerAccounts");
       sessionStorage.removeItem("expenseManagerTransactions");
       sessionStorage.removeItem("expenseManagerActiveAccountId");
+    }
+  }, [transactions]);
+
+  useEffect(() => {
+    // Check for duplicate or missing ids in transactions
+    const ids = transactions.map(tx => tx.id);
+    const uniqueIds = new Set(ids);
+    if (ids.length !== uniqueIds.size) {
+      console.warn("Duplicate transaction ids found!", ids);
+    }
+    if (transactions.some(tx => !tx.id)) {
+      console.warn("Transaction(s) missing id!", transactions.filter(tx => !tx.id));
     }
   }, [transactions]);
 
@@ -494,7 +516,7 @@ export default function ExpenseManager() {
               </div>
             )}
             <ul className="expense-splits-list">
-              <li>
+              <li key="main">
                 <span className="expense-split-name">Main</span>
                 <span className="expense-split-amount">
                   ₹{activeAccount.balance.toFixed(2)}
@@ -522,86 +544,99 @@ export default function ExpenseManager() {
         )}
 
         {/* Transaction form */}
-        {activeAccount && (
-          <form onSubmit={handleSubmit} className="expense-form">
-            <div className="expense-form-row">
-              <select
-                className="expense-input"
-                name="splitId"
-                value={form.splitId}
-                onChange={handleChange}
-              >
-                <option value="">Main</option>
-                {activeAccount.splits.map((split) => (
-                  <option key={split.id} value={split.id}>
-                    {split.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="expense-input"
-                name="type"
-                value={form.type}
-                onChange={handleChange}
-              >
-                <option value="add">Add Money</option>
-                <option value="spend">Spend Money</option>
-              </select>
+        <form onSubmit={handleSubmit} className="expense-form">
+          <div className="expense-form-row">
+            <select
+              className="expense-input"
+              name="splitId"
+              value={form.splitId}
+              onChange={handleChange}
+              disabled={!activeAccount}
+            >
+              <option value="">Main</option>
+              {activeAccount?.splits.map((split) => (
+                <option key={split.id} value={split.id}>
+                  {split.name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="expense-input"
+              name="type"
+              value={form.type}
+              onChange={handleChange}
+              disabled={!activeAccount}
+            >
+              <option value="add">Add Money</option>
+              <option value="spend">Spend Money</option>
+            </select>
+          </div>
+          {!activeAccount && (
+            <div className="error-message" style={{ marginTop: 8 }}>
+              Please add and select a bank account to record transactions.
             </div>
-            <input
-              className="expense-input"
-              type="number"
-              name="amount"
-              placeholder="Amount"
-              value={form.amount}
-              onChange={handleChange}
-              required
-            />
-            <input
-              className="expense-input"
-              type="text"
-              name="description"
-              placeholder="Description"
-              value={form.description}
-              onChange={handleChange}
-              required
-            />
-            <input
-              className="expense-input"
-              type="date"
-              name="date"
-              value={form.date.split("T")[0] || ""}
-              onChange={e =>
-                setForm({
-                  ...form,
-                  date:
-                    e.target.value +
-                    "T" +
-                    (form.date.split("T")[1] || "00:00"),
-                })
-              }
-            />
-            <input
-              className="expense-input"
-              type="time"
-              name="time"
-              value={form.date.split("T")[1] || ""}
-              onChange={e =>
-                setForm({
-                  ...form,
-                  date:
-                    (form.date.split("T")[0] ||
-                      new Date().toISOString().split("T")[0]) +
-                    "T" +
-                    e.target.value,
-                })
-              }
-            />
-            <button className="expense-btn expense-btn-gradient" type="submit">
-              Submit
-            </button>
-          </form>
-        )}
+          )}
+          <input
+            className="expense-input"
+            type="number"
+            name="amount"
+            placeholder="Amount"
+            value={form.amount}
+            onChange={handleChange}
+            required
+            disabled={!activeAccount}
+          />
+          <input
+            className="expense-input"
+            type="text"
+            name="description"
+            placeholder="Description"
+            value={form.description}
+            onChange={handleChange}
+            required
+            disabled={!activeAccount}
+          />
+          <input
+            className="expense-input"
+            type="date"
+            name="date"
+            value={form.date.split("T")[0] || ""}
+            onChange={e =>
+              setForm({
+                ...form,
+                date:
+                  e.target.value +
+                  "T" +
+                  (form.date.split("T")[1] || "00:00"),
+              })
+            }
+            disabled={!activeAccount}
+          />
+          <input
+            className="expense-input"
+            type="time"
+            name="time"
+            value={form.date.split("T")[1] || ""}
+            onChange={e =>
+              setForm({
+                ...form,
+                date:
+                  (form.date.split("T")[0] ||
+                    new Date().toISOString().split("T")[0]) +
+                  "T" +
+                  e.target.value,
+              })
+            }
+            disabled={!activeAccount}
+          />
+          <button
+            className="expense-btn expense-btn-gradient"
+            type="submit"
+            disabled={!activeAccount}
+          >
+            Submit
+          </button>
+        </form>
       </div>
       <div className="expense-btn-group" style={{ display: "flex", gap: "1rem", justifyContent: "center", margin: "1.2rem 0" }}>
           {!hasPremium && (
@@ -617,7 +652,6 @@ export default function ExpenseManager() {
           <button className="expense-btn" onClick={exportCSV}>Export CSV</button>
         </div>
       {/* Transactions Section - outside the card */}
-      {activeAccount && (
         <div className="expense-transactions-bg">
           <div className="expense-transactions-container">
             <div className="expense-transactions-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.2rem" }}>
@@ -659,56 +693,60 @@ export default function ExpenseManager() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedTransactions.map((tx) => {
-                    const split = activeAccount.splits.find(
-                      (s) => s.id === tx.splitId
-                    );
-                    return (
-                      <tr
-                        key={tx.id}
-                        className={tx.source === "bank" ? "bank-sync-row" : "manual-row"}
-                      >
-                        <td>
-                          {(() => {
-                            const d = new Date(tx.date);
-                            const day = String(d.getDate()).padStart(2, "0");
-                            const month = String(d.getMonth() + 1).padStart(2, "0");
-                            const year = d.getFullYear();
-                            const hours = String(d.getHours()).padStart(2, "0");
-                            const minutes = String(d.getMinutes()).padStart(2, "0");
-                            return `${day}/${month}/${year}, ${hours}:${minutes}`;
-                          })()}
-                        </td>
-                        <td>{split ? split.name : "Main"}</td>
-                        <td>
-                          <span
-                            className={
-                              tx.type === "add"
-                                ? "expense-type-add"
-                                : "expense-type-spend"
-                            }
-                          >
-                            {tx.type === "add" ? "Add" : "Spend"}
-                          </span>
-                        </td>
-                        <td>
-                          {tx.type === "add" ? "+" : "-"}₹
-                          {tx.amount.toFixed(2)}
-                        </td>
-                        <td>{tx.description}</td>
-                        <td>
-                          {tx.source === "bank" ? (
-                            <span title={tx.bankName ? `Imported from ${tx.bankName}` : "Bank Sync"} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <img src={bankIcon} alt="Bank" style={{ width: 20, height: 20, marginRight: 4 }} />
-                              Bank‑Sync
-                            </span>
-                          ) : (
-                            "Manual"
-                          )}
+                  {activeAccount
+                    ? paginatedTransactions.map((tx) => {
+                        const split = activeAccount.splits.find((s) => s.id === tx.splitId);
+                        return (
+                          <tr key={tx.id} className={tx.source === "bank" ? "bank-sync-row" : "manual-row"}>
+                            <td>
+                              {(() => {
+                                const d = new Date(tx.date);
+                                const day = String(d.getDate()).padStart(2, "0");
+                                const month = String(d.getMonth() + 1).padStart(2, "0");
+                                const year = d.getFullYear();
+                                const hours = String(d.getHours()).padStart(2, "0");
+                                const minutes = String(d.getMinutes()).padStart(2, "0");
+                                return `${day}/${month}/${year}, ${hours}:${minutes}`;
+                              })()}
+                            </td>
+                            <td>{split ? split.name : "Main"}</td>
+                            <td>
+                              <span
+                                className={
+                                  tx.type === "add"
+                                    ? "expense-type-add"
+                                    : "expense-type-spend"
+                                }
+                              >
+                                {tx.type === "add" ? "Add" : "Spend"}
+                              </span>
+                            </td>
+                            <td>
+                              {tx.type === "add" ? "+" : "-"}₹
+                              {tx.amount.toFixed(2)}
+                            </td>
+                            <td>{tx.description}</td>
+                            <td>
+                              {tx.source === "bank" ? (
+                                <span title={tx.bankName ? `Imported from ${tx.bankName}` : "Bank Sync"} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <img src={bankIcon} alt="Bank" style={{ width: 20, height: 20, marginRight: 4 }} />
+                                  Bank‑Sync
+                                </span>
+                              ) : (
+                                "Manual"
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    : (
+                      <tr  key="no-account">
+                        <td colSpan={6} style={{ textAlign: "center", color: "#888" }}>
+                          Please add and select a bank account to view transactions.
                         </td>
                       </tr>
-                    );
-                  })}
+                    )
+                  }
                 </tbody>
               </table>
             </div>
@@ -728,7 +766,7 @@ export default function ExpenseManager() {
             </div>
           </div>
         </div>
-      )}
+      
       <div className="expense-manager-bg">
         <RevealOnScroll
           as="h1"
@@ -775,17 +813,17 @@ export default function ExpenseManager() {
           </RevealOnScroll>
           <div>
           <RevealOnScroll as="ul">
-            <li>
+            <li key="add-bank">
               <b>Add Bank:</b> Create a new account for tracking.
             </li>
-            <li>
+            <li key="add-split">
               <b>Add Split:</b> Allocate money for a specific purpose.
             </li>
-            <li>
+            <li key="add-spend">
               <b>Add/Spend Money:</b> Record every transaction for accurate
               tracking.
             </li>
-            <li>
+            <li key="table">
               <b>Transactions Table:</b> Review your history and stay on top of
               your finances.
             </li>
@@ -804,23 +842,21 @@ export default function ExpenseManager() {
             Suppose you add a new bank account with ₹10,000 as your main
             balance. You want to set aside ₹3,000 for Groceries.
             </RevealOnScroll>
-            <div>
             <RevealOnScroll as="ul">
-              <li>Your <b>Main</b> balance starts at ₹10,000.</li>
-              <li>
+              <li key="main-balance">Your <b>Main</b> balance starts at ₹10,000.</li>
+              <li key="create-split">
                 You create a <b>Groceries split</b> and allocate ₹3,000 from
                 your main balance.
               </li>
-              <li>
+              <li key="split-balance">
                 Now, your <b>Main</b> balance is ₹7,000 and your{" "}
                 <b>Groceries split</b> is ₹3,000.
               </li>
-              <li>
+              <li key="total-money">
                 Your <b>Total</b> money tracked is still ₹10,000 (₹7,000 main +
                 ₹3,000 split).
               </li>
             </RevealOnScroll>
-            </div>
           <RevealOnScroll as="p">
             When you spend ₹500 on groceries, you record it under the Groceries
             split. The split balance drops to ₹2,500, and your main balance
