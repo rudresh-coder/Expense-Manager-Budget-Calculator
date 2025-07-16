@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const splitSchema = new mongoose.Schema({
+    id: { type: String },
     name: String,
     balance: Number,
 });
@@ -16,14 +17,17 @@ const transactionSchema = new mongoose.Schema({
     bankName: { type: String },
 });
 
+const accountSchema = new mongoose.Schema({
+    id: { type: String },
+    name: String,
+    balance: Number,
+    splits: [splitSchema],
+    transactions: [transactionSchema],
+});
+
 const expenseManagerDataSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    accounts: [{
-        name: String,
-        balance: Number,
-        splits: [splitSchema],
-    }],
-    transactions: [transactionSchema],
+    accounts: [accountSchema],
     updatedAt: { type: Date, default: Date.now }
 });
 

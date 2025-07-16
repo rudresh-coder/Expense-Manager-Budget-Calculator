@@ -14,13 +14,14 @@ type Account = {
   name: string;
   balance: number;
   splits: Split[];
+  transactions?: Transaction[];
 };
 
 type Transaction = {
   id: string;
   accountId: string;
   splitId?: string;
-  type: "add" | "spend";
+  type: "add" | "spend" | "transfer";
   amount: number;
   description: string;
   date: string;
@@ -29,10 +30,25 @@ type Transaction = {
   timestamp?: number; 
 };
 
+function transferBetweenSplits(splits: Split[], fromId: string, toId: string, amount: number) {
+  return splits.map(split => {
+    if (split.id === fromId) return { ...split, balance: split.balance - amount };
+    if (split.id === toId) return { ...split, balance: split.balance + amount };
+    return split;
+  });
+}
+
+function updateSplitBalance(splits: Split[], splitId: string, amount: number, type: "add" | "spend") {
+  return splits.map(split =>
+    split.id === splitId
+      ? { ...split, balance: type === "add" ? split.balance + amount : split.balance - amount }
+      : split
+  );
+}
+
 export default function ExpenseManager() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [activeAccountId, setActiveAccountId] = useState<string>("");
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [newAccountName, setNewAccountName] = useState("");
   const [form, setForm] = useState({
     splitId: "",
@@ -40,6 +56,8 @@ export default function ExpenseManager() {
     amount: "",
     description: "",
     date: "",
+    fromSplitId: "",
+    toSplitId: "",
   });
   const [newSplitName, setNewSplitName] = useState("");
   const [newSplitAmount, setNewSplitAmount] = useState("");
@@ -56,61 +74,97 @@ export default function ExpenseManager() {
   const isTrialActive = trialExpiresAt && Date.now() < new Date(trialExpiresAt).getTime();
   const hasPremium = isPremium || isTrialActive;
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
 
   useEffect(() => {
-    const handleStorage = () => {
-      setTrialExpiresAt(localStorage.getItem("trialExpiresAt"));
-      setIsPremium(JSON.parse(localStorage.getItem("isPremium") || "false"));
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
+    function handleStorageChange(e: StorageEvent) {
+      if (
+        e.key === "expenseManagerAccounts" ||
+        e.key === "expenseManagerActiveAccountId" ||
+        e.key === "expenseManagerLastUpdated"
+      ) {
+        const storageLastUpdated = Number(sessionStorage.getItem("expenseManagerLastUpdated") || "0");
+        if (storageLastUpdated > lastUpdated) {
+          if (window.confirm("Changes were made in another tab. Reload to get the latest data?")) {
+            const savedAccounts = sessionStorage.getItem("expenseManagerAccounts");
+            const savedActiveAccountId = sessionStorage.getItem("expenseManagerActiveAccountId");
+            setAccounts(savedAccounts ? JSON.parse(savedAccounts) : []);
+            setActiveAccountId(savedActiveAccountId || "");
+            setLastUpdated(storageLastUpdated);
+          }
+        }
+      }
+      if (e.key === "trialExpiresAt" || e.key === "isPremium") {
+        // For premium users
+        setTrialExpiresAt(localStorage.getItem("trialExpiresAt"));
+        setIsPremium(JSON.parse(localStorage.getItem("isPremium") || "false"));
+      }
+    }
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [hasPremium, lastUpdated]);
 
   useEffect(() => {
     if (hasPremium) {
-      console.log("Fetching data for premium user...");
+      console.log("[ExpenseManager] Premium user detected. Fetching data from backend...");
       setIsLoading(true);
-      // Fetch from backend
+      setError(null); // Reset error before fetching
       fetch("http://localhost:5000/api/expense", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       })
-        .then(res => res.json())
+        .then(async res => {
+          console.log("[ExpenseManager] Backend response status:", res.status);
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            console.error("[ExpenseManager] Backend error response:", data);
+            throw new Error(data.error || "Failed to fetch expense data");
+          }
+          return res.json();
+        })
         .then(data => {
-          console.log("Received data from backend:", data);
+          console.log("[ExpenseManager] Data received from backend:", data);
           setIsLoading(false);
-          if (data && data.hasData) {
-            setAccounts(data.accounts || []);
-            setTransactions(data.transactions || []);
+          if (data && data.hasData && Array.isArray(data.accounts)) {
+            setAccounts(data.accounts);
             const savedActiveAccountId = localStorage.getItem("expenseManagerActiveAccountId");
             if (
               savedActiveAccountId &&
               data.accounts.some((acc: Account) => acc.id === savedActiveAccountId)
             ) {
+              console.log("[ExpenseManager] Restoring saved active account:", savedActiveAccountId);
               setActiveAccountId(savedActiveAccountId);
             } else if (data.accounts.length > 0) {
+              console.log("[ExpenseManager] No saved active account, defaulting to first account:", data.accounts[0].id);
               setActiveAccountId(data.accounts[0].id);
             } else {
+              console.log("[ExpenseManager] No accounts found for user.");
               setActiveAccountId("");
             }
           } else {
+            console.warn("[ExpenseManager] No account data found or malformed data.");
             setAccounts([]);
-            setTransactions([]);
             setActiveAccountId("");
+            setError("No account data found. Please add a bank account.");
           }
         })
         .catch(err => {
+          console.error("[ExpenseManager] Fetch error:", err);
           setIsLoading(false);
-          console.log("failed to fetch expense data", err);
-        })
+          setAccounts([]);
+          setActiveAccountId("");
+          setError(err.message || "Network error. Please try again.");
+        });
     } else {
       // SessionStorage logic for free users
+      console.log("[ExpenseManager] Free user detected. Loading data from sessionStorage...");
       const savedAccounts = sessionStorage.getItem("expenseManagerAccounts");
-      const savedTransactions = sessionStorage.getItem("expenseManagerTransactions");
       const savedActiveAccountId = sessionStorage.getItem("expenseManagerActiveAccountId");
       setAccounts(savedAccounts ? JSON.parse(savedAccounts) : []);
-      setTransactions(savedTransactions ? JSON.parse(savedTransactions) : []);
       setActiveAccountId(savedActiveAccountId || "");
       setIsLoading(false);
+      console.log("[ExpenseManager] Loaded accounts from sessionStorage:", savedAccounts);
+      console.log("[ExpenseManager] Loaded activeAccountId from sessionStorage:", savedActiveAccountId);
     }
   }, [hasPremium]);
   
@@ -119,17 +173,17 @@ export default function ExpenseManager() {
     const timeoutId = setTimeout(() => {
       if (hasPremium && !isLoading) {
         // Only saving if we have actual data OR if this is a deliberate deletion
-        if (accounts.length > 0 || transactions.length > 0) {
+        if (accounts.length > 0) {
           const saveData = async () => {
             try {
-              console.log("Saving data to backend:", { accounts, transactions });
+              console.log("Saving data to backend:", { accounts });
               const res = await fetch("http://localhost:5000/api/expense", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${localStorage.getItem("token")}`
                 },
-                body: JSON.stringify({ accounts, transactions })
+                body: JSON.stringify({ accounts })
               });
               if (!res.ok) {
                 const data = await res.json();
@@ -145,17 +199,12 @@ export default function ExpenseManager() {
         }
       } else if (!hasPremium) {
         sessionStorage.setItem("expenseManagerAccounts", JSON.stringify(accounts));
+        sessionStorage.setItem("expenseManagerLastUpdated", String(Date.now()));
       }
     }, 1000); // 1 second delay
-
-    return () => clearTimeout(timeoutId);
-  }, [accounts, transactions, hasPremium, isLoading]);
   
-  useEffect(() => {
-    if (!hasPremium) {
-      sessionStorage.setItem("expenseManagerTransactions", JSON.stringify(transactions));
-    }
-  }, [transactions, hasPremium]);
+    return () => clearTimeout(timeoutId);
+  }, [accounts, hasPremium, isLoading]);
   
   useEffect(() => {
     if (activeAccountId && hasPremium) {
@@ -178,31 +227,34 @@ export default function ExpenseManager() {
     }
   }, [accounts, hasPremium]);
 
-  useEffect (() => {
-    if (transactions.length === 0) return;
-    const now = Date.now();
-    const oldest = Math.min(...transactions.map(tx => tx.timestamp || now));
-    if (now - oldest > 6 * 60 * 60 * 1000) {//6 hours
-      setAccounts([]);
-      setTransactions([]);
-      setActiveAccountId("");
-      sessionStorage.removeItem("expenseManagerAccounts");
-      sessionStorage.removeItem("expenseManagerTransactions");
-      sessionStorage.removeItem("expenseManagerActiveAccountId");
-    }
-  }, [transactions]);
-
   useEffect(() => {
-    // Check for duplicate or missing ids in transactions
-    const ids = transactions.map(tx => tx.id);
-    const uniqueIds = new Set(ids);
-    if (ids.length !== uniqueIds.size) {
-      console.warn("Duplicate transaction ids found!", ids);
-    }
-    if (transactions.some(tx => !tx.id)) {
-      console.warn("Transaction(s) missing id!", transactions.filter(tx => !tx.id));
-    }
-  }, [transactions]);
+    accounts.forEach(acc => {
+      if (!acc.transactions || acc.transactions.length === 0) return;
+      const now = Date.now();
+      const oldest = Math.min(...acc.transactions.map(tx => tx.timestamp || now));
+      if (now - oldest > 6 * 60 * 60 * 1000) { // 6 hours
+        setAccounts([]);
+        setActiveAccountId("");
+        sessionStorage.removeItem("expenseManagerAccounts");
+        sessionStorage.removeItem("expenseManagerActiveAccountId");
+      }
+    });
+  }, [accounts]);
+  
+  useEffect(() => {
+    accounts.forEach(acc => {
+      if (acc.transactions) {
+        const ids = acc.transactions.map(tx => tx.id);
+        const uniqueIds = new Set(ids);
+        if (ids.length !== uniqueIds.size) {
+          console.warn(`Duplicate transaction ids found in account ${acc.name}!`, ids);
+        }
+        if (acc.transactions.some(tx => !tx.id)) {
+          console.warn(`Transaction(s) missing id in account ${acc.name}!`, acc.transactions.filter(tx => !tx.id));
+        }
+      }
+    });
+  }, [accounts]);
 
   const handleAddAccount = () => {
     if (!newAccountName.trim()) return;
@@ -211,8 +263,11 @@ export default function ExpenseManager() {
       name: newAccountName,
       balance: 0,
       splits: [],
+      transactions: [],
     };
-    setAccounts([...accounts, newAccount]);
+    const newAccounts = [...accounts, newAccount];
+    setAccounts(newAccounts);
+    setLastUpdated(Date.now());
     setActiveAccountId(newAccount.id);
     setNewAccountName("");
   };
@@ -225,24 +280,24 @@ export default function ExpenseManager() {
     }
     const amount = parseFloat(newSplitAmount);
     if (!amount || amount <= 0) return;
-    setAccounts(
-      accounts.map((acc) => {
-        if (acc.id !== activeAccountId) return acc;
-        if (acc.balance < amount) return acc;
-        return {
-          ...acc,
-          balance: acc.balance - amount,
-          splits: [
-            ...acc.splits,
-            {
-              id: Math.random().toString(36).slice(2),
-              name: newSplitName,
-              balance: amount,
-            },
-          ],
-        };
-      })
-    );
+    const newAccounts = accounts.map((acc) => {
+      if (acc.id !== activeAccountId) return acc;
+      if (acc.balance < amount) return acc;
+      return {
+        ...acc,
+        balance: acc.balance - amount,
+        splits: [
+          ...acc.splits,
+          {
+            id: Math.random().toString(36).slice(2),
+            name: newSplitName,
+            balance: amount,
+          },
+        ],
+      };
+    });
+    setAccounts(newAccounts);
+    setLastUpdated(Date.now());
     setNewSplitName("");
     setNewSplitAmount("");
     setSplitNameError("");
@@ -274,6 +329,17 @@ export default function ExpenseManager() {
 
     const acc = accounts.find((a) => a.id === activeAccountId);
     if (!acc) return;
+    let splits = acc.splits;
+    if (form.type === "spend" && form.splitId) {
+      // Spend from split
+      splits = updateSplitBalance(acc.splits, form.splitId, amount, "spend");
+    } else if (form.type === "add" && form.splitId) {
+      // Add to split
+      splits = updateSplitBalance(acc.splits, form.splitId, amount, "add");
+    } else if (form.type === "transfer") {
+      // Transfer between splits
+      splits = transferBetweenSplits(acc.splits, form.fromSplitId, form.toSplitId, amount);
+    }
     if (form.type === "spend") {
       if (form.splitId) {
         const split = acc.splits.find((split) => split.id === form.splitId);
@@ -288,7 +354,7 @@ export default function ExpenseManager() {
         }
       }
     }
-    if (!hasPremium && transactions.length >= 50) {
+    if (!hasPremium && (acc.transactions?.length || 0) >= 50) {
       alert("Free users can only store up to 50 transactions. Please export or upgrade for unlimited history.");
       return;
     }
@@ -296,47 +362,39 @@ export default function ExpenseManager() {
       id: Math.random().toString(36).slice(2),
       accountId: activeAccountId,
       splitId: form.splitId || undefined,
-      type: form.type as "add" | "spend",
+      type: form.type as "add" | "spend" | "transfer",
       amount,
       description: form.description,
       date,
       timestamp: Date.now(), 
     };
-    setTransactions(
-      [...transactions, newTransaction].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      )
-    );
-    setAccounts(
-      accounts.map((acc) => {
-        if (acc.id !== activeAccountId) return acc;
-        if (form.splitId) {
-          return {
-            ...acc,
-            splits: acc.splits.map((split) =>
-              split.id === form.splitId
-                ? {
-                    ...split,
-                    balance:
-                      form.type === "add"
-                        ? split.balance + amount
-                        : split.balance - amount,
-                  }
-                : split
-            ),
-          };
-        } else {
-          return {
-            ...acc,
-            balance:
-              form.type === "add"
-                ? acc.balance + amount
-                : acc.balance - amount,
-          };
-        }
-      })
-    );
-    setForm({ splitId: "", type: "add", amount: "", description: "", date: "" });
+    const newAccounts = accounts.map((acc) => {
+      if (acc.id !== activeAccountId) return acc;
+      const updatedTransactions = acc.transactions
+        ? [...acc.transactions, newTransaction].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          )
+        : [newTransaction];
+      if (form.splitId) {
+        return {
+          ...acc,
+          transactions: updatedTransactions,
+          splits,
+        };
+      } else {
+        return {
+          ...acc,
+          transactions: updatedTransactions,
+          balance:
+            form.type === "add"
+              ? acc.balance + amount
+              : acc.balance - amount,
+        };
+      }
+    });
+    setAccounts(newAccounts);
+    setLastUpdated(Date.now());
+    setForm({ splitId: "", type: "add", amount: "", description: "", date: "", fromSplitId: "", toSplitId: "" });
   };
 
   const handleUpgrade = async () => {
@@ -364,14 +422,14 @@ export default function ExpenseManager() {
   const exportCSV = () => {
     const rows = [
       ["Date", "Split", "Type", "Amount", "Description", "Source"],
-      ...transactions.map(tx => [
+      ...(activeAccount?.transactions ? activeAccount.transactions.map(tx => [
         tx.date,
         tx.splitId ? (accounts.find(a => a.id === tx.accountId)?.splits.find(s => s.id === tx.splitId)?.name || "Main") : "Main",
         tx.type,
         tx.amount,
         tx.description,
         tx.source || "manual"
-      ])
+      ]) : [])
     ];
     const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
     const link = document.createElement("a");
@@ -380,14 +438,15 @@ export default function ExpenseManager() {
     link.click();
   };
 
-  const activeAccount = accounts.find((acc) => acc.id === activeAccountId);
-  const filteredTransactions = transactions.filter(
-    tx =>
-      tx.accountId === activeAccountId &&
-      (filterSource === "all" ||
-        (filterSource === "manual" && tx.source !== "bank") ||
-        (filterSource === "bank" && tx.source === "bank"))
-  );
+  const activeAccount = accounts.find(acc => acc.id === activeAccountId);
+  const filteredTransactions = activeAccount?.transactions
+    ? activeAccount.transactions.filter(
+        tx =>
+          (filterSource === "all" ||
+            (filterSource === "manual" && tx.source !== "bank") ||
+            (filterSource === "bank" && tx.source === "bank"))
+      )
+    : [];
 
   const sortedTransactions = [...filteredTransactions];
   if (sortType === "date-desc") {
@@ -426,6 +485,29 @@ export default function ExpenseManager() {
       </div>
       <div className="expense-manager-card">
         <h1 className="expense-title">Expense Manager</h1>
+        {error && (
+          <div className="error-message" style={{ color: "#e53935", margin: "1rem 0", textAlign: "center" }}>
+            {error}
+            <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+              <button
+                className="expense-btn"
+                onClick={() => window.location.reload()}
+                style={{ width: "50%", marginLeft: 0 }}
+              >
+                Retry
+              </button>
+              {!hasPremium && (
+                <button
+                  className="expense-btn"
+                  onClick={handleUpgrade}
+                  style={{ width: "50%" }}
+                >
+                  Upgrade to Premium
+                </button>
+              )}
+            </div>
+          </div>
+        )}
         {hasPremium ? (
           <div className="premium-features">
             {/* Show premium features */}
@@ -569,6 +651,7 @@ export default function ExpenseManager() {
             >
               <option value="add">Add Money</option>
               <option value="spend">Spend Money</option>
+              <option value="transfer">Transfer Money</option>
             </select>
           </div>
           {!activeAccount && (
@@ -629,6 +712,38 @@ export default function ExpenseManager() {
             }
             disabled={!activeAccount}
           />
+          {form.type === "transfer" && (
+            <div className="expense-form-row">
+              <select
+                className="expense-input"
+                name="fromSplitId"
+                value={form.fromSplitId}
+                onChange={handleChange}
+                disabled={!activeAccount}
+              >
+                <option value="">Select From Split</option>
+                {activeAccount?.splits.map((split) => (
+                  <option key={split.id} value={split.id}>
+                    {split.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="expense-input"
+                name="toSplitId"
+                value={form.toSplitId}
+                onChange={handleChange}
+                disabled={!activeAccount}
+              >
+                <option value="">Select To Split</option>
+                {activeAccount?.splits.map((split) => (
+                  <option key={split.id} value={split.id}>
+                    {split.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <button
             className="expense-btn expense-btn-gradient"
             type="submit"

@@ -14,20 +14,32 @@ async function migrate() {
 
     for (const doc of allDocs) {
         let changed = false;
-        for (const tx of doc.transactions) {
-            if (!tx.id && tx._id) {
-                tx.id = tx._id.toString();
+        for (const account of doc.accounts) {
+            // Ensure transactions array exists
+            if (!account.transactions || typeof account.transactions !== "object" || !("isMongooseDocumentArray" in account.transactions)) {
+                account.transactions = Array.isArray(account.transactions)
+                    ? []
+                    : account.transactions && typeof account.transactions === "object" && "constructor" in account.transactions
+                        ? new (account.transactions as any).constructor()
+                        : [];
                 changed = true;
+            }
+            // Ensure every transaction has an id
+            for (const tx of account.transactions) {
+                if (!tx.id && tx._id) {
+                    tx.id = tx._id.toString();
+                    changed = true;
+                }
             }
         }
         if (changed) {
             await doc.save();
             updateCount++;
-            console.log(`Update document ${doc._id}`);
+            console.log(`Updated document ${doc._id}`);
         }
     }
 
-    console.log(`Migration complete. Update ${updateCount} documents.`);
+    console.log(`Migration complete. Updated ${updateCount} documents.`);
     mongoose.disconnect();
 }
 

@@ -111,16 +111,19 @@ app.post("/api/auth/signup", async (req: express.Request, res: express.Response)
 app.get("/api/expense", auth, checkPremium, async (req, res) => {
   try {
     const data = await ExpenseManagerData.findOne({ userId: req.user?.id });
-    
+
     if (!data) {
-      // Return consistent structure for new users
-      res.json({ hasData: false, accounts: [], transactions: [] });
+      res.json({ hasData: false, accounts: [] });
     } else {
-      // Return existing data with hasData flag
-      res.json({ 
-        hasData: true, 
-        accounts: data.accounts || [], 
-        transactions: data.transactions || [],
+      // Ensure every account has a transactions array
+      const accounts = (data.accounts || []).map(acc => ({
+        ...acc.toObject(),
+        transactions: Array.isArray(acc.transactions) ? acc.transactions : [],
+      }));
+
+      res.json({
+        hasData: true,
+        accounts,
         _id: data._id,
         userId: data.userId,
         updatedAt: data.updatedAt
@@ -135,14 +138,13 @@ app.get("/api/expense", auth, checkPremium, async (req, res) => {
 //Save/Update expense data (premium only)
 app.post("/api/expense", auth, checkPremium, async (req, res) => {
   try {
-      const { accounts, transactions } = req.body;
+      const { accounts } = req.body;
       
-      console.log("Saving data for user:", req.user?.id, { accountsCount: accounts?.length, transactionsCount: transactions?.length });
+      console.log("Saving data for user:", req.user?.id, { accountsCount: accounts?.length });
       
       const filter = { userId: req.user?.id };
       const update = {
           accounts: accounts || [],
-          transactions: transactions || [],
           updatedAt: new Date(),
       };
       const options = { upsert: true, new: true, setDefaultsOnInsert: true };
