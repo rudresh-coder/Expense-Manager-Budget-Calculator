@@ -322,6 +322,17 @@ export default function ExpenseManager() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
+      setError("Please enter a valid amount.");
+      return;
+    }
+    if (!form.description.trim()) {
+      setError("Description is required.");
+      return;
+    }
+    // ...other validations
+    setError(null);
+    // ...proceed with transaction logic
     if (!activeAccountId) return;
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) return;

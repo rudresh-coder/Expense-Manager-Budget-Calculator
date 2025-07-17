@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaMoon, FaSun, FaBars, FaTimes } from "react-icons/fa";
+import { FaMoon, FaSun, FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
 import logo from "../assets/Expense1.png";
 import "../CSS/Navbar.css";
 
@@ -13,7 +13,12 @@ const navItems = [
   { label: "Premium", to: "/pricing" },
 ];
 
-export default function Navbar() {
+type NavbarProps = {
+  onUserProfileClick: () => void;
+  user: { avatarUrl?: string };
+};
+
+export default function Navbar({ onUserProfileClick, user }: NavbarProps) {
   const [dark, setDark] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
@@ -61,25 +66,45 @@ export default function Navbar() {
           <img src={logo} alt="Expense Manager Logo" />
         </Link>
       </div>
-      <button
-        className="navbar-toggle"
-        onClick={() => setDark((d) => !d)}
-        aria-label="Toggle dark mode"
-        tabIndex={0}
-      >
-        {dark ? <FaMoon /> : <FaSun />}
-        <span style={{ marginLeft: "0.5em", fontSize: "1rem" }}>
-          {dark ? "Dark" : "Light"}
-        </span>
-      </button>
-      <button
-        className="navbar-menu-btn"
-        onClick={() => setMenuOpen((open) => !open)}
-        aria-label="Toggle menu"
-        tabIndex={0}
-      >
-        {menuOpen ? <FaTimes /> : <FaBars />}
-      </button>
+      <div style={{ flex: 1 }} /> {/* Spacer to push right controls to the end */}
+      <div className="navbar-right-controls" style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <button
+          className="navbar-toggle"
+          onClick={() => setDark((d) => !d)}
+          aria-label="Toggle dark mode"
+          tabIndex={0}
+        >
+          {dark ? <FaMoon /> : <FaSun />}
+          <span style={{ marginLeft: "0.5em", fontSize: "1rem" }}>
+            {dark ? "Dark" : "Light"}
+          </span>
+        </button>
+        <button
+          className="navbar-profile-btn"
+          onClick={onUserProfileClick}
+          aria-label="Open user profile"
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
+            marginLeft: "0.7rem"
+          }}
+        >
+          {user.avatarUrl
+            ? <img src={user.avatarUrl} alt="profile" style={{ width: 34, height: 34, borderRadius: "50%" }} />
+            : <FaUserCircle style={{ fontSize: "2.1rem", color: "#7c4dff" }} />
+          }
+        </button>
+        <button
+          className="navbar-menu-btn"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-label="Toggle menu"
+          tabIndex={0}
+        >
+          {menuOpen ? <FaTimes /> : <FaBars />}
+        </button>
+      </div>
       <ul
         className={`navbar-list ${menuOpen ? "open" : ""}`}
         ref={menuRef}

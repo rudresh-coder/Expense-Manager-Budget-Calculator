@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useState } from "react";
 import LandingPage from "./TSX/LandingPage";
 import SignUp from "./TSX/SignUp";
 import LogIn from "./TSX/LogIn";
@@ -9,16 +10,32 @@ import SmartInvesting from "./TSX/SmartInvesting";
 import BehavioralMindset from "./TSX/BehavioralMindset";
 import Navbar from "./TSX/Navbar";
 import Footer from "./TSX/Footer";
+import UserProfile from "./TSX/UserProfile";
 import ScrollToTop from "./ScrollToTop";
 import Terms from "./TSX/Terms";
 import Privacy from "./TSX/Privacy";
 import Pricing from "./TSX/Pricing";
 
 export default function App() {
+  const [userProfileOpen, setUserProfileOpen] = useState(false);
+
+  const user = {
+    name: "John Doe",
+    email: "john@example.com",
+    username: "johndoe",
+    avatarUrl: "", // or a real URL
+    banks: [{ name: "ICICI" }, { name: "HDFC" }]
+  };
+
   return (
     <Router>
       <ScrollToTop />
-      <Navbar />
+      <Navbar onUserProfileClick={() => setUserProfileOpen(true)} user={{ avatarUrl: user.avatarUrl }} />
+      <UserProfile
+        user={user}
+        open={userProfileOpen}
+        onClose={() => setUserProfileOpen(false)}
+      />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/signup" element={<SignUp />} />

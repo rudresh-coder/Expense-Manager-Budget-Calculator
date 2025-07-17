@@ -138,24 +138,60 @@ app.get("/api/expense", auth, checkPremium, async (req, res) => {
 //Save/Update expense data (premium only)
 app.post("/api/expense", auth, checkPremium, async (req, res) => {
   try {
-      const { accounts } = req.body;
-      
-      console.log("Saving data for user:", req.user?.id, { accountsCount: accounts?.length });
-      
-      const filter = { userId: req.user?.id };
-      const update = {
-          accounts: accounts || [],
-          updatedAt: new Date(),
-      };
-      const options = { upsert: true, new: true, setDefaultsOnInsert: true };
+    const { accounts } = req.body;
 
-      const result = await ExpenseManagerData.findOneAndUpdate(filter, update, options);
-      console.log("Save successful for user:", req.user?.id);
+    // Validate accounts is an array
+    if (!Array.isArray(accounts)) {
+      res.status(400).json({ error: "Accounts must be an array." });
+      return; 
+    }
 
-      res.json({ message: "Expense data saved", data: result });
+    // Validate each account
+    for (const account of accounts) {
+      if (typeof account.name !== "string" || typeof account.balance !== "number") {
+        res.status(400).json({ error: "Invalid account data." });
+        return;
+      }
+      if (!Array.isArray(account.splits) || !Array.isArray(account.transactions)) {
+        res.status(400).json({ error: "Splits and transactions must be arrays." });
+        return;
+      }
+      // Validate splits
+      for (const split of account.splits) {
+        if (typeof split.name !== "string" || typeof split.balance !== "number") {
+          res.status(400).json({ error: "Invalid split data." });
+          return;
+        }
+      }
+      // Validate transactions
+      for (const tx of account.transactions) {
+        if (
+          typeof tx.id !== "string" ||
+          typeof tx.type !== "string" ||
+          typeof tx.amount !== "number" ||
+          typeof tx.date !== "string"
+        ) {
+          res.status(400).json({ error: "Invalid transaction data." });
+          return;
+        }
+      }
+    }
+
+    // Proceed with saving
+    const filter = { userId: req.user?.id };
+    const update = {
+        accounts: accounts || [],
+        updatedAt: new Date(),
+    };
+    const options = { upsert: true, new: true, setDefaultsOnInsert: true };
+
+    const result = await ExpenseManagerData.findOneAndUpdate(filter, update, options);
+    console.log("Save successful for user:", req.user?.id);
+
+    res.json({ message: "Expense data saved", data: result });
   } catch (err) {
-      console.error("Expense save error:", err);
-      res.status(500).json({ error: "Failed to save expense data" });
+    console.error("Expense save error:", err);
+    res.status(500).json({ error: "Failed to save expense data" });
   }
 });
 
