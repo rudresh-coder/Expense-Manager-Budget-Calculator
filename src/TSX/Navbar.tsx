@@ -7,7 +7,7 @@ import "../CSS/Navbar.css";
 const navItems = [
   { label: "Home", to: "/" },
   { label: "Budget Calculator", to: "/calculator" },
-  { label: "Expense Manager", to: "/premium" },
+  { label: "Expense Manager", to: "/expensemanager" },
   { label: "Login", to: "/signin" },
   { label: "Sign Up", to: "/signup" },
   { label: "Premium", to: "/pricing" },

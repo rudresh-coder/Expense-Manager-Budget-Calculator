@@ -4,15 +4,20 @@ type UserProfileProps = {
   user: {
     name: string;
     email: string;
-    username: string;
     avatarUrl?: string;
     banks: { name: string }[];
+    isPremium?: boolean;
   };
   open: boolean;
   onClose: () => void;
 };
 
 export default function UserProfile({ user, open, onClose }: UserProfileProps) {
+  function handleLogout() {
+    localStorage.clear();
+    window.location.href = "/signin";
+  }
+
   return (
     <>
       <div className={`profile-sidebar${open ? " open" : ""}`}>
@@ -27,8 +32,8 @@ export default function UserProfile({ user, open, onClose }: UserProfileProps) {
           </div>
           <div className="profile-details">
             <div className="profile-name">{user.name}</div>
-            <div className="profile-username">@{user.username}</div>
             <div className="profile-email">{user.email}</div>
+            {user.isPremium && <div className="profile-premium-badge">Premium</div>}
           </div>
           <div className="profile-banks">
             <b>Banks Connected:</b> {user.banks.length}
@@ -38,6 +43,7 @@ export default function UserProfile({ user, open, onClose }: UserProfileProps) {
               ))}
             </ul>
           </div>
+          <button className="profile-logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </div>
       {open && <div className="profile-sidebar-overlay" onClick={onClose} />}

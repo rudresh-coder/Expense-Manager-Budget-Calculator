@@ -101,7 +101,14 @@ app.post("/api/auth/signup", async (req: express.Request, res: express.Response)
         process.env.JWT_SECRET || "default_secret",
         { expiresIn: "7d" }
       );
-      res.json({ token, isPremium: user.isPremium, fullName: user.fullName, trialExpiresAt: user.trialExpiresAt });
+      res.json({
+        token,
+        isPremium: user.isPremium,
+        fullName: user.fullName,
+        email: user.email,
+        avatarUrl: user.avatarUrl || "", 
+        trialExpiresAt: user.trialExpiresAt
+      });
     } catch (err) {
       res.status(500).json({ error: "Login failed" });
     }
@@ -199,6 +206,22 @@ app.post("/api/expense", auth, checkPremium, async (req, res) => {
 app.post("/api/user/upgrade", auth, async (req: express.Request, res: express.Response) => {
     await User.findByIdAndUpdate(req.user?.id, { isPremium: true });
     res.json({ message: "Upgraded to premium" });
+});
+
+// Get user profile
+app.get("/api/user/profile", auth, async (req, res) => {
+  const user = await User.findById(req.user?.id);
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  res.json({
+    fullName: user.fullName,
+    email: user.email,
+    avatarUrl: user.avatarUrl || "",
+    isPremium: user.isPremium,
+    trialExpiresAt: user.trialExpiresAt
+  });
 });
 
 const PORT = process.env.PORT || 5000;

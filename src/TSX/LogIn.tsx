@@ -29,10 +29,18 @@ export default function LogIn() {
         setGeneralError(data.error || "Login failed.");
         return;
       }
-      localStorage.setItem("token", data.token);//stores JWT
-      localStorage.setItem("isPremium", JSON.stringify(data.isPremium));
+      // Save user info to localStorage
+      localStorage.setItem("token", data.token);
       localStorage.setItem("fullName", data.fullName);
-      localStorage.setItem("trialExpiresAt", data.trialExpiresAt);
+      localStorage.setItem("email", data.email);
+      localStorage.setItem("avatarUrl", data.avatarUrl || "");
+      localStorage.setItem("isPremium", JSON.stringify(data.isPremium));
+      if (data.trialExpiresAt) {
+        localStorage.setItem("trialExpiresAt", data.trialExpiresAt);
+      } else {
+        localStorage.removeItem("trialExpiresAt");
+      }
+
       alert("Welcome Back!");
       setEmail("");
       setPassword("");

@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LandingPage from "./TSX/LandingPage";
 import SignUp from "./TSX/SignUp";
 import LogIn from "./TSX/LogIn";
@@ -18,14 +18,52 @@ import Pricing from "./TSX/Pricing";
 
 export default function App() {
   const [userProfileOpen, setUserProfileOpen] = useState(false);
+  const [accounts] = useState([]);
+  const [user, setUser] = useState({
+    name: "",
+    email: "",
+    avatarUrl: "",
+    banks: accounts,
+    isPremium: false,
+  });
+  const [profileError, setProfileError] = useState<string | null>(null);
 
-  const user = {
-    name: "John Doe",
-    email: "john@example.com",
-    username: "johndoe",
-    avatarUrl: "", // or a real URL
-    banks: [{ name: "ICICI" }, { name: "HDFC" }]
-  };
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setProfileError("No authentication token found. Please log in.");
+        return;
+      }
+      try {
+        const res = await fetch("http://localhost:5000/api/user/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setProfileError(data.error || "Failed to fetch user profile.");
+          return;
+        }
+        const data = await res.json();
+        setUser({
+          name: data.fullName,
+          email: data.email,
+          avatarUrl: data.avatarUrl || "",
+          banks: accounts,
+          isPremium: data.isPremium,
+        });
+        if (data.trialExpiresAt) {
+          localStorage.setItem("trialExpiresAt", data.trialExpiresAt);
+        } else {
+          localStorage.removeItem("trialExpiresAt");
+        }
+        setProfileError(null);
+      } catch {
+        setProfileError("Network error. Could not fetch user profile.");
+      }
+    };
+    fetchProfile();
+  }, [accounts]);
 
   return (
     <Router>
@@ -36,12 +74,13 @@ export default function App() {
         open={userProfileOpen}
         onClose={() => setUserProfileOpen(false)}
       />
+      {profileError && <div className="error-message">{profileError}</div>}
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<LogIn />} />
         <Route path="/calculator" element={<BudgetCalculator />} /> 
-        <Route path="/premium" element={<ExpenseManager />} />
+        <Route path="/expensemanager" element={<ExpenseManager />} />
         <Route path="/debtmanagement" element={<DebtManagement />} />
         <Route path="/smartinvesting" element={<SmartInvesting />} />
         <Route path="/behavioralmindset" element={<BehavioralMindset />} />
