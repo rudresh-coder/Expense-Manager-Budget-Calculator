@@ -1,10 +1,14 @@
 import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import "../CSS/AuthForms.css";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,9 +34,9 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div>
+    <div className="auth-form-container">
       <h2>Forgot Password</h2>
-      <form onSubmit={handleSubmit}>
+      <form className="auth-form" onSubmit={handleSubmit}>
         <input
           type="email"
           placeholder="Your email"
@@ -40,6 +44,29 @@ export default function ForgotPassword() {
           onChange={e => setEmail(e.target.value)}
           required
         />
+        <div style={{ position: "relative" }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="New password"
+            value={newPassword}
+            onChange={e => setNewPassword(e.target.value)}
+            required
+            style={{ paddingRight: "2.2rem" }}
+          />
+          <span
+            style={{
+              position: "absolute",
+              right: "0.7rem",
+              top: "50%",
+              transform: "translateY(-50%)",
+              cursor: "pointer"
+            }}
+            onClick={() => setShowPassword(s => !s)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </span>
+        </div>
         <button type="submit" disabled={loading}>
           {loading ? "Sending..." : "Send Reset Link"}
         </button>
