@@ -22,3 +22,12 @@ body.dark {
   background: #1d061a;
   color: #fff;
 }
+
+.error-message {
+  color: #e53935;
+  margin-top: 8px;
+}
+.success-message {
+  color: #43a047;
+  margin-top: 8px;
+}

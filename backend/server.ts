@@ -1,12 +1,16 @@
+import crypto from "crypto";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { sendResetEmail } from "./utils/sendMail";
+import { passwordResetLimiter } from "./middleware/rateLimiter";
 
 import User from "./models/User";
 import ExpenseManagerData from "./models/ExpenseManagerData";
+import PasswordResetToken from "./models/PasswordResetToken";
 import { checkPremium } from "./middleware/checkPremium";
 
 dotenv.config();
@@ -113,6 +117,57 @@ app.post("/api/auth/signup", async (req: express.Request, res: express.Response)
       res.status(500).json({ error: "Login failed" });
     }
   });
+
+//Request password reset
+app.post("/api/auth/forgot-password", passwordResetLimiter, async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    res.status(400).json({ error: "Email is required." });
+    return;
+  }
+  const user = await User.findOne({ email });
+  if (!user) {
+    res.status(200).json({ message: "If this email exists, a reset link has been sent." });
+    return;
+  }
+  const token = crypto.randomBytes(32).toString("hex");
+  await PasswordResetToken.deleteMany({ email }); // Remove old tokens for this email
+  await PasswordResetToken.create({
+    email,
+    token,
+    expires: new Date(Date.now() + 1000 * 60 * 15), // 15 min expiry
+  });
+
+  try {
+    await sendResetEmail(user.email, token);
+    res.json({ message: "Password reset link sent." });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to send password reset email. Please try again later." });
+  }
+});
+
+// Reset password
+app.post("/api/auth/reset-password", passwordResetLimiter, async (req, res) => {
+  const { email, token, newPassword } = req.body;
+  if (!email || !token || !newPassword) {
+    res.status(400).json({ error: "All fields are required." });
+    return;
+  }
+  const record = await PasswordResetToken.findOne({ email, token });
+  if (!record || record.expires.getTime() < Date.now()) {
+    res.status(400).json({ error: "Invalid or expired token." });
+    return;
+  }
+  const user = await User.findOne({ email });
+  if (!user) {
+    res.status(404).json({ error: "User not found." });
+    return;
+  }
+  user.password = await bcrypt.hash(newPassword, 10);
+  await user.save();
+  await PasswordResetToken.deleteMany({ email }); // Remove used tokens
+  res.json({ message: "Password has been reset." });
+});
 
 //Get expense data (premium only)
 app.get("/api/expense", auth, checkPremium, async (req, res) => {

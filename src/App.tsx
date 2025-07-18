@@ -15,6 +15,8 @@ import ScrollToTop from "./ScrollToTop";
 import Terms from "./TSX/Terms";
 import Privacy from "./TSX/Privacy";
 import Pricing from "./TSX/Pricing";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
 
 export default function App() {
   const [userProfileOpen, setUserProfileOpen] = useState(false);
@@ -87,6 +89,8 @@ export default function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
       <Footer />
     </Router>
