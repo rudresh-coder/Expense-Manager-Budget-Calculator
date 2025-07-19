@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import "../CSS/InfoCarousel.css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useSwipeable } from "react-swipeable";
 
 const slides = [
   {
@@ -67,68 +69,257 @@ const slides = [
 
 export default function InfoCarousel() {
   const [idx, setIdx] = useState(0);
-  const [animating, setAnimating] = useState(false);
   const [direction, setDirection] = useState<"next" | "prev">("next");
+  const [paused, setPaused] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [animationType, setAnimationType] = useState<"slide" | "bounce" | "zoom">("zoom");
 
-  const changeSlide = (newIdx: number, dir: "next" | "prev") => {
+  // Stable functions using useCallback
+  const changeSlide = useCallback((newIdx: number, dir: "next" | "prev") => {
     setDirection(dir);
-    setAnimating(true);
-    setTimeout(() => {
-      setIdx(newIdx);
-      setAnimating(false);
-    }, 420); //match CSS animation duration
+    setIdx(newIdx);
+    setProgress(0); // Reset progress when manually changing slides
+  }, []);
+
+  const prev = useCallback(() => {
+    changeSlide(idx === 0 ? slides.length - 1 : idx - 1, "prev");
+  }, [idx, changeSlide]);
+
+  const next = useCallback(() => {
+    changeSlide(idx === slides.length - 1 ? 0 : idx + 1, "next");
+  }, [idx, changeSlide]);
+
+  // Animation variants
+  const slideVariants = {
+    enter: (direction: string) => ({
+      x: direction === "next" ? 300 : -300,
+      opacity: 0,
+      scale: 0.9,
+      rotateY: direction === "next" ? 15 : -15,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      rotateY: 0,
+    },
+    exit: (direction: string) => ({
+      x: direction === "next" ? -300 : 300,
+      opacity: 0,
+      scale: 0.9,
+      rotateY: direction === "next" ? -15 : 15,
+    }),
   };
 
-  const prev = () => changeSlide(idx === 0 ? slides.length - 1 : idx - 1, "prev");
-  const next = () => changeSlide(idx === slides.length - 1 ? 0 : idx + 1, "next");
+  const bounceVariants = {
+    enter: { y: 100, opacity: 0, scale: 0.8 },
+    center: { y: 0, opacity: 1, scale: 1 },
+    exit: { y: -100, opacity: 0, scale: 0.8 },
+  };
 
-return (
-  <div>
-    <div className="info-carousel">
-      <button className="carousel-arrow left" onClick={prev} aria-label="Previous">
-        <FaChevronLeft />
-      </button>
-      <div
-        className={
-          "carousel-slide floating-fade " +
-          (animating
-            ? direction === "next"
-              ? "fade-out-up"
-              : "fade-out-down"
-            : "fade-in-float")
+  const zoomVariants = {
+    enter: { scale: 0.5, opacity: 0 },
+    center: { scale: 1, opacity: 1 },
+    exit: { scale: 1.5, opacity: 0 },
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const textVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 30, 
+      scale: 0.95 
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: {
+        damping: 25,
+        stiffness: 120,
+      },
+    },
+  };
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => next(),
+    onSwipedRight: () => prev(),
+    trackMouse: true,
+  });
+
+  // Autoplay timer
+  useEffect(() => {
+    if (paused) return;
+    
+    const timer = setTimeout(() => {
+      next();
+    }, 5000);
+    
+    return () => clearTimeout(timer);
+  }, [idx, paused, next]);
+
+  // Progress bar animation
+  useEffect(() => {
+    if (paused) return;
+    
+    setProgress(0); // Reset progress for new slide
+    
+    const interval = setInterval(() => {
+      setProgress((prevProgress) => {
+        if (prevProgress >= 100) {
+          return 100;
         }
-      >
-        <h2
-          className={
-            "carousel-title" +
-            (slides[idx].title === "Expense Reduction" ? " carousel-title-big" : "")
-          }
+        return prevProgress + 2; // 2% every 100ms = 5 seconds total
+      });
+    }, 100);
+    
+    return () => clearInterval(interval);
+  }, [idx, paused]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [prev, next]);
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      {...handlers}
+    >
+      <div className="info-carousel">
+        <motion.button 
+          className="carousel-arrow left" 
+          onClick={prev} 
+          aria-label="Previous"
+          whileHover={{ scale: 1.1, backgroundColor: "rgba(143, 55, 255, 0.25)" }}
+          whileTap={{ scale: 0.95 }}
         >
-          {slides[idx].title}
-        </h2>
-        <div className="carousel-content">{slides[idx].content}</div>
+          <FaChevronLeft />
+        </motion.button>
+
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={idx}
+            className="carousel-slide"
+            custom={direction}
+            variants={animationType === "bounce" ? bounceVariants : animationType === "zoom" ? zoomVariants : slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              type: "spring",
+              damping: 20,
+              stiffness: 100,
+              duration: 0.6,
+            }}
+            style={{ perspective: "1000px" }}
+          >
+            <motion.h2
+              className={
+                "carousel-title" +
+                (slides[idx].title === "Expense Reduction" ? " carousel-title-big" : "")
+              }
+              variants={textVariants}
+            >
+              {slides[idx].title}
+            </motion.h2>
+            
+            <motion.div 
+              className="carousel-content"
+              variants={textVariants}
+            >
+              {slides[idx].content}
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+
+        <motion.button 
+          className="carousel-arrow right" 
+          onClick={next} 
+          aria-label="Next"
+          whileHover={{ scale: 1.1, backgroundColor: "rgba(143, 55, 255, 0.25)" }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <FaChevronRight />
+        </motion.button>
+      </div>
+
+      {/* Carousel Controls - Move outside and below the carousel */}
+      <div className="carousel-bottom-controls">
+        {/* Progress Bar */}
+        <motion.div 
+          className="carousel-progress-bar" 
+          style={{ '--progress': `${progress}%` } as React.CSSProperties}
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.3 }}
+        />
+        
+        {/* Indicators */}
         <div className="carousel-indicators">
           {slides.map((_, i) => (
-            <div
+            <motion.div
               key={i}
               className={`carousel-indicator-segment${i === idx ? " active" : ""}`}
-              onClick={() => !animating && changeSlide(i, i > idx ? "next" : "prev")}
+              onClick={() => changeSlide(i, i > idx ? "next" : "prev")}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
               aria-label={`Go to slide ${i + 1}`}
               role="button"
               tabIndex={0}
-              onKeyDown={e => {
-                if ((e.key === "Enter" || e.key === " ") && !animating) {
-                  changeSlide(i, i > idx ? "next" : "prev");
-                }
-              }}
             />
           ))}
         </div>
+
+        {/* Animation Control Buttons */}
+        <div className="animation-controls">
+          <motion.button 
+            className={`animation-btn ${animationType === "zoom" ? "active" : ""}`}
+            onClick={() => setAnimationType("zoom")}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Zoom
+          </motion.button>
+
+          <motion.button 
+            className={`animation-btn ${animationType === "slide" ? "active" : ""}`}
+            onClick={() => setAnimationType("slide")}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Slide
+          </motion.button>
+
+          <motion.button 
+            className={`animation-btn ${animationType === "bounce" ? "active" : ""}`}
+            onClick={() => setAnimationType("bounce")}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Bounce
+          </motion.button>
+        </div>
       </div>
-      <button className="carousel-arrow right" onClick={next} aria-label="Next">
-        <FaChevronRight />
-      </button>
-    </div>
-  </div>
-);
+    </motion.div>
+  );
 }

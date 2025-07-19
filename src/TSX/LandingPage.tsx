@@ -325,13 +325,13 @@ export default function LandingPage() {
           <RevealOnScroll as="h3" className="automate-how-title">
             How to set it up:
           </RevealOnScroll>
-          <div>
+          {/* <div> */}
           <RevealOnScroll as="ul" className="automate-how">
             <li>Schedule a recurring transfer on payday from your checking to savings or an investment SIP.</li>
             <li>Use your bank’s auto‑debit feature or sign up for a mutual fund SIP.</li>
             <li>Treat that transfer like a fixed expense—just like rent or groceries.</li>
           </RevealOnScroll>
-          </div>
+          {/* </div> */}
           <RevealOnScroll as="p" className="automate-example">
             <b>Real-Life Example:</b> On the 1st of every month, ₹2,000 automatically debits into your favorite equity fund, so you never have to remember to save.
           </RevealOnScroll>
@@ -356,13 +356,13 @@ export default function LandingPage() {
           <RevealOnScroll as="h3" className="roundup-how-title">
             How to set it up:
           </RevealOnScroll>
-          <div>
+          {/* <div> */}
           <RevealOnScroll as="ul" className="roundup-how">
             <li>Link your spending account to our app (or a dedicated round‑up service).</li>
             <li>After every purchase, the app rounds up to the nearest ₹10 or ₹50.</li>
             <li>It then transfers that difference into your savings envelope or account.</li>
           </RevealOnScroll>
-          </div>
+          {/* </div> */}
           <RevealOnScroll as="p" className="roundup-example">
             <b>Real‑Life Example:</b> You buy coffee for ₹123; the app rounds to ₹130 and deposits ₹7 into your savings—so you save while you sip.
           </RevealOnScroll>
@@ -387,14 +387,14 @@ export default function LandingPage() {
           <RevealOnScroll as="h3" className="emergency-how-title">
             How to set it up:
           </RevealOnScroll>
-          <div>
+          {/* <div> */}
           <RevealOnScroll as="ul" className="emergency-how">
             <li>Calculate your total monthly essentials (rent, bills, groceries).</li>
             <li>Multiply by 3–6 to set your target (3 months, 6 months, whatever gives you peace of mind).</li>
             <li>Automate transfers each pay period until you hit that target.</li>
             <li>Store the fund in a high‑yield or liquid savings account so you can grab it instantly if needed.</li>
           </RevealOnScroll>
-          </div>
+          {/* </div> */}
           <RevealOnScroll as="p" className="emergency-example">
             <b>Real‑Life Example:</b> If you spend ₹15,000 monthly on essentials, aim to stash away ₹45,000–₹90,000—your safety net is ready.
           </RevealOnScroll>

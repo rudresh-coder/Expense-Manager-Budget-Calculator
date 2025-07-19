@@ -1,22 +1,24 @@
-.modern-navbar {
-  width: 100vw;
-  height: 70px;
-  top: 0;
-  left: 0;
-  background: #fff;
-  z-index: 1000;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
-  display: flex;
+.modern-navbar,
+.grid-navbar {
+  min-height: 70px;
+  height: 110px;
   align-items: center;
-  justify-content: space-between;
   padding: 0 2.5rem;
-  gap: 2rem;
+  background: #fff;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+}
+
+.grid-navbar {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center; 
 }
 
 .navbar-logo {
   display: flex;
   align-items: center;
-  flex-shrink: 0;
+  justify-content: center;
+  height: 100%;
 }
 
 .navbar-logo img {
@@ -66,20 +68,19 @@
   position: fixed;
   top: 0;
   right: 0;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  background: #fff;
-  width: 270px;
+  width: 240px;
+  max-width: 90vw;
   height: 100vh;
-  padding: 80px 1.2rem 1.2rem 1.2rem;
+  background: #fff;
   box-shadow: -2px 0 16px rgba(0,0,0,0.08);
+  padding: 70px 1.5rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  z-index: 1200;
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(.23,1.01,.32,1);
-  z-index: 1200;
-  gap: 1.2rem;
   overflow-y: auto;
-  flex-wrap: nowrap;
 }
 
 .navbar-list.open {
@@ -90,20 +91,24 @@
   list-style: none;
 }
 
-.navbar-list a {
-  display: block;
-  text-transform: uppercase;
-  padding: 10px 20px;
-  text-decoration: none;
-  color: #262626;
+.navbar-list a,
+.navbar-list button {
+  font-size: 1.08rem;
   font-weight: 600;
-  font-size: 18px;
-  white-space: nowrap;
+  color: #262626;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 0.8rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+  width: 100%;
+  display: block;
 }
 
-.navbar-list a:hover {
+.navbar-list a:hover,
+.navbar-list button:hover {
   color: #237efd;
-  text-decoration: none;
   background: linear-gradient(90deg, #5b42f3 0%, #00ddeb 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -117,6 +122,61 @@
   background-clip: text;
 }
 
+.navbar-links-grid {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  margin-left: 2rem;
+}
+
+.navbar-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.navbar-row a,
+.navbar-row button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #262626;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 0.5rem 0.2rem;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.navbar-row a.active {
+  background: linear-gradient(90deg, #5b42f3 0%, #00ddeb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.navbar-row a:hover,
+.navbar-row button:hover {
+  color: #237efd;
+  background: linear-gradient(90deg, #5b42f3 0%, #00ddeb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.navbar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.18);
+  z-index: 1100;
+}
+
 @media (max-width: 1400px) {
   .navbar-list {
     gap: 1.2rem;
@@ -128,18 +188,49 @@
   }
 }
 
-@media (max-width: 1059px) {
-  .modern-navbar {
+@media (max-width: 1060px) {
+  .modern-navbar,
+  .grid-navbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 120px;
+    min-height: 120px;
     padding: 0 0.7rem;
-    height: 56px;
+  }
+
+  .navbar-logo {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    height: 100%;
   }
   .navbar-logo img {
     height: 32px;
+    width: auto;
+    display: block;
   }
+
+  .navbar-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex: 0 0 auto;
+  }
+
+  .navbar-menu-btn,
+  .navbar-profile-btn,
   .navbar-toggle {
-    margin-right: 0.5rem;
+    display: block;
+    background: none;
+    border: none;
     font-size: 1.3rem;
+    color: #262626;
+    cursor: pointer;
+    margin-left: 0.5rem;
   }
+
   .navbar-list {
     position: fixed;
     top: 0;
@@ -149,13 +240,14 @@
     justify-content: flex-start;
     background: #fff;
     width: 220px;
+    height: 90vw;
     height: 100vh;
-    padding: 80px 1.2rem 1.2rem 1.2rem;
+    padding: 70px 1rem 1.2rem 1rem;
     box-shadow: -2px 0 16px rgba(0,0,0,0.08);
     transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(.23,1.01,.32,1);
     z-index: 1200;
-    gap: 1.2rem;
+    gap: 0.7rem;
     overflow-y: auto;
     flex-wrap: nowrap;
   }
@@ -186,6 +278,94 @@
   }
 }
 
+@media (max-width: 865px) {
+  .navbar-links-grid {
+    display: none !important;
+  }
+  .navbar-menu-btn {
+    display: block !important;
+  }
+  .navbar-profile-btn {
+    display: block !important;
+  }
+  .modern-navbar,
+  .grid-navbar {
+    min-height: 65px;
+    height: 65px;
+    padding: 0 0.5rem;
+  }
+  .navbar-list {
+    width: 70vw;
+    max-width: 70vw;
+    padding: 65px 1.5rem 1.5rem 1.5rem;
+    gap: 0.7rem;
+  }
+  .navbar-list a,
+  .navbar-list button {
+    font-size: 1rem;
+    padding: 0.7rem 0.3rem;
+  }
+}
+
+@media (max-width:865px) {
+  .modern-navbar,
+  .grid-navbar {
+    height: 65px;
+    align-items: center;
+  }
+  .navbar-logo img {
+    height: 28px;
+    margin: 0; /* remove any margin */
+    display: block;
+  }
+  .modern-navbar {
+    padding: 0 0.5rem;
+    gap: 0.5rem;
+  }
+  .navbar-right-controls {
+    gap: 0.5rem;
+  }
+  .navbar-list {
+    width: 70vw;
+    min-width: 70vw;
+    padding: 70px 1.5rem 1.5rem 1.5rem;
+  }
+  .navbar-profile-btn img,
+  .navbar-profile-btn svg {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 1.6rem !important;
+  }
+  .navbar-menu-btn {
+    font-size: 1.5rem;
+    margin-left: 0.3rem;
+  }
+  .navbar-links-grid {
+    display: none;
+  }
+  .navbar-menu-btn {
+    display: block;
+  }
+  .navbar-profile-btn {
+    display: block;
+  }
+}
+
+@media (max-width: 600px) {
+  .navbar-list {
+    width: 70vw;
+    max-width: 70vw;
+    padding: 56px 1.5rem 1.5rem 1.5rem;
+    gap: 0.2rem;
+    border-radius: 0;
+  }
+  .navbar-list a,
+  .navbar-list button {
+    font-size: 0.98rem;
+    padding: 0.6rem 0.2rem;
+  }
+}
+
 body.dark .modern-navbar {
   background: #1d061a;
   box-shadow: 0 2px 16px rgba(143, 55, 255, 0.08);
@@ -195,7 +375,8 @@ body.dark .navbar-list {
   background: #1d061a;
 }
 
-body.dark .navbar-list a {
+body.dark .navbar-list a,
+body.dark .navbar-list button {
   color: #fff;
 }
 
@@ -211,5 +392,39 @@ body.dark .navbar-toggle {
 }
 
 body.dark .navbar-menu-btn {
+  color: #fff;
+}
+
+body.dark .navbar-row a,
+body.dark .navbar-row button {
+  color: #fff;
+}
+
+body.dark .navbar-row a.active {
+  background: linear-gradient(90deg, #a78bfa 0%, #8f37ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.dark .navbar-row a:hover,
+body.dark .navbar-row button:hover {
+  color: #a78bfa;
+  background: linear-gradient(90deg, #8f37ff 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.navbar-expense-btn:hover {
+  background: linear-gradient(90deg, #7c4dff 0%, #a78bfa 100%);
+  color: #fff;
+}
+body.dark .navbar-expense-btn {
+  background: linear-gradient(90deg, #a78bfa 0%, #8f37ff 100%);
+  color: #1d061a;
+}
+body.dark .navbar-expense-btn:hover {
+  background: linear-gradient(90deg, #8f37ff 0%, #a78bfa 100%);
   color: #fff;
 }

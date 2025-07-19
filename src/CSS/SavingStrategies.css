@@ -118,6 +118,10 @@
     position: relative;
     padding-left: 2em;
     list-style: none;
+    color: #444 !important;
+    -webkit-text-fill-color: #444 !important;
+    background: none !important;
+    background-clip: initial !important;
   }
   .automate-how li::before, .roundup-how li::before, .emergency-how li::before {
     content: "";
@@ -329,4 +333,11 @@
   body.dark .roundup-example,
   body.dark .emergency-example {
     color: #fff;
+  }
+
+  body.dark .automate-how li,
+  body.dark .roundup-how li,
+  body.dark .emergency-how li {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
   }

@@ -456,3 +456,15 @@ body.dark .budgeting-description {
       font-size: 1.8rem;
   }
 }
+
+@media (max-width: 600px) {
+  .landing-main {
+    padding: 1rem 0.2rem;
+  }
+  .landing-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    padding: 1.2rem 0.2rem;
+  }
+}
+

@@ -23,12 +23,7 @@ body.dark .container .box .content h2 {
 }
 
 body.dark .container {
-  background: rgba(61, 24, 74, 0.48);
-  box-shadow:
-    0 0 32px 8px #8f37ff55,
-    0 0 64px 0 #00ddeb33,   
-    0 8px 40px rgba(143, 55, 255, 0.18),
-    0 1.5px 6px rgba(0,0,0,0.10);
+  background: #1d061a;
     border-radius: 24px;
     position: relative;
     z-index: 1;
