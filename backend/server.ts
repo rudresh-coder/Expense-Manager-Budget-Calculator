@@ -172,7 +172,26 @@ app.post("/api/auth/reset-password", passwordResetLimiter, async (req, res) => {
 //Get expense data (premium only)
 app.get("/api/expense", auth, checkPremium, async (req, res) => {
   try {
+    const { accounts } = req.body;
     const data = await ExpenseManagerData.findOne({ userId: req.user?.id });
+
+    if (data && data.accounts) {
+      const existingData = data; // Assign data to existingData for clarity
+      for (let i = 0; i < accounts.length; i++) {
+        const newAccount = accounts[i];
+        const existingAccount = existingData.accounts.find(acc => acc.id === newAccount.id);
+        
+        if (existingAccount && 
+            existingAccount.transactions && 
+            existingAccount.transactions.length > 0 && 
+            (!newAccount.transactions || newAccount.transactions.length === 0)) {
+          
+          console.warn(`Preventing transaction data loss for account ${newAccount.name}`);
+          // Keep existing transactions instead of overwriting with empty array
+          newAccount.transactions = existingAccount.transactions;
+        }
+      }
+    }
 
     if (!data) {
       res.json({ hasData: false, accounts: [] });
@@ -201,6 +220,27 @@ app.get("/api/expense", auth, checkPremium, async (req, res) => {
 app.post("/api/expense", auth, checkPremium, async (req, res) => {
   try {
     const { accounts } = req.body;
+    
+    // Get existing data first
+    const existingData = await ExpenseManagerData.findOne({ userId: req.user?.id });
+    
+    // If we're about to save empty transactions but existing data has transactions, prevent it
+    if (existingData && existingData.accounts) {
+      for (let i = 0; i < accounts.length; i++) {
+        const newAccount = accounts[i];
+        const existingAccount = existingData.accounts.find(acc => acc.id === newAccount.id);
+        
+        if (existingAccount && 
+            existingAccount.transactions && 
+            existingAccount.transactions.length > 0 && 
+            (!newAccount.transactions || newAccount.transactions.length === 0)) {
+          
+          console.warn(`Preventing transaction data loss for account ${newAccount.name}`);
+          // Keep existing transactions instead of overwriting with empty array
+          newAccount.transactions = existingAccount.transactions;
+        }
+      }
+    }
 
     // Validate accounts is an array
     if (!Array.isArray(accounts)) {

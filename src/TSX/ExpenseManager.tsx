@@ -27,7 +27,7 @@ type Transaction = {
   date: string;
   source?: "manual" | "bank";
   bankName?: string;
-  timestamp?: number; 
+  // timestamp?: number; 
 };
 
 function transferBetweenSplits(splits: Split[], fromId: string, toId: string, amount: number) {
@@ -175,6 +175,11 @@ export default function ExpenseManager() {
         // Only saving if we have actual data OR if this is a deliberate deletion
         if (accounts.length > 0) {
           const saveData = async () => {
+            console.log("About to save accounts:", accounts);
+            console.log("Transactions count per account:", accounts.map(acc => ({
+              name: acc.name,
+              transactionCount: acc.transactions?.length || 0
+            })));
             try {
               console.log("Saving data to backend:", { accounts });
               const res = await fetch("http://localhost:5000/api/expense", {
@@ -227,19 +232,22 @@ export default function ExpenseManager() {
     }
   }, [accounts, hasPremium]);
 
-  useEffect(() => {
-    accounts.forEach(acc => {
-      if (!acc.transactions || acc.transactions.length === 0) return;
-      const now = Date.now();
-      const oldest = Math.min(...acc.transactions.map(tx => tx.timestamp || now));
-      if (now - oldest > 6 * 60 * 60 * 1000) { // 6 hours
-        setAccounts([]);
-        setActiveAccountId("");
-        sessionStorage.removeItem("expenseManagerAccounts");
-        sessionStorage.removeItem("expenseManagerActiveAccountId");
-      }
-    });
-  }, [accounts]);
+  // useEffect(() => {
+    
+  //   if (!hasPremium) {
+  //     accounts.forEach(acc => {
+  //       if (!acc.transactions || acc.transactions.length === 0) return;
+  //       const now = Date.now();
+  //       const oldest = Math.min(...acc.transactions.map(tx => tx.timestamp || now));
+  //       if (now - oldest > 6 * 60 * 60 * 1000) { // 6 hours
+  //         setAccounts([]);
+  //         setActiveAccountId("");
+  //         sessionStorage.removeItem("expenseManagerAccounts");
+  //         sessionStorage.removeItem("expenseManagerActiveAccountId");
+  //       }
+  //     });
+  //   }
+  // }, [accounts, hasPremium]);
   
   useEffect(() => {
     accounts.forEach(acc => {
@@ -377,7 +385,7 @@ export default function ExpenseManager() {
       amount,
       description: form.description,
       date,
-      timestamp: Date.now(), 
+      // timestamp: Date.now(), 
     };
     const newAccounts = accounts.map((acc) => {
       if (acc.id !== activeAccountId) return acc;
