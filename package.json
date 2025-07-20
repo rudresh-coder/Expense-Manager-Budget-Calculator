@@ -17,15 +17,20 @@
     "@mantine/hooks": "^8.0.2",
     "@mui/material": "^7.1.1",
     "@react-three/fiber": "^9.1.2",
+    "@sentry/node": "^9.40.0",
     "dayjs": "^1.11.13",
+    "express-mongo-sanitize": "^2.2.0",
     "framer-motion": "^12.23.6",
+    "helmet": "^8.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-icons": "^5.5.0",
     "react-native-web": "^0.20.0",
     "react-router-dom": "^7.6.2",
     "react-swipeable": "^7.0.2",
-    "three": "^0.177.0"
+    "three": "^0.177.0",
+    "winston": "^3.17.0",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

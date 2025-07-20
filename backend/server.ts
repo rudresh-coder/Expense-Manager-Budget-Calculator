@@ -5,9 +5,13 @@ import cors from "cors";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import xss from "xss-clean";
+import rateLimit from "express-rate-limit";
+import winston from "winston";
 import { sendResetEmail } from "./utils/sendMail";
 import { passwordResetLimiter } from "./middleware/rateLimiter";
-
 import User from "./models/User";
 import ExpenseManagerData from "./models/ExpenseManagerData";
 import PasswordResetToken from "./models/PasswordResetToken";
@@ -15,19 +19,55 @@ import { checkPremium } from "./middleware/checkPremium";
 
 dotenv.config();
 
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: "error.log", level: "error" })
+  ]
+});
+
 const app = express();
-app.use(cors());
+app.use(helmet());
+app.use(cors({
+  origin: process.env.FRONTEND_URL, // Only allow your frontend
+  credentials: true
+}));
 app.use(express.json());
+app.use(mongoSanitize());
+app.use(xss());
+
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { error: "Too many requests, please try again later." }
+});
+
+// Apply to all API routes
+app.use(generalLimiter);
 
 //MongoDB connection
 if (!process.env.MONGO_URI) {
-    console.error("MongoDB connection string is not defined in environment variables.");
+    logger.error("MongoDB connection string is not defined in environment variables.");
     process.exit(1); 
 }
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("MongoDB connected"))
-    .catch(err => console.error("MongoDB connection error:", err));
+    .catch(err => logger.error("MongoDB connection error:", err));
+
+if (!process.env.JWT_SECRET) {
+    logger.error("JWT secret is not defined in environment variables.");
+    process.exit(1);
+}
+if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    logger.error("SMTP credentials are not defined in environment variables.");
+    process.exit(1);
+}
 
 const auth: express.RequestHandler = async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> => {
     const token = req.headers.authorization?.split(" ")[1];
@@ -211,7 +251,7 @@ app.get("/api/expense", auth, checkPremium, async (req, res) => {
       });
     }
   } catch (err) {
-    console.error("Fetch expense data error:", err);
+    logger.error("Fetch expense data error:", err);
     res.status(500).json({ error: "Failed to fetch expense data" });
   }
 });
@@ -308,7 +348,7 @@ app.post("/api/expense", auth, checkPremium, async (req, res) => {
 
     res.json({ message: "Expense data saved", data: result });
   } catch (err) {
-    console.error("Expense save error:", err);
+    logger.error("Expense save error:", err);
     res.status(500).json({ error: "Failed to save expense data" });
   }
 });
