@@ -248,6 +248,22 @@ app.post("/api/expense", auth, checkPremium, async (req, res) => {
       return; 
     }
 
+    // Check for duplicate account IDs and names
+    const accountIds = new Set();
+    const accountNames = new Set();
+    for (const account of accounts) {
+      if (accountIds.has(account.id)) {
+        res.status(400).json({ error: `Duplicate account id found: ${account.id}` });
+        return;
+      }
+      if (accountNames.has(account.name)) {
+        res.status(400).json({ error: `Duplicate account name found: ${account.name}` });
+        return;
+      }
+      accountIds.add(account.id);
+      accountNames.add(account.name);
+    }
+
     // Validate each account
     for (const account of accounts) {
       if (typeof account.name !== "string" || typeof account.balance !== "number") {

@@ -266,6 +266,10 @@ export default function ExpenseManager() {
 
   const handleAddAccount = () => {
     if (!newAccountName.trim()) return;
+    if (accounts.some(acc => acc.name === newAccountName)) {
+      setError("Bank name already exists. Please choose a different name.");
+      return;
+    }
     const newAccount: Account = {
       id: Math.random().toString(36).slice(2),
       name: newAccountName,
