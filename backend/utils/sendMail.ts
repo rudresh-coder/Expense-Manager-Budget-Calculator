@@ -46,3 +46,17 @@ export async function sendResetEmail(to: string, token: string) {
     `,
   });
 }
+
+export async function sendVerificationEmail(to: string, url: string) {
+  await transporter.sendMail({
+    from: process.env.FROM_EMAIL,
+    to,
+    subject: "Verify your Expense Manager account",
+    html: `
+      <p>Hello,</p>
+      <p>Thank you for registering. Please verify your email by clicking the link below:</p>
+      <a href="${url}">${url}</a>
+      <p>If you did not register, please ignore this email.</p>
+    `,
+  });
+}

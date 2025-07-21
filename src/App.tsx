@@ -17,6 +17,7 @@ import Privacy from "./TSX/Privacy";
 import Pricing from "./TSX/Pricing";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
+import VerifyEmail from "./TSX/VerifyEmail";
 
 export default function App() {
   const [userProfileOpen, setUserProfileOpen] = useState(false);
@@ -91,6 +92,7 @@ export default function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
       </Routes>
       <Footer />
     </Router>

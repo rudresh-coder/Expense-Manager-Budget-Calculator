@@ -10,7 +10,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
 import rateLimit from "express-rate-limit";
 import winston from "winston";
-import { sendResetEmail } from "./utils/sendMail";
+import { sendResetEmail, sendVerificationEmail } from "./utils/sendMail";
 import { passwordResetLimiter } from "./middleware/rateLimiter";
 import User from "./models/User";
 import ExpenseManagerData from "./models/ExpenseManagerData";
@@ -32,11 +32,41 @@ const logger = winston.createLogger({
 });
 
 const app = express();
+
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+  app.use((req, res, next) => {
+    if (req.headers["x-forwarded-proto"] !== "https") {
+      return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
+
 app.use(helmet());
+
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://apis.google.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", process.env.FRONTEND_URL || "'self'"],
+      objectSrc: ["'none'"],
+      frameSrc: ["'self'"],
+      upgradeInsecureRequests: [],
+    },
+  })
+);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL, // Only allow your frontend
+  origin: process.env.FRONTEND_URL || "http://localhost:5173", // Only allow your frontend
   credentials: true
 }));
+
+app.options("*", cors());
 app.use(express.json());
 app.use(mongoSanitize());
 app.use(xss());
@@ -56,8 +86,13 @@ if (!process.env.MONGO_URI) {
     process.exit(1); 
 }
 
+if (!process.env.FRONTEND_URL) {
+  logger.error("FRONTEND_URL is not defined in environment variables.");
+  process.exit(1);
+}
+
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB connected"))
+    .then(() => logger.info("MongoDB connected"))
     .catch(err => logger.error("MongoDB connection error:", err));
 
 if (!process.env.JWT_SECRET) {
@@ -88,14 +123,28 @@ const auth: express.RequestHandler = async (req: express.Request, res: express.R
     }
 }
 
+function isStrongPassword(password: string): boolean {
+  // At least 8 chars, one uppercase, one lowercase, one number, one special char
+  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(password);
+}
+
 // Register
 app.post("/api/auth/signup", async (req: express.Request, res: express.Response) => {
     try {
       const { fullName, email, password } = req.body;
+      const verificationToken = crypto.randomBytes(32).toString("hex");
   
       // Validate required fields
       if (!fullName || !email || !password) {
         res.status(400).json({ error: "All fields are required." });
+        return;
+      }
+
+      if (!isStrongPassword(password)) {
+        res.status(400).json({
+          error:
+            "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
+        });
         return;
       }
   
@@ -114,11 +163,17 @@ app.post("/api/auth/signup", async (req: express.Request, res: express.Response)
         fullName,
         email,
         password: hashedPassword,
-        isPremium: true,
+        isPremium: false,
         trialExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        isVerified: false,
+        verificationToken,
       });
   
       await user.save();
+      logger.info(`User registered: ${email}`);
+
+      const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+      await sendVerificationEmail(email, verificationUrl);
   
       res.status(201).json({ message: "User registered successfully." });
     } catch (err) {
@@ -135,6 +190,10 @@ app.post("/api/auth/signup", async (req: express.Request, res: express.Response)
         res.status(400).json({ error: "Invalid credentials" });
         return;
       }
+      if (!user.isVerified) {
+        res.status(403).json({ error: "Please verify your email before logging in." });
+        return;
+      }
       const valid = await bcrypt.compare(password, user.password);
       if (!valid) {
         res.status(400).json({ error: "Invalid credentials" });
@@ -145,6 +204,7 @@ app.post("/api/auth/signup", async (req: express.Request, res: express.Response)
         process.env.JWT_SECRET || "default_secret",
         { expiresIn: "7d" }
       );
+      logger.info(`User login: ${email}`);
       res.json({
         token,
         isPremium: user.isPremium,
@@ -193,6 +253,13 @@ app.post("/api/auth/reset-password", passwordResetLimiter, async (req, res) => {
     res.status(400).json({ error: "All fields are required." });
     return;
   }
+  if (!isStrongPassword(newPassword)) {
+    res.status(400).json({
+      error:
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
+    });
+    return;
+  }
   const record = await PasswordResetToken.findOne({ email, token });
   if (!record || record.expires.getTime() < Date.now()) {
     res.status(400).json({ error: "Invalid or expired token." });
@@ -206,37 +273,38 @@ app.post("/api/auth/reset-password", passwordResetLimiter, async (req, res) => {
   user.password = await bcrypt.hash(newPassword, 10);
   await user.save();
   await PasswordResetToken.deleteMany({ email }); // Remove used tokens
+  logger.info(`Password reset for: ${email}`);
   res.json({ message: "Password has been reset." });
+});
+
+// Email verification
+app.get("/api/auth/verify-email", async (req: express.Request, res: express.Response) => {
+  const { token, email } = req.query;
+  if (!token || !email) {
+     res.status(400).json({ error: "Invalid verification link." });
+     return
+  }
+  const user = await User.findOne({ email, verificationToken: token });
+  if (!user) {
+     res.status(400).json({ error: "Invalid or expired verification link." });
+     return
+  }
+  user.isVerified = true;
+  user.verificationToken = "";
+  await user.save();
+  logger.info(`Email verified: ${email}`);
+  res.json({ message: "Email verified successfully. You can now log in." });
 });
 
 //Get expense data (premium only)
 app.get("/api/expense", auth, checkPremium, async (req, res) => {
   try {
-    const { accounts } = req.body;
     const data = await ExpenseManagerData.findOne({ userId: req.user?.id });
-
-    if (data && data.accounts) {
-      const existingData = data; // Assign data to existingData for clarity
-      for (let i = 0; i < accounts.length; i++) {
-        const newAccount = accounts[i];
-        const existingAccount = existingData.accounts.find(acc => acc.id === newAccount.id);
-        
-        if (existingAccount && 
-            existingAccount.transactions && 
-            existingAccount.transactions.length > 0 && 
-            (!newAccount.transactions || newAccount.transactions.length === 0)) {
-          
-          console.warn(`Preventing transaction data loss for account ${newAccount.name}`);
-          // Keep existing transactions instead of overwriting with empty array
-          newAccount.transactions = existingAccount.transactions;
-        }
-      }
-    }
 
     if (!data) {
       res.json({ hasData: false, accounts: [] });
     } else {
-      // Ensure every account has a transactions array
+      // Only ensure transactions is always an array for each account
       const accounts = (data.accounts || []).map(acc => ({
         ...acc.toObject(),
         transactions: Array.isArray(acc.transactions) ? acc.transactions : [],
@@ -275,7 +343,7 @@ app.post("/api/expense", auth, checkPremium, async (req, res) => {
             existingAccount.transactions.length > 0 && 
             (!newAccount.transactions || newAccount.transactions.length === 0)) {
           
-          console.warn(`Preventing transaction data loss for account ${newAccount.name}`);
+          logger.warn(`Preventing transaction data loss for account ${newAccount.name}`);
           // Keep existing transactions instead of overwriting with empty array
           newAccount.transactions = existingAccount.transactions;
         }
@@ -344,7 +412,7 @@ app.post("/api/expense", auth, checkPremium, async (req, res) => {
     const options = { upsert: true, new: true, setDefaultsOnInsert: true };
 
     const result = await ExpenseManagerData.findOneAndUpdate(filter, update, options);
-    console.log("Save successful for user:", req.user?.id);
+    logger.info(`Expense data saved for user: ${req.user?.id}`);
 
     res.json({ message: "Expense data saved", data: result });
   } catch (err) {
@@ -356,6 +424,7 @@ app.post("/api/expense", auth, checkPremium, async (req, res) => {
 //Example: Upgrade to premium (demo)
 app.post("/api/user/upgrade", auth, async (req: express.Request, res: express.Response) => {
     await User.findByIdAndUpdate(req.user?.id, { isPremium: true });
+    logger.info(`User upgraded to premium: ${req.user?.id}`);
     res.json({ message: "Upgraded to premium" });
 });
 
@@ -375,5 +444,10 @@ app.get("/api/user/profile", auth, async (req, res) => {
   });
 });
 
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  logger.error("Unhandled error:", err);
+  res.status(500).json({ error: "Internal server error" });
+});
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));

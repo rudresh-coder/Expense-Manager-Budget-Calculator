@@ -22,6 +22,7 @@ export default function SignUp() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,13 +70,15 @@ export default function SignUp() {
         setError(data.error || "Signup failed.");
         return;
       }
-      alert("Signup seccessful! Please log in.");
+      setSuccess("Signup successful! Please check your email and verify your account before logging in.");
       setFullName("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
       setAgree(false);
-      navigate("/signin");
+      setTimeout(() => {
+        navigate("/signin");
+      }, 3500);
     } catch {
       setError("Network error. Please try again.");
     }
@@ -171,6 +174,7 @@ export default function SignUp() {
           <Link to="/privacy" target="_blank">Privacy Policy</Link>
         </label>
         {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
         <button type="submit" className="sign">Sign Up</button>
       </form>
       <p className="signup">
