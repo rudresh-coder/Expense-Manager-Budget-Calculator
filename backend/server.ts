@@ -66,10 +66,10 @@ app.use(cors({
   credentials: true
 }));
 
-app.options("*", cors());
+// app.options("/*", cors());
 app.use(express.json());
-app.use(mongoSanitize());
-app.use(xss());
+// app.use(mongoSanitize({ replaceWith: '_' }));
+// app.use(xss());
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -430,18 +430,29 @@ app.post("/api/user/upgrade", auth, async (req: express.Request, res: express.Re
 
 // Get user profile
 app.get("/api/user/profile", auth, async (req, res) => {
-  const user = await User.findById(req.user?.id);
-  if (!user) {
-    res.status(404).json({ error: "User not found" });
-    return;
+  try {
+    if (!req.user?.id) {
+      logger.error("No user ID in request");
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      logger.error(`User not found: ${req.user.id}`);
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    res.json({
+      fullName: user.fullName,
+      email: user.email,
+      avatarUrl: user.avatarUrl || "",
+      isPremium: user.isPremium,
+      trialExpiresAt: user.trialExpiresAt
+    });
+  } catch (err) {
+    logger.error("Profile fetch error:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
-  res.json({
-    fullName: user.fullName,
-    email: user.email,
-    avatarUrl: user.avatarUrl || "",
-    isPremium: user.isPremium,
-    trialExpiresAt: user.trialExpiresAt
-  });
 });
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

@@ -231,23 +231,6 @@ export default function ExpenseManager() {
       }
     }
   }, [accounts, hasPremium]);
-
-  // useEffect(() => {
-    
-  //   if (!hasPremium) {
-  //     accounts.forEach(acc => {
-  //       if (!acc.transactions || acc.transactions.length === 0) return;
-  //       const now = Date.now();
-  //       const oldest = Math.min(...acc.transactions.map(tx => tx.timestamp || now));
-  //       if (now - oldest > 6 * 60 * 60 * 1000) { // 6 hours
-  //         setAccounts([]);
-  //         setActiveAccountId("");
-  //         sessionStorage.removeItem("expenseManagerAccounts");
-  //         sessionStorage.removeItem("expenseManagerActiveAccountId");
-  //       }
-  //     });
-  //   }
-  // }, [accounts, hasPremium]);
   
   useEffect(() => {
     accounts.forEach(acc => {
@@ -443,33 +426,49 @@ export default function ExpenseManager() {
   };
   
   const exportCSV = () => {
+    if (!hasPremium) {
+      alert("CSV export is a premium feature. Please upgrade to access this functionality.");
+      return;
+    }
+  
+    if (!activeAccount || !activeAccount.transactions?.length) {
+      alert("No transactions to export for the selected account.");
+      return;
+    }
+  
     const rows = [
       ["Date", "Split", "Type", "Amount", "Description", "Source"],
-      ...(activeAccount?.transactions ? activeAccount.transactions.map(tx => [
-        tx.date,
-        tx.splitId ? (accounts.find(a => a.id === tx.accountId)?.splits.find(s => s.id === tx.splitId)?.name || "Main") : "Main",
-        tx.type,
-        tx.amount,
-        tx.description,
-        tx.source || "manual"
-      ]) : [])
+      ...activeAccount.transactions
+        .filter(tx => tx.type !== "transfer")
+        .map(tx => [
+          new Date(tx.date).toLocaleDateString('en-GB'),
+          tx.splitId ? (activeAccount.splits.find(s => s.id === tx.splitId)?.name || "Main") : "Main",
+          tx.type.charAt(0).toUpperCase() + tx.type.slice(1),
+          tx.amount.toFixed(2),
+          tx.description,
+          tx.source || "manual"
+        ])
     ];
-    const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+  
+    const csvContent = "data:text/csv;charset=utf-8," + 
+      rows.map(row => row.map(field => `"${field}"`).join(",")).join("\n");
+    
     const link = document.createElement("a");
     link.href = csvContent;
-    link.download = "expense_manager.csv";
+    link.download = `${activeAccount.name}_transactions.csv`;
     link.click();
   };
 
   const activeAccount = accounts.find(acc => acc.id === activeAccountId);
   const filteredTransactions = activeAccount?.transactions
-    ? activeAccount.transactions.filter(
-        tx =>
-          (filterSource === "all" ||
-            (filterSource === "manual" && tx.source !== "bank") ||
-            (filterSource === "bank" && tx.source === "bank"))
-      )
-    : [];
+  ? activeAccount.transactions.filter(
+      tx =>
+        tx.type !== "transfer" && // Exclude transfer transactions from display
+        (filterSource === "all" ||
+          (filterSource === "manual" && tx.source !== "bank") ||
+          (filterSource === "bank" && tx.source === "bank"))
+    )
+  : [];
 
   const sortedTransactions = [...filteredTransactions];
   if (sortType === "date-desc") {
@@ -787,7 +786,13 @@ export default function ExpenseManager() {
               Connect Bank Account
             </button>
           )}
+          {hasPremium ? (
           <button className="expense-btn" onClick={exportCSV}>Export CSV</button>
+        ) : (
+          <button className="expense-btn" disabled title="Premium feature">
+            Export CSV (Premium)
+          </button>
+        )}
         </div>
       {/* Transactions Section - outside the card */}
         <div className="expense-transactions-bg">
@@ -853,10 +858,12 @@ export default function ExpenseManager() {
                                 className={
                                   tx.type === "add"
                                     ? "expense-type-add"
+                                    : tx.type === "spend"
+                                    ? "expense-type-spend"
                                     : "expense-type-spend"
                                 }
                               >
-                                {tx.type === "add" ? "Add" : "Spend"}
+                                {tx.type === "add" ? "Add" : tx.type === "spend" ? "Spend" : "Transfer"}
                               </span>
                             </td>
                             <td>

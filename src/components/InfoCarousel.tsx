@@ -72,7 +72,7 @@ export default function InfoCarousel() {
   const [direction, setDirection] = useState<"next" | "prev">("next");
   const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [animationType, setAnimationType] = useState<"slide" | "bounce" | "zoom">("zoom");
+  const [animationType, setAnimationType] = useState<"slide" | "bounce" | "zoom">("slide");
 
   // Stable functions using useCallback
   const changeSlide = useCallback((newIdx: number, dir: "next" | "prev") => {
