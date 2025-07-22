@@ -6,8 +6,9 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import helmet from "helmet";
-import mongoSanitize from "express-mongo-sanitize";
-import xss from "xss-clean";
+import cron from "node-cron";
+// import mongoSanitize from "express-mongo-sanitize";
+// import xss from "xss-clean";
 import rateLimit from "express-rate-limit";
 import winston from "winston";
 import { sendResetEmail, sendVerificationEmail } from "./utils/sendMail";
@@ -324,11 +325,22 @@ app.get("/api/expense", auth, checkPremium, async (req, res) => {
   }
 });
 
-//Save/Update expense data (premium only)
-app.post("/api/expense", auth, checkPremium, async (req, res) => {
+//Save/Update expense data
+app.post("/api/expense", auth, async (req, res) => {
   try {
     const { accounts } = req.body;
-    
+    const user = await User.findById(req.user?.id);
+
+    // Limit free users to 100 transactions per account
+    if (user && !user.isPremium) {
+      for (const account of accounts) {
+        if (account.transactions && account.transactions.length > 100) {
+          res.status(403).json({ error: "Free users can only store up to 100 transactions per account. Please export or upgrade for unlimited history." });
+          return;
+        }
+      }
+    }
+
     // Get existing data first
     const existingData = await ExpenseManagerData.findOne({ userId: req.user?.id });
     
@@ -428,6 +440,78 @@ app.post("/api/user/upgrade", auth, async (req: express.Request, res: express.Re
     res.json({ message: "Upgraded to premium" });
 });
 
+// Bank linking
+app.post("/api/bank/link", auth, async (req, res) => {
+  try {
+    if (!req.user?.id) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const { accountId, bankName, accessToken } = req.body;
+
+    if (!accountId || !bankName || (user.isPremium && !accessToken)) {
+      res.status(400).json({ error: "Missing required bank account information." });
+      return;
+    }
+
+    if (user.bankLinks.some(link => link.accountId === accountId)) {
+      res.status(400).json({ error: "This bank account is already linked." });
+      return;
+    }
+
+    const linkedCount = user.bankLinks.filter(link => link.accessToken).length;
+
+    // Premium: 1 free bank link, others require payment
+    if (user.isPremium) {
+      const paidLinks = user.bankLinks.filter(link => link.paid).length;
+      if (linkedCount >= 1 + paidLinks) {
+        res.status(403).json({
+          error: "You have reached your free bank account link limit. Pay ₹35 to link another account."
+        });
+        return;
+      }
+      user.bankLinks.push({
+        accountId,
+        bankName,
+        accessToken,
+        paid: linkedCount >= 1,
+        linkedAt: new Date(),
+      });
+      await user.save();
+      res.json({ message: "Bank linked successfully", bankLinks: user.bankLinks });
+    } else {
+      // Free users: allow manual accounts only (no accessToken)
+      user.bankLinks.push({
+        accountId,
+        bankName,
+        accessToken: "", // No bank integration for free users
+        paid: false,
+        linkedAt: new Date(),
+      });
+      await user.save();
+      res.json({ message: "Manual account added" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: "Failed to link bank account" });
+  }
+});
+
+// app.post("/api/bank/pay-extra", auth, async (req, res) => {
+//   // Payment integration logic here (Razorpay/Stripe)
+//   // On success:
+//   const user = await User.findById(req.user.id);
+//   // Mark the next bank link as paid
+//   user.bankLinks[user.bankLinks.length - 1].paid = true;
+//   await user.save();
+//   res.json({ message: "Extra bank account unlocked" });
+// });
+
 // Get user profile
 app.get("/api/user/profile", auth, async (req, res) => {
   try {
@@ -453,6 +537,30 @@ app.get("/api/user/profile", auth, async (req, res) => {
     logger.error("Profile fetch error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
+});
+
+cron.schedule("0 2 * * *", async () => {
+  // Runs every day at 2 AM
+  const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  const freeUsers = await User.find({ isPremium: false });
+  for (const user of freeUsers) {
+    const data = await ExpenseManagerData.findOne({ userId: user._id });
+    if (data && Array.isArray(data.accounts)) {
+      let changed = false;
+      for (const account of data.accounts) {
+        if (Array.isArray(account.transactions)) {
+          const originalLength = account.transactions.length;
+          account.transactions = account.transactions.toObject().filter(
+            (tx: { date: string }) => new Date(tx.date) > oneMonthAgo
+          );
+          if (account.transactions.length !== originalLength) changed = true;
+        }
+      }
+      if (changed) await data.save();
+    }
+  }
+  logger.info("Old transactions deleted for free users");
 });
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

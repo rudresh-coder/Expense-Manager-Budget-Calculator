@@ -15,6 +15,8 @@ type Account = {
   balance: number;
   splits: Split[];
   transactions?: Transaction[];
+  isBankLinked?: boolean; 
+  bankLinkPaid?: boolean; 
 };
 
 type Transaction = {
@@ -75,155 +77,92 @@ export default function ExpenseManager() {
   const hasPremium = isPremium || isTrialActive;
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
+  // Removed unused lastUpdated state
 
-  useEffect(() => {
-    function handleStorageChange(e: StorageEvent) {
-      if (
-        e.key === "expenseManagerAccounts" ||
-        e.key === "expenseManagerActiveAccountId" ||
-        e.key === "expenseManagerLastUpdated"
-      ) {
-        const storageLastUpdated = Number(sessionStorage.getItem("expenseManagerLastUpdated") || "0");
-        if (storageLastUpdated > lastUpdated) {
-          if (window.confirm("Changes were made in another tab. Reload to get the latest data?")) {
-            const savedAccounts = sessionStorage.getItem("expenseManagerAccounts");
-            const savedActiveAccountId = sessionStorage.getItem("expenseManagerActiveAccountId");
-            setAccounts(savedAccounts ? JSON.parse(savedAccounts) : []);
-            setActiveAccountId(savedActiveAccountId || "");
-            setLastUpdated(storageLastUpdated);
-          }
-        }
-      }
-      if (e.key === "trialExpiresAt" || e.key === "isPremium") {
-        // For premium users
-        setTrialExpiresAt(localStorage.getItem("trialExpiresAt"));
-        setIsPremium(JSON.parse(localStorage.getItem("isPremium") || "false"));
-      }
+useEffect(() => {
+  function handleStorageChange(e: StorageEvent) {
+    if (e.key === "trialExpiresAt" || e.key === "isPremium") {
+      setTrialExpiresAt(localStorage.getItem("trialExpiresAt"));
+      setIsPremium(JSON.parse(localStorage.getItem("isPremium") || "false"));
     }
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, [hasPremium, lastUpdated]);
+  }
+  window.addEventListener("storage", handleStorageChange);
+  return () => window.removeEventListener("storage", handleStorageChange);
+}, []);
 
   useEffect(() => {
-    if (hasPremium) {
-      console.log("[ExpenseManager] Premium user detected. Fetching data from backend...");
-      setIsLoading(true);
-      setError(null); // Reset error before fetching
-      fetch("http://localhost:5000/api/expense", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+    setIsLoading(true);
+    setError(null);
+    fetch("http://localhost:5000/api/expense", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+    })
+      .then(async res => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Failed to fetch expense data");
+        }
+        return res.json();
       })
-        .then(async res => {
-          console.log("[ExpenseManager] Backend response status:", res.status);
-          if (!res.ok) {
-            const data = await res.json().catch(() => ({}));
-            console.error("[ExpenseManager] Backend error response:", data);
-            throw new Error(data.error || "Failed to fetch expense data");
-          }
-          return res.json();
-        })
-        .then(data => {
-          console.log("[ExpenseManager] Data received from backend:", data);
-          setIsLoading(false);
-          if (data && data.hasData && Array.isArray(data.accounts)) {
-            setAccounts(data.accounts);
-            const savedActiveAccountId = localStorage.getItem("expenseManagerActiveAccountId");
-            if (
-              savedActiveAccountId &&
-              data.accounts.some((acc: Account) => acc.id === savedActiveAccountId)
-            ) {
-              console.log("[ExpenseManager] Restoring saved active account:", savedActiveAccountId);
-              setActiveAccountId(savedActiveAccountId);
-            } else if (data.accounts.length > 0) {
-              console.log("[ExpenseManager] No saved active account, defaulting to first account:", data.accounts[0].id);
-              setActiveAccountId(data.accounts[0].id);
-            } else {
-              console.log("[ExpenseManager] No accounts found for user.");
-              setActiveAccountId("");
-            }
+      .then(data => {
+        setIsLoading(false);
+        if (data && data.hasData && Array.isArray(data.accounts)) {
+          setAccounts(data.accounts);
+          const savedActiveAccountId = localStorage.getItem("expenseManagerActiveAccountId");
+          if (
+            savedActiveAccountId &&
+            data.accounts.some((acc: Account) => acc.id === savedActiveAccountId)
+          ) {
+            setActiveAccountId(savedActiveAccountId);
+          } else if (data.accounts.length > 0) {
+            setActiveAccountId(data.accounts[0].id);
           } else {
-            console.warn("[ExpenseManager] No account data found or malformed data.");
-            setAccounts([]);
             setActiveAccountId("");
-            setError("No account data found. Please add a bank account.");
           }
-        })
-        .catch(err => {
-          console.error("[ExpenseManager] Fetch error:", err);
-          setIsLoading(false);
+        } else {
           setAccounts([]);
           setActiveAccountId("");
-          setError(err.message || "Network error. Please try again.");
-        });
-    } else {
-      // SessionStorage logic for free users
-      console.log("[ExpenseManager] Free user detected. Loading data from sessionStorage...");
-      const savedAccounts = sessionStorage.getItem("expenseManagerAccounts");
-      const savedActiveAccountId = sessionStorage.getItem("expenseManagerActiveAccountId");
-      setAccounts(savedAccounts ? JSON.parse(savedAccounts) : []);
-      setActiveAccountId(savedActiveAccountId || "");
-      setIsLoading(false);
-      console.log("[ExpenseManager] Loaded accounts from sessionStorage:", savedAccounts);
-      console.log("[ExpenseManager] Loaded activeAccountId from sessionStorage:", savedActiveAccountId);
-    }
-  }, [hasPremium]);
-  
-  useEffect(() => {
-    // small delay to prevent immediate saving on load
-    const timeoutId = setTimeout(() => {
-      if (hasPremium && !isLoading) {
-        // Only saving if we have actual data OR if this is a deliberate deletion
-        if (accounts.length > 0) {
-          const saveData = async () => {
-            console.log("About to save accounts:", accounts);
-            console.log("Transactions count per account:", accounts.map(acc => ({
-              name: acc.name,
-              transactionCount: acc.transactions?.length || 0
-            })));
-            try {
-              console.log("Saving data to backend:", { accounts });
-              const res = await fetch("http://localhost:5000/api/expense", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${localStorage.getItem("token")}`
-                },
-                body: JSON.stringify({ accounts })
-              });
-              if (!res.ok) {
-                const data = await res.json();
-                console.error("Save error:", data.error || "Unknown error");
-              } else {
-                console.log("Data saved successfully");
-              }
-            } catch (err) {
-              console.error("Network error while saving expense data:", err);
-            }
-          };
-          saveData();
+          setError("No account data found. Please add a bank account.");
         }
-      } else if (!hasPremium) {
-        sessionStorage.setItem("expenseManagerAccounts", JSON.stringify(accounts));
-        sessionStorage.setItem("expenseManagerLastUpdated", String(Date.now()));
-      }
-    }, 1000); // 1 second delay
-  
-    return () => clearTimeout(timeoutId);
-  }, [accounts, hasPremium, isLoading]);
+      })
+      .catch(err => {
+        setIsLoading(false);
+        setAccounts([]);
+        setActiveAccountId("");
+        setError(err.message || "Network error. Please try again.");
+      });
+  }, []);
   
   useEffect(() => {
-    if (activeAccountId && hasPremium) {
-      localStorage.setItem("expenseManagerActiveAccountId", activeAccountId);
-    } else if (!hasPremium) {
-      sessionStorage.setItem("expenseManagerActiveAccountId", activeAccountId);
+    if (accounts.length > 0 && !isLoading) {
+      const saveData = async () => {
+        try {
+          await fetch("http://localhost:5000/api/expense", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            },
+            body: JSON.stringify({ accounts })
+          });
+        } catch (err) {
+          console.error("Network error while saving expense data:", err);
+        }
+      };
+      saveData();
     }
-  }, [activeAccountId, hasPremium]);
+  }, [accounts, isLoading]);
+  
+  useEffect(() => {
+    if (activeAccountId) {
+      localStorage.setItem("expenseManagerActiveAccountId", activeAccountId);
+    }
+  }, [activeAccountId]);
 
   useEffect(() => {
     const savedActiveAccountId = hasPremium 
-      ? localStorage.getItem("expenseManagerActiveAccountId")
-      : sessionStorage.getItem("expenseManagerActiveAccountId");
-    
+      ? localStorage.getItem("expenseManagerActiveAccountId") 
+      : null;
+
     if (savedActiveAccountId && accounts.length > 0) {
       const accountExists = accounts.find(acc => acc.id === savedActiveAccountId);
       if (accountExists) {
@@ -262,7 +201,6 @@ export default function ExpenseManager() {
     };
     const newAccounts = [...accounts, newAccount];
     setAccounts(newAccounts);
-    setLastUpdated(Date.now());
     setActiveAccountId(newAccount.id);
     setNewAccountName("");
   };
@@ -292,13 +230,11 @@ export default function ExpenseManager() {
       };
     });
     setAccounts(newAccounts);
-    setLastUpdated(Date.now());
     setNewSplitName("");
     setNewSplitAmount("");
     setSplitNameError("");
   };
-
-  const handleSplitNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+   const handleSplitNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Only allow letters (no spaces, numbers, or symbols)
     if (/^[A-Za-z]*$/.test(value)) {
@@ -308,6 +244,7 @@ export default function ExpenseManager() {
       setSplitNameError("Split name must contain only letters.");
     }
   };
+  
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -315,7 +252,7 @@ export default function ExpenseManager() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
       setError("Please enter a valid amount.");
@@ -360,8 +297,8 @@ export default function ExpenseManager() {
         }
       }
     }
-    if (!hasPremium && (acc.transactions?.length || 0) >= 50) {
-      alert("Free users can only store up to 50 transactions. Please export or upgrade for unlimited history.");
+    if (!hasPremium && (acc.transactions?.length || 0) >= 100) {
+      alert("Free users can only store up to 100 transactions. Please export or upgrade for unlimited history.");
       return;
     }
     const newTransaction: Transaction = {
@@ -399,10 +336,10 @@ export default function ExpenseManager() {
       }
     });
     setAccounts(newAccounts);
-    setLastUpdated(Date.now());
+    // Removed unused setLastUpdated call
+    // setAccounts(newAccounts);
     setForm({ splitId: "", type: "add", amount: "", description: "", date: "", fromSplitId: "", toSplitId: "" });
-  };
-
+  }
   const handleUpgrade = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/user/upgrade", {
@@ -485,6 +422,32 @@ export default function ExpenseManager() {
     // Logic to connect bank account
     console.log("Connecting bank account...");
   };
+
+  async function handlePayExtraBank(): Promise<void> {
+    try {
+      const res = await fetch("http://localhost:5000/api/user/pay-extra-bank", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Payment successful! You can now link another bank account.");
+        const updatedAccounts = [...accounts];
+        const activeAccount = updatedAccounts.find(acc => acc.id === activeAccountId);
+        if (activeAccount) {
+          activeAccount.bankLinkPaid = true;
+          setAccounts(updatedAccounts);
+        }
+      } else {
+        alert(data.error || "Payment failed. Please try again.");
+      }
+    } catch {
+      alert("Network error. Please try again later.");
+    }
+  }
 
   return (
     <div className="expense-manager-bg">
@@ -575,6 +538,27 @@ export default function ExpenseManager() {
             ))}
           </select>
         </div>
+
+        {hasPremium && (
+          <>
+            {activeAccount && activeAccount.isBankLinked ? (
+              <span className="bank-linked-badge">Bank Linked</span>
+            ) : (
+              <button className="expense-btn" onClick={goLinkBank}>
+                Connect Bank Account
+              </button>
+            )}
+            {activeAccount && activeAccount.bankLinkPaid === false && (
+              <button className="expense-btn" onClick={handlePayExtraBank}>
+                Pay ₹35 to Link Another Account
+              </button>
+            )}
+          </>
+        )}
+        {!hasPremium && (
+          <span className="manual-account-note">Manual accounts only. Upgrade for bank linking.</span>
+        )}
+
         {/* Splits */}
         {activeAccount && (
           <div className="expense-section">
@@ -860,7 +844,7 @@ export default function ExpenseManager() {
                                     ? "expense-type-add"
                                     : tx.type === "spend"
                                     ? "expense-type-spend"
-                                    : "expense-type-spend"
+                                    : "expense-type-transfer"
                                 }
                               >
                                 {tx.type === "add" ? "Add" : tx.type === "spend" ? "Spend" : "Transfer"}

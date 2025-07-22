@@ -7,7 +7,9 @@ const plans = [
         price: "₹0/mo",
         features: [
             "Budget Calculator: Unlimited",
-            "Manual Expense Entry: Session-only",
+            "Manual Expense Entry: Database storage (up to 100 transactions/account)",
+            "Transactions older than 1 month are automatically deleted",
+            "No bank linking (manual entry only)",
             "Ad-supported",
             "Basic totals"
         ],
@@ -19,11 +21,12 @@ const plans = [
         name: "Premium Monthly",
         price: "₹99/mo",
         features: [
-            "Unlimited presistent history",
+            "Unlimited persistent history (database storage, never deleted)",
+            "No transaction limit",
             "Export (CSV/PDF)",
             "Ad-free",
-            "Account Linking (UPI/Bank/PayPal)",
-            "Auto-imported Transactions",
+            "1 free bank account link (auto-imported transactions)",
+            "Additional bank links: ₹35/account/month",
             "Multi-device Sync",
             "Spending trends, forecasts, what-if scenarios",
             "Bill Reminders & Goal-Tracker Alerts",
@@ -88,9 +91,9 @@ export default function Pricing() {
                         </div>
                 ))}
             </div>
-            <div className="pricing-note">
+            {/* <div className="pricing-note">
             <b>Special Offers:</b> 20% off annual, 1 Month free trial!!!
-            </div>
+            </div> */}
         </div>
     );
 }
