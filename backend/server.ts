@@ -7,6 +7,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import helmet from "helmet";
 import cron from "node-cron";
+import bankRoutes from './routes/bank';
+import adminRoutes from "./routes/admin";
 // import mongoSanitize from "express-mongo-sanitize";
 // import xss from "xss-clean";
 import rateLimit from "express-rate-limit";
@@ -531,13 +533,17 @@ app.get("/api/user/profile", auth, async (req, res) => {
       email: user.email,
       avatarUrl: user.avatarUrl || "",
       isPremium: user.isPremium,
-      trialExpiresAt: user.trialExpiresAt
+      trialExpiresAt: user.trialExpiresAt,
+      isAdmin: user.isAdmin
     });
   } catch (err) {
     logger.error("Profile fetch error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.use('/api/bank', auth, bankRoutes);
+app.use("/api/admin", auth, adminRoutes);
 
 cron.schedule("0 2 * * *", async () => {
   // Runs every day at 2 AM

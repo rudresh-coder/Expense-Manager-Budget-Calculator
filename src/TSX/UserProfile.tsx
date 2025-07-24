@@ -7,6 +7,7 @@ type UserProfileProps = {
     avatarUrl?: string;
     banks: { name: string }[];
     isPremium?: boolean;
+    isAdmin?: boolean;
   };
   open: boolean;
   onClose: () => void;
@@ -43,6 +44,25 @@ export default function UserProfile({ user, open, onClose }: UserProfileProps) {
               ))}
             </ul>
           </div>
+          {user.isAdmin && (
+            <button
+              className="profile-admin-btn"
+              style={{
+                marginBottom: "1rem",
+                background: "#7c4dff",
+                color: "#fff",
+                borderRadius: "8px",
+                padding: "0.7em 1.6em",
+                fontWeight: "bold",
+                fontSize: "1.08rem",
+                border: "none",
+                cursor: "pointer"
+              }}
+              onClick={() => window.location.href = "/admin"}
+            >
+              Go to Admin Panel
+            </button>
+          )}
           <button className="profile-logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </div>

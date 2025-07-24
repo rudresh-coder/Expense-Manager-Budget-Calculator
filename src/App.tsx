@@ -8,6 +8,7 @@ import DebtManagement from "./TSX/DebtManagement";
 import ExpenseManager from "./TSX/ExpenseManager";
 import SmartInvesting from "./TSX/SmartInvesting";
 import BehavioralMindset from "./TSX/BehavioralMindset";
+import AdminPanel from "./TSX/AdminPanel";
 import Navbar from "./TSX/Navbar";
 import Footer from "./TSX/Footer";
 import UserProfile from "./TSX/UserProfile";
@@ -54,6 +55,7 @@ export default function App() {
           avatarUrl: data.avatarUrl || "",
           banks: accounts,
           isPremium: data.isPremium,
+          isAdmin: data.isAdmin
         });
         if (data.trialExpiresAt) {
           localStorage.setItem("trialExpiresAt", data.trialExpiresAt);
@@ -93,6 +95,7 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/admin" element={<AdminPanel />} />
       </Routes>
       <Footer />
     </Router>
