@@ -9,8 +9,6 @@ import helmet from "helmet";
 import cron from "node-cron";
 import bankRoutes from './routes/bank';
 import adminRoutes from "./routes/admin";
-// import mongoSanitize from "express-mongo-sanitize";
-// import xss from "xss-clean";
 import rateLimit from "express-rate-limit";
 import winston from "winston";
 import { sendResetEmail, sendVerificationEmail } from "./utils/sendMail";
@@ -19,6 +17,8 @@ import User from "./models/User";
 import ExpenseManagerData from "./models/ExpenseManagerData";
 import PasswordResetToken from "./models/PasswordResetToken";
 import { checkPremium } from "./middleware/checkPremium";
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 dotenv.config();
 
@@ -35,6 +35,19 @@ const logger = winston.createLogger({
 });
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true
+  }
+});
+
+io.on('connection', (socket) => {
+  socket.on('join', (userId) => {
+    socket.join(`user-${userId}`);
+  });
+});
 
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
@@ -429,6 +442,7 @@ app.post("/api/expense", auth, async (req, res) => {
     logger.info(`Expense data saved for user: ${req.user?.id}`);
 
     res.json({ message: "Expense data saved", data: result });
+    io.to(`user-${req.user?.id}`).emit('expenseDataUpdated', result);
   } catch (err) {
     logger.error("Expense save error:", err);
     res.status(500).json({ error: "Failed to save expense data" });
@@ -575,4 +589,4 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
+httpServer.listen(PORT, () => logger.info(`Server running on port ${PORT}`));

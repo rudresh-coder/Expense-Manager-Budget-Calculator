@@ -85,7 +85,7 @@ export default function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<LogIn />} />
         <Route path="/calculator" element={<BudgetCalculator />} /> 
-        <Route path="/expensemanager" element={<ExpenseManager />} />
+        <Route path="/expensemanager" element={<ExpenseManager userId={user._id} />} />
         <Route path="/debtmanagement" element={<DebtManagement />} />
         <Route path="/smartinvesting" element={<SmartInvesting />} />
         <Route path="/behavioralmindset" element={<BehavioralMindset />} />

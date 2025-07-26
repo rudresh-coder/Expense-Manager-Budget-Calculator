@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../CSS/ExpenseManager.css";
 import RevealOnScroll from "./RevealOnScroll";
 import bankIcon from "../assets/bank.png";
+import { io } from "socket.io-client";
 
 type Split = {
   id: string;
@@ -32,6 +33,10 @@ type Transaction = {
   // timestamp?: number; 
 };
 
+type ExpenseManagerProps = {
+  userId: string;
+};
+
 function transferBetweenSplits(splits: Split[], fromId: string, toId: string, amount: number) {
   return splits.map(split => {
     if (split.id === fromId) return { ...split, balance: split.balance - amount };
@@ -48,7 +53,7 @@ function updateSplitBalance(splits: Split[], splitId: string, amount: number, ty
   );
 }
 
-export default function ExpenseManager() {
+export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [activeAccountId, setActiveAccountId] = useState<string>("");
   const [newAccountName, setNewAccountName] = useState("");
@@ -185,6 +190,15 @@ useEffect(() => {
       }
     });
   }, [accounts]);
+
+  useEffect(() => {
+    const socket = io("http://localhost:5000", { withCredentials: true });
+    if (userId) socket.emit("join", userId);
+    socket.on("expenseDataUpdated", (newData) => {
+      setAccounts(newData.accounts);
+    });
+    return () => socket.disconnect();
+  }, [userId]);
 
   const handleAddAccount = () => {
     if (!newAccountName.trim()) return;
