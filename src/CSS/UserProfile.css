@@ -87,6 +87,11 @@
     background: rgba(0,0,0,0.18);
     z-index: 1299;
   }
+
+.profile-logout-btn {
+  margin-top: 2rem;
+}
+
   @media (max-width: 600px) {
     .profile-sidebar {
       width: 95vw;

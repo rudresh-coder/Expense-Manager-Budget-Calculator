@@ -100,7 +100,7 @@ export default function Privacy() {
 
       <RevealOnScroll as="h2">10. Contact Us</RevealOnScroll>
       <RevealOnScroll as="p">
-        If you have any questions or concerns about this Privacy Policy, please contact us at <a href="mailto:tcs.summarizer@gmail.com" className="terms-link">tcs.summarizer@gmail.com</a>.
+        If you have any questions or concerns about this Privacy Policy, please contact us at <a href="mailto:expensemanager991@gmail.com" className="terms-link">tcs.summarizer@gmail.com</a>.
       </RevealOnScroll>
     </div>
   );

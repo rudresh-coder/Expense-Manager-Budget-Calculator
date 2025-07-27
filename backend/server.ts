@@ -19,6 +19,7 @@ import PasswordResetToken from "./models/PasswordResetToken";
 import { checkPremium } from "./middleware/checkPremium";
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import analyticsRoutes from "./routes/analytics";
 
 dotenv.config();
 
@@ -82,10 +83,8 @@ app.use(cors({
   credentials: true
 }));
 
-// app.options("/*", cors());
 app.use(express.json());
-// app.use(mongoSanitize({ replaceWith: '_' }));
-// app.use(xss());
+
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -543,6 +542,7 @@ app.get("/api/user/profile", auth, async (req, res) => {
       return;
     }
     res.json({
+      _id: user._id,
       fullName: user.fullName,
       email: user.email,
       avatarUrl: user.avatarUrl || "",
@@ -558,6 +558,7 @@ app.get("/api/user/profile", auth, async (req, res) => {
 
 app.use('/api/bank', auth, bankRoutes);
 app.use("/api/admin", auth, adminRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 cron.schedule("0 2 * * *", async () => {
   // Runs every day at 2 AM

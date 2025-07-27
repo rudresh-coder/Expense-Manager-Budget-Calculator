@@ -1,0 +1,185 @@
+.analytics-panel {
+  max-width: 1200px;
+  margin: 2.5rem auto;
+  padding: 2.5rem 2rem;
+  background: linear-gradient(135deg, #f7f4ff 60%, #e0e7ff 100%);
+  border-radius: 2rem;
+  box-shadow: 0 12px 48px #a78bfa33, 0 2px 8px #7c4dff11;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 1.2s cubic-bezier(.23,1.01,.32,1);
+}
+
+.analytics-panel::before {
+  content: "";
+  position: absolute;
+  top: -120px;
+  left: -120px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, #a78bfa 0%, #7c4dff 60%, transparent 100%);
+  opacity: 0.18;
+  z-index: 0;
+  filter: blur(12px);
+}
+
+.analytics-panel::after {
+  content: "";
+  position: absolute;
+  bottom: -80px;
+  right: -80px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, #61d887 0%, #4bc0c0 60%, transparent 100%);
+  opacity: 0.14;
+  z-index: 0;
+  filter: blur(10px);
+}
+
+.analytics-panel h1 {
+  font-size: 2.8rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 2.2rem;
+  background: linear-gradient(90deg, #7c4dff 0%, #61d887 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 2px;
+  animation: gradientFlow 4s linear infinite;
+  position: relative;
+  z-index: 1;
+}
+
+.analytics-charts {
+  margin: 2.5rem 0;
+  padding: 2rem 1.5rem;
+  background: rgba(255,255,255,0.85);
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px #a78bfa22;
+  position: relative;
+  z-index: 1;
+  transition: box-shadow 0.3s;
+  backdrop-filter: blur(8px);
+  animation: fadeInUp 1.5s cubic-bezier(.23,1.01,.32,1);
+}
+
+.analytics-charts:hover {
+  box-shadow: 0 8px 32px #61d88733, 0 2px 8px #7c4dff22;
+  transform: scale(1.02);
+}
+
+.analytics-charts h2 {
+  color: #4b267d;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 2rem;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, #7c4dff 0%, #61d887 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: gradientFlow 4s linear infinite;
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(40px) scale(0.97);}
+  100% { opacity: 1; transform: translateY(0) scale(1);}
+}
+
+/* Chart.js canvas styling */
+.analytics-panel canvas {
+  margin: 0 auto;
+  display: block;
+  max-width: 700px;
+  background: linear-gradient(135deg, #f7f4ff 60%, #e0e7ff 100%);
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 16px #a78bfa22;
+  padding: 1.2rem;
+  transition: box-shadow 0.3s;
+}
+
+.analytics-charts:hover canvas {
+  box-shadow: 0 8px 32px #61d88733, 0 2px 8px #7c4dff22;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+  .analytics-panel {
+    padding: 1.2rem 0.5rem;
+    border-radius: 1rem;
+  }
+  .analytics-charts {
+    padding: 1.2rem 0.5rem;
+    border-radius: 1rem;
+  }
+  .analytics-panel h1 {
+    font-size: 2rem;
+  }
+  .analytics-charts h2 {
+    font-size: 1.3rem;
+  }
+  .analytics-panel canvas {
+    max-width: 98vw;
+    padding: 0.5rem;
+    border-radius: 0.7rem;
+  }
+}
+
+/* Dark Mode */
+body.dark .analytics-panel {
+  background: linear-gradient(135deg, #25102a 60%, #1d061a 100%);
+  color: #fff;
+  border: 1.5px solid #a78bfa;
+  box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
+}
+
+body.dark .analytics-panel h1,
+body.dark .analytics-charts h2 {
+  color: #bfa3e6;
+  background: linear-gradient(90deg, #a78bfa 0%, #61d887 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientFlow 4s linear infinite;
+}
+
+body.dark .analytics-charts {
+  background: rgba(37,16,42,0.95);
+  box-shadow: 0 4px 24px #a78bfa22;
+  border: 1px solid #a78bfa;
+}
+
+body.dark .analytics-panel canvas {
+  background: linear-gradient(135deg, #25102a 60%, #1d061a 100%);
+  box-shadow: 0 2px 16px #a78bfa22;
+  border-radius: 1.2rem;
+}
+
+.analytics-charts .chartjs-render-monitor {
+  transition: box-shadow 0.3s;
+}
+
+/* Glowing accent for charts */
+.analytics-charts::after {
+  content: "";
+  position: absolute;
+  bottom: -18px;
+  right: -18px;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, #61d887 0%, #7c4dff 60%, transparent 100%);
+  opacity: 0.18;
+  z-index: 0;
+  filter: blur(8px);
+  pointer-events: none;
+}

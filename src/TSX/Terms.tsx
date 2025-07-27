@@ -82,7 +82,7 @@ export default function Terms() {
 
       <RevealOnScroll as="h2">13. Contact Us</RevealOnScroll>
       <RevealOnScroll as="p">
-        If you have any questions about these Terms, please contact us at <a href="mailto:tcs.summarizer@gmail.com" className="terms-link">tcs.summarizer@gmail.com</a>.
+        If you have any questions about these Terms, please contact us at <a href="mailto:expensemanager991@gmail.com" className="terms-link">tcs.summarizer@gmail.com</a>.
       </RevealOnScroll>
     </div>
   );
