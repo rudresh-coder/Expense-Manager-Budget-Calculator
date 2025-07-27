@@ -5,6 +5,7 @@ import { checkPremium } from "../middleware/checkPremium";
 const router = express.Router();
 
 router.get("/spending-trends", auth, checkPremium, async (req, res): Promise<void> => {
+  const { accountId } = req.query;
   if (!req.user?.id) {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -12,10 +13,13 @@ router.get("/spending-trends", auth, checkPremium, async (req, res): Promise<voi
   const data = await ExpenseManagerData.findOne({ userId: req.user.id });
   const trends: Record<string, number> = {};
   if (data && data.accounts) {
-    data.accounts.forEach(account => {
+    const accounts = accountId
+      ? data.accounts.filter(acc => acc.id === accountId)
+      : data.accounts;
+    accounts.forEach(account => {
       account.transactions.forEach(tx => {
         if (tx.type === "spend") {
-            const splitName =
+          const splitName =
             tx.splitId
               ? account.splits.find(s => s.id === tx.splitId)?.name || "Other"
               : "Main";
@@ -28,6 +32,7 @@ router.get("/spending-trends", auth, checkPremium, async (req, res): Promise<voi
 });
 
 router.get("/income-expense", auth, checkPremium, async (req, res): Promise<void> => {
+  const { accountId } = req.query;
   if (!req.user?.id) {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -35,11 +40,14 @@ router.get("/income-expense", auth, checkPremium, async (req, res): Promise<void
   const data = await ExpenseManagerData.findOne({ userId: req.user.id });
   const monthly: Record<string, { income: number; expense: number }> = {};
   if (data && data.accounts) {
-    data.accounts.forEach(account => {
+    const accounts = accountId
+      ? data.accounts.filter(acc => acc.id === accountId)
+      : data.accounts;
+    accounts.forEach(account => {
       account.transactions.forEach(tx => {
         const month = tx.date && !isNaN(new Date(tx.date).getTime())
-        ? new Date(tx.date).toISOString().slice(0, 7)
-        : "Unknown";
+          ? new Date(tx.date).toISOString().slice(0, 7)
+          : "Unknown";
         if (!monthly[month]) monthly[month] = { income: 0, expense: 0 };
         if (tx.type === "add") monthly[month].income += tx.amount ?? 0;
         if (tx.type === "spend") monthly[month].expense += tx.amount ?? 0;

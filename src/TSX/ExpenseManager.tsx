@@ -195,10 +195,14 @@ useEffect(() => {
     const socket = io("http://localhost:5000", { withCredentials: true });
     if (userId) socket.emit("join", userId);
     socket.on("expenseDataUpdated", (newData) => {
-      setAccounts(newData.accounts);
+      if (JSON.stringify(accounts) !== JSON.stringify(newData.accounts)) {
+        setAccounts(newData.accounts);
+      }
     });
-    return () => socket.disconnect();
-  }, [userId]);
+    return () => {
+      socket.disconnect();
+    };
+  }, [userId, accounts]);
 
   const handleAddAccount = () => {
     if (!newAccountName.trim()) return;

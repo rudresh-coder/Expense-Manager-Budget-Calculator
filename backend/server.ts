@@ -88,12 +88,10 @@ app.use(express.json());
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: process.env.NODE_ENV === "production" ? 100 : 1000,
   message: { error: "Too many requests, please try again later." }
 });
 
-// Apply to all API routes
-app.use(generalLimiter);
 
 //MongoDB connection
 if (!process.env.MONGO_URI) {
@@ -556,9 +554,11 @@ app.get("/api/user/profile", auth, async (req, res) => {
   }
 });
 
-app.use('/api/bank', auth, bankRoutes);
+app.use("/api/bank", auth, bankRoutes);
 app.use("/api/admin", auth, adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/auth", generalLimiter);
+app.use("/api/password-reset", generalLimiter);
 
 cron.schedule("0 2 * * *", async () => {
   // Runs every day at 2 AM
