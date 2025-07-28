@@ -55,6 +55,7 @@ function updateSplitBalance(splits: Split[], splitId: string, amount: number, ty
 
 export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accountsUpdatedAt, setAccountsUpdatedAt] = useState<string | null>(null);
   const [activeAccountId, setActiveAccountId] = useState<string>("");
   const [newAccountName, setNewAccountName] = useState("");
   const [form, setForm] = useState({
@@ -80,9 +81,32 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
 
   const isTrialActive = trialExpiresAt && Date.now() < new Date(trialExpiresAt).getTime();
   const hasPremium = isPremium || isTrialActive;
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Removed unused lastUpdated state
+  // Removed unused isLoading state
+
+  async function saveAccounts(accounts: Account[]) {
+    try {
+      const res = await fetch("http://localhost:5000/api/expense", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ accounts })
+      });
+      const data = await res.json();
+      if (res.ok && data.data?.updatedAt) {
+        setAccountsUpdatedAt(data.data.updatedAt);
+      }
+      if (!res.ok) {
+        console.error("Save failed:", data.error || "Unknown error");
+        alert(data.error || "Failed to save expense data.");
+      }
+    } catch (err) {
+      console.error("Network error while saving expense data:", err);
+      alert("Network error while saving expense data.");
+    }
+  }
 
 useEffect(() => {
   function handleStorageChange(e: StorageEvent) {
@@ -96,7 +120,7 @@ useEffect(() => {
 }, []);
 
   useEffect(() => {
-    setIsLoading(true);
+    // Removed isLoading logic
     setError(null);
     fetch("http://localhost:5000/api/expense", {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
@@ -109,9 +133,9 @@ useEffect(() => {
         return res.json();
       })
       .then(data => {
-        setIsLoading(false);
         if (data && data.hasData && Array.isArray(data.accounts)) {
           setAccounts(data.accounts);
+          setAccountsUpdatedAt(data.updatedAt); 
           const savedActiveAccountId = localStorage.getItem("expenseManagerActiveAccountId");
           if (
             savedActiveAccountId &&
@@ -130,32 +154,11 @@ useEffect(() => {
         }
       })
       .catch(err => {
-        setIsLoading(false);
         setAccounts([]);
         setActiveAccountId("");
         setError(err.message || "Network error. Please try again.");
       });
   }, []);
-  
-  useEffect(() => {
-    if (accounts.length > 0 && !isLoading) {
-      const saveData = async () => {
-        try {
-          await fetch("http://localhost:5000/api/expense", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`
-            },
-            body: JSON.stringify({ accounts })
-          });
-        } catch (err) {
-          console.error("Network error while saving expense data:", err);
-        }
-      };
-      saveData();
-    }
-  }, [accounts, isLoading]);
   
   useEffect(() => {
     if (activeAccountId) {
@@ -195,14 +198,19 @@ useEffect(() => {
     const socket = io("http://localhost:5000", { withCredentials: true });
     if (userId) socket.emit("join", userId);
     socket.on("expenseDataUpdated", (newData) => {
-      if (JSON.stringify(accounts) !== JSON.stringify(newData.accounts)) {
+      // Only update if the incoming data is newer
+      if (
+        !accountsUpdatedAt ||
+        (newData.updatedAt && new Date(newData.updatedAt) > new Date(accountsUpdatedAt))
+      ) {
         setAccounts(newData.accounts);
+        setAccountsUpdatedAt(newData.updatedAt);
       }
     });
     return () => {
       socket.disconnect();
     };
-  }, [userId, accounts]);
+  }, [userId, accountsUpdatedAt]);
 
   const handleAddAccount = () => {
     if (!newAccountName.trim()) return;
@@ -221,6 +229,7 @@ useEffect(() => {
     setAccounts(newAccounts);
     setActiveAccountId(newAccount.id);
     setNewAccountName("");
+    saveAccounts(newAccounts);
   };
 
   const handleAddSplit = () => {
@@ -251,6 +260,7 @@ useEffect(() => {
     setNewSplitName("");
     setNewSplitAmount("");
     setSplitNameError("");
+    saveAccounts(newAccounts);
   };
    const handleSplitNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -327,7 +337,6 @@ useEffect(() => {
       amount,
       description: form.description,
       date,
-      // timestamp: Date.now(), 
     };
     const newAccounts = accounts.map((acc) => {
       if (acc.id !== activeAccountId) return acc;
@@ -354,8 +363,7 @@ useEffect(() => {
       }
     });
     setAccounts(newAccounts);
-    // Removed unused setLastUpdated call
-    // setAccounts(newAccounts);
+    saveAccounts(newAccounts);
     setForm({ splitId: "", type: "add", amount: "", description: "", date: "", fromSplitId: "", toSplitId: "" });
   }
   const handleUpgrade = async () => {
