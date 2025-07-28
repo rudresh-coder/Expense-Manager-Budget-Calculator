@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "../CSS/ExpenseManager.css";
 import RevealOnScroll from "./RevealOnScroll";
 import bankIcon from "../assets/bank.png";
@@ -74,7 +74,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   const [sortType, setSortType] = useState<"date-asc" | "date-desc" | "input-asc" | "input-desc">("date-desc");
   const [filterSource, setFilterSource] = useState<"all" | "manual" | "bank">("all");
   const [page, setPage] = useState(1);
-  const pageSize = 50;
+  const pageSize = 25;
 
   const [trialExpiresAt, setTrialExpiresAt] = useState(localStorage.getItem("trialExpiresAt"));
   const [isPremium, setIsPremium] = useState(JSON.parse(localStorage.getItem("isPremium") || "false"));
@@ -197,17 +197,36 @@ useEffect(() => {
   useEffect(() => {
     const socket = io("http://localhost:5000", { withCredentials: true });
     if (userId) socket.emit("join", userId);
-    socket.on("expenseDataUpdated", (newData) => {
-      // Only update if the incoming data is newer
-      if (
-        !accountsUpdatedAt ||
-        (newData.updatedAt && new Date(newData.updatedAt) > new Date(accountsUpdatedAt))
-      ) {
-        setAccounts(newData.accounts);
-        setAccountsUpdatedAt(newData.updatedAt);
+
+    // Define the handler as a named function so it can be removed
+    function handleExpenseDataUpdated(newData: { accounts: Account[]; updatedAt: string }) {
+      try {
+        if (
+          !newData ||
+          !Array.isArray(newData.accounts) ||
+          !newData.updatedAt
+        ) {
+          console.error("Malformed socket data received:", newData);
+          setError("Received invalid data from server. Please reload.");
+          return;
+        }
+        if (
+          !accountsUpdatedAt ||
+          (new Date(newData.updatedAt) > new Date(accountsUpdatedAt))
+        ) {
+          setAccounts(newData.accounts);
+          setAccountsUpdatedAt(newData.updatedAt);
+        }
+      } catch (err) {
+        console.error("Error handling socket event:", err);
+        setError("A sync error occurred. Please reload the page.");
       }
-    });
+    }
+
+    socket.on("expenseDataUpdated", handleExpenseDataUpdated);
+
     return () => {
+      socket.off("expenseDataUpdated", handleExpenseDataUpdated); // <-- Remove listener
       socket.disconnect();
     };
   }, [userId, accountsUpdatedAt]);
@@ -280,7 +299,7 @@ useEffect(() => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
       setError("Please enter a valid amount.");
@@ -296,7 +315,16 @@ useEffect(() => {
     if (!activeAccountId) return;
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) return;
-    const date = form.date || new Date().toISOString();
+    let date = form.date;
+    if (!date) {
+      // No date selected, use now
+      date = new Date().toISOString();
+    } else if (!date.includes("T") || date.endsWith("T")) {
+      // Date selected but no time, add current time
+      const today = new Date();
+      const time = today.toTimeString().slice(0,5); // "HH:MM"
+      date = date.split("T")[0] + "T" + time;
+    }
 
     const acc = accounts.find((a) => a.id === activeAccountId);
     if (!acc) return;
@@ -362,9 +390,15 @@ useEffect(() => {
         };
       }
     });
+    const prevAccounts = accounts; 
     setAccounts(newAccounts);
-    saveAccounts(newAccounts);
     setForm({ splitId: "", type: "add", amount: "", description: "", date: "", fromSplitId: "", toSplitId: "" });
+    try {
+      await saveAccounts(newAccounts);
+    } catch {
+      setAccounts(prevAccounts);
+      setError("Failed to save transaction. Please try again.");
+    }
   }
   const handleUpgrade = async () => {
     try {
@@ -423,26 +457,33 @@ useEffect(() => {
   };
 
   const activeAccount = accounts.find(acc => acc.id === activeAccountId);
-  const filteredTransactions = activeAccount?.transactions
-  ? activeAccount.transactions.filter(
+  const filteredTransactions = useMemo(() => {
+    if (!activeAccount?.transactions) return [];
+    return activeAccount.transactions.filter(
       tx =>
-        tx.type !== "transfer" && // Exclude transfer transactions from display
+        tx.type !== "transfer" &&
         (filterSource === "all" ||
           (filterSource === "manual" && tx.source !== "bank") ||
           (filterSource === "bank" && tx.source === "bank"))
-    )
-  : [];
+    );
+  }, [activeAccount?.transactions, filterSource]);
 
-  const sortedTransactions = [...filteredTransactions];
-  if (sortType === "date-desc") {
-    sortedTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  } else if (sortType === "date-asc") {
-    sortedTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  } else if (sortType === "input-desc") {
-    sortedTransactions.reverse(); // latest input first
-  } // input-asc is default order
+  const sortedTransactions = useMemo(() => {
+    const txs = [...filteredTransactions];
+    if (sortType === "date-desc") {
+      txs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    } else if (sortType === "date-asc") {
+      txs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    } else if (sortType === "input-desc") {
+      txs.reverse();
+    }
+    // input-asc is default order
+    return txs;
+  }, [filteredTransactions, sortType]);
 
-  const paginatedTransactions = sortedTransactions.slice((page - 1) * pageSize, page * pageSize);
+  const paginatedTransactions = useMemo(() => {
+    return sortedTransactions.slice((page - 1) * pageSize, page * pageSize);
+  }, [sortedTransactions, page, pageSize]);
 
   const goLinkBank = () => {
     // Logic to connect bank account
@@ -559,8 +600,8 @@ useEffect(() => {
             onChange={(e) => setActiveAccountId(e.target.value)}
           >
             <option value="">Select Bank</option>
-            {accounts.map((acc, idx) => (
-              <option key={acc.id || idx} value={acc.id}>{acc.name}</option>
+            {accounts.map(acc => (
+              <option key={acc.id} value={acc.id}>{acc.name}</option>
             ))}
           </select>
         </div>
