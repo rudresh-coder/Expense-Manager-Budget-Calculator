@@ -52,9 +52,43 @@
   z-index: 1;
 }
 
+.analytics-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  margin-top: 0.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.analytics-header h1 {
+  font-size: 2.8rem;
+  font-weight: 900;
+  margin-bottom: 0.7rem;
+  background: linear-gradient(90deg, #7c4dff 0%, #61d887 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: 2px;
+  animation: gradientFlow 4s linear infinite;
+}
+
+.analytics-header .analytics-subtitle {
+  font-size: 1.25rem;
+  color: #4b267d;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  opacity: 0.92;
+  letter-spacing: 0.5px;
+}
+
+/* Better container sizing for many data points */
 .analytics-charts {
-  margin: 2.5rem 0;
-  padding: 2rem 1.5rem;
+  flex: 1 1 450px;
+  min-width: 400px; /* Increase min-width for more data */
+  max-width: 700px; /* Increase max-width */
+  margin: 0.5rem 0;
+  padding: 1.5rem;
   background: rgba(255,255,255,0.85);
   border-radius: 1.5rem;
   box-shadow: 0 4px 24px #a78bfa22;
@@ -63,6 +97,7 @@
   transition: box-shadow 0.3s;
   backdrop-filter: blur(8px);
   animation: fadeInUp 1.5s cubic-bezier(.23,1.01,.32,1);
+  overflow: hidden;
 }
 
 .analytics-charts:hover {
@@ -96,15 +131,17 @@
   100% { opacity: 1; transform: translateY(0) scale(1);}
 }
 
-/* Chart.js canvas styling */
+/* Chart canvas sizing for more data */
 .analytics-panel canvas {
   margin: 0 auto;
   display: block;
-  max-width: 700px;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 450px !important; /* Increase height for more data */
   background: linear-gradient(135deg, #f7f4ff 60%, #e0e7ff 100%);
   border-radius: 1.2rem;
   box-shadow: 0 2px 16px #a78bfa22;
-  padding: 1.2rem;
+  padding: 0;
   transition: box-shadow 0.3s;
 }
 
@@ -119,8 +156,9 @@
     border-radius: 1rem;
   }
   .analytics-charts {
-    padding: 1.2rem 0.5rem;
-    border-radius: 1rem;
+    min-width: 350px;
+    max-width: 100%;
+    padding: 1rem;
   }
   .analytics-panel h1 {
     font-size: 2rem;
@@ -129,9 +167,22 @@
     font-size: 1.3rem;
   }
   .analytics-panel canvas {
+    height: 350px !important;
     max-width: 98vw;
     padding: 0.5rem;
     border-radius: 0.7rem;
+  }
+  .analytics-charts-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+}
+
+/* Responsive grid for larger charts */
+@media (max-width: 1400px) {
+  .analytics-charts-grid {
+    grid-template-columns: 1fr; /* Stack charts vertically on smaller screens */
+    gap: 1.5rem;
   }
 }
 
@@ -151,6 +202,20 @@ body.dark .analytics-charts h2 {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: gradientFlow 4s linear infinite;
+}
+
+body.dark .analytics-header h1 {
+  background: linear-gradient(90deg, #a78bfa 0%, #61d887 100%);
+  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientFlow 4s linear infinite;
+}
+
+body.dark .analytics-header .analytics-subtitle {
+  color: #bfa3e6;
+  opacity: 0.95;
 }
 
 body.dark .analytics-charts {
@@ -182,4 +247,111 @@ body.dark .analytics-panel canvas {
   z-index: 0;
   filter: blur(8px);
   pointer-events: none;
+}
+
+.analytics-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.analytics-empty-state {
+  text-align: center;
+  color: #888;
+  font-size: 1.1rem;
+  margin: 2rem 0;
+}
+
+.account-selector {
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem; /* Add gap between selectors */
+  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
+  z-index: 3;
+  position: relative;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.account-selector select {
+  padding: 0.7rem 1.2rem;
+  border-radius: 0.7rem;
+  border: 1.5px solid #a78bfa;
+  background: #fff;
+  color: #4b267d;
+  font-size: 1.08rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px #a78bfa11;
+  transition: border 0.2s, background 0.2s, color 0.2s;
+  outline: none;
+  min-width: 180px;
+  max-width: 320px;
+  cursor: pointer;
+}
+
+.account-selector select:focus {
+  border-color: #7c4dff;
+  background: #f7f4ff;
+  color: #7c4dff;
+}
+
+.account-selector select:disabled {
+  background: #f0e7ff;
+  color: #aaa;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+body.dark .account-selector select {
+  background: #25102a;
+  color: #bfa3e6;
+  border: 1.5px solid #a78bfa;
+  box-shadow: 0 2px 8px #a78bfa22;
+}
+
+body.dark .account-selector select:focus {
+  border-color: #7c4dff;
+  background: #1d061a;
+  color: #a78bfa;
+}
+
+body.dark .account-selector select:disabled {
+  background: #1d061a;
+  color: #555;
+  opacity: 0.7;
+}
+
+@media (max-width: 600px) {
+  .analytics-charts {
+    min-width: 280px;
+    padding: 0.8rem;
+  }
+  
+  .analytics-panel canvas {
+    height: 250px !important;
+  }
+
+  .account-selector {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .account-selector select {
+    min-width: auto;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 1200px) {
+  .analytics-charts-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .analytics-charts {
+    max-width: 100%;
+    min-width: 300px;
+  }
 }

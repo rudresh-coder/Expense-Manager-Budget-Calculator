@@ -90,6 +90,11 @@
 
 .profile-logout-btn {
   margin-top: 2rem;
+  padding: 0.6rem 1.2rem;
+  background: none;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
 }
 
   @media (max-width: 600px) {
@@ -131,6 +136,11 @@
 
   body.dark .profile-banks ul li {
     color: #bfa3e6;
+  }
+
+  body.dark .profile-logout-btn {
+    background: transparent;
+    color: #fff;
   }
 
   body.dark .profile-sidebar-overlay {

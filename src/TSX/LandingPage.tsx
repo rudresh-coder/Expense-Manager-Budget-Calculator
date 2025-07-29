@@ -231,7 +231,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <div className="flex flex-wrap justify-center gap-x-10 gap-y-6 my-4">
+      <div className="budgeting-tooltip-row">
         <TooltipButton
           label="Zero-Based Budgeting"
           tooltipTitle="Zero-Based Budgeting"

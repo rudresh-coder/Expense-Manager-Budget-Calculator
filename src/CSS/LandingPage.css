@@ -164,6 +164,22 @@ body.dark .budgeting-description {
     margin-bottom: 0;
 }
 
+.budgeting-tooltip-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2.5rem 2.5rem; 
+  margin: 1.5rem 0;
+}
+
+@media (max-width: 700px) {
+  .budgeting-tooltip-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+  }
+}
+
 .cta-cards-row {
     width: 100%;
     display: flex;
