@@ -1,0 +1,347 @@
+[
+{
+  "_id": "687f261873b34b23424f760e",
+  "userId": "6873b6fc8cacc88cf7d3ca59",
+  "__v": 0,
+  "accounts": [
+    {
+      "id": "n821qt62it9",
+      "name": "HDFC",
+      "balance": 10000,
+      "splits": [
+        {
+          "id": "rzle3z0d0wc",
+          "name": "taxes",
+          "balance": 802,
+          "_id": "687f27435d84b5e907989fb3"
+        },
+        {
+          "id": "n0biv5r3xtg",
+          "name": "Savings",
+          "balance": 19000,
+          "_id": "687f27435d84b5e907989fb4"
+        }
+      ],
+      "transactions": [
+        {
+          "id": "7m9uhgogb2g",
+          "splitId": "n0biv5r3xtg",
+          "type": "transfer",
+          "amount": 899,
+          "description": "transfer mother fucker",
+          "date": "2025-07-20T23:34:00.000Z",
+          "source": "manual",
+          "_id": "687f3a555d84b5e90798a65e"
+        },
+        {
+          "id": "ir66d9hfse",
+          "splitId": "rzle3z0d0wc",
+          "type": "spend",
+          "amount": 99,
+          "description": "checking if source works",
+          "date": "2025-07-08T03:50:00.000Z",
+          "source": "manual",
+          "_id": "6887349ffe70ad2b00420fb9"
+        },
+        {
+          "id": "a6wlbz4m7ah",
+          "type": "add",
+          "amount": 1,
+          "description": "testing sync on tab 2",
+          "date": "2025-07-08T01:43:00.000Z",
+          "source": "manual",
+          "_id": "68871bd2fe70ad2b00420d04"
+        },
+        {
+          "id": "wcyj7n232un",
+          "splitId": "rzle3z0d0wc",
+          "type": "spend",
+          "amount": 99,
+          "description": "testing sync",
+          "date": "2025-07-08T00:35:00.000Z",
+          "source": "manual",
+          "_id": "68871badfe70ad2b00420c98"
+        },
+        {
+          "id": "u0yvlc5yau",
+          "type": "spend",
+          "amount": 1,
+          "description": "pennies",
+          "date": "2025-07-06T21:34:00.000Z",
+          "source": "manual",
+          "_id": "68867b2a511247459402f4d2"
+        },
+        {
+          "id": "wf54vfz5v3",
+          "splitId": "rzle3z0d0wc",
+          "type": "add",
+          "amount": 1,
+          "description": "bheek",
+          "date": "2025-07-06T19:31:00.000Z",
+          "source": "manual",
+          "_id": "68866d45511247459402e5f5"
+        },
+        {
+          "id": "lfpzajoont",
+          "type": "spend",
+          "amount": 500,
+          "description": "lunch and dinner",
+          "date": "2025-07-06T15:47:00.000Z",
+          "source": "manual",
+          "_id": "6884b427525d73b8d64b35e7"
+        },
+        {
+          "id": "vxvm9x3rzh",
+          "splitId": "n0biv5r3xtg",
+          "type": "transfer",
+          "amount": 99,
+          "description": "bored again indeed",
+          "date": "2025-07-05T19:31:00.000Z",
+          "source": "manual",
+          "_id": "687f31555d84b5e90798a426"
+        },
+        {
+          "id": "wkw0se3eht",
+          "type": "spend",
+          "amount": 10000,
+          "description": "credit card bills",
+          "date": "2025-07-05T05:05:00.000Z",
+          "source": "manual",
+          "_id": "687f2d275d84b5e90798a02c"
+        },
+        {
+          "id": "edx3r8y9u8m",
+          "type": "spend",
+          "amount": 10000,
+          "description": "shopping of clothes",
+          "date": "2025-07-04T12:32:00.000Z",
+          "source": "manual",
+          "_id": "687f2d275d84b5e90798a02d"
+        },
+        {
+          "id": "kzpadcybzfc",
+          "type": "spend",
+          "amount": 1500,
+          "description": "all subscriptions and data recharges",
+          "date": "2025-07-01T06:49:00.000Z",
+          "source": "manual",
+          "_id": "687f27435d84b5e907989fb5"
+        },
+        {
+          "id": "sigaxbrkjh",
+          "type": "spend",
+          "amount": 15000,
+          "description": "rent paid for this month",
+          "date": "2025-07-01T05:35:00.000Z",
+          "source": "manual",
+          "_id": "687f27435d84b5e907989fb6"
+        },
+        {
+          "id": "xgjm5k1wu3",
+          "type": "spend",
+          "amount": 3000,
+          "description": "petrol expense for this month",
+          "date": "2025-07-01T00:35:00.000Z",
+          "source": "manual",
+          "_id": "687f27435d84b5e907989fb7"
+        },
+        {
+          "id": "i9fngt8nnug",
+          "splitId": "n0biv5r3xtg",
+          "type": "spend",
+          "amount": 10000,
+          "description": "emergency",
+          "date": "2025-06-30T23:35:00.000Z",
+          "source": "manual",
+          "_id": "687f27435d84b5e907989fb8"
+        },
+        {
+          "id": "9hh1z12ptr",
+          "splitId": "rzle3z0d0wc",
+          "type": "spend",
+          "amount": 20000,
+          "description": "paid all the taxes for this month",
+          "date": "2025-06-30T20:32:00.000Z",
+          "source": "manual",
+          "_id": "687f27435d84b5e907989fb9"
+        },
+        {
+          "id": "1fdzbpq9ilb",
+          "type": "add",
+          "amount": 99999,
+          "description": "salary",
+          "date": "2025-06-30T19:30:00.000Z",
+          "source": "manual",
+          "_id": "687f27435d84b5e907989fba"
+        }
+      ],
+      "_id": "687f27435d84b5e907989fb2"
+    },
+    {
+      "id": "q99nway1n3",
+      "name": "ICICI",
+      "balance": 8600,
+      "splits": [
+        {
+          "id": "1skwwfh48gg",
+          "name": "Girlfriend",
+          "balance": 14000,
+          "_id": "687f2eca5d84b5e90798a225"
+        },
+        {
+          "id": "jx1vwehekxd",
+          "name": "transferchecking",
+          "balance": 4000,
+          "_id": "687f2eca5d84b5e90798a226"
+        },
+        {
+          "id": "bafid7ze64e",
+          "name": "text",
+          "balance": 100,
+          "_id": "6886789a511247459402ef5a"
+        }
+      ],
+      "transactions": [
+        {
+          "id": "r23uk06q83e",
+          "splitId": "jx1vwehekxd",
+          "type": "transfer",
+          "amount": 1000,
+          "description": "bored",
+          "date": "2025-07-17T19:31:00.000Z",
+          "source": "manual",
+          "_id": "687f311e5d84b5e90798a364"
+        },
+        {
+          "id": "gxzf2d7sudb",
+          "splitId": "1skwwfh48gg",
+          "type": "transfer",
+          "amount": 100,
+          "description": "transfer dude",
+          "date": "2025-07-17T06:35:00.000Z",
+          "source": "manual",
+          "_id": "687f311e5d84b5e90798a365"
+        },
+        {
+          "id": "23x6in90gnu",
+          "splitId": "1skwwfh48gg",
+          "type": "transfer",
+          "amount": 100,
+          "description": "edcw",
+          "date": "2025-07-15T00:35:00.000Z",
+          "source": "manual",
+          "_id": "687f2eca5d84b5e90798a227"
+        },
+        {
+          "id": "yeuxbhhyj7",
+          "splitId": "1skwwfh48gg",
+          "type": "transfer",
+          "amount": 100,
+          "description": "again testing transfer",
+          "date": "2025-07-14T20:32:00.000Z",
+          "source": "manual",
+          "_id": "687f2eca5d84b5e90798a228"
+        },
+        {
+          "id": "py9qwn63bc",
+          "splitId": "bafid7ze64e",
+          "type": "add",
+          "amount": 100,
+          "description": "more money",
+          "date": "2025-07-12T07:42:00.000Z",
+          "source": "manual",
+          "_id": "68867af4511247459402f305"
+        },
+        {
+          "id": "l5v242tfsj",
+          "splitId": "jx1vwehekxd",
+          "type": "spend",
+          "amount": 733,
+          "description": "dance class",
+          "date": "2025-07-12T06:34:00.000Z",
+          "source": "manual",
+          "_id": "688630335112474594e87f13"
+        },
+        {
+          "id": "ah0mkudcdi",
+          "splitId": "1skwwfh48gg",
+          "type": "spend",
+          "amount": 5000,
+          "description": "party brotha",
+          "date": "2025-07-11T17:57:00.000Z",
+          "source": "manual",
+          "_id": "688507148e2e5eed65d8d3e1"
+        },
+        {
+          "id": "iq4akjw7618",
+          "type": "spend",
+          "amount": 100,
+          "description": "tea",
+          "date": "2025-07-11T09:34:00.000Z",
+          "source": "manual",
+          "_id": "688630585112474594e91716"
+        },
+        {
+          "id": "61kp3zgucde",
+          "splitId": "1skwwfh48gg",
+          "type": "spend",
+          "amount": 1350,
+          "description": "cafe",
+          "date": "2025-07-10T12:34:00.000Z",
+          "source": "manual",
+          "_id": "6884b427525d73b8d64b35f8"
+        },
+        {
+          "id": "of5v2xnz7ij",
+          "splitId": "bafid7ze64e",
+          "type": "spend",
+          "amount": 200,
+          "description": "test it is",
+          "date": "2025-07-06T22:34:00.000Z",
+          "source": "manual",
+          "_id": "688678ab511247459402efc3"
+        },
+        {
+          "id": "b2p9fqe8af9",
+          "type": "transfer",
+          "amount": 1100,
+          "description": "trnsfer checking",
+          "date": "2025-07-06T19:31:00.000Z",
+          "source": "manual",
+          "_id": "687f2eca5d84b5e90798a229"
+        },
+        {
+          "id": "o42r06antr",
+          "splitId": "1skwwfh48gg",
+          "type": "spend",
+          "amount": 350,
+          "description": "dinner date with girlfriend",
+          "date": "2025-07-06T15:43:00.000Z",
+          "source": "manual",
+          "_id": "687f2eca5d84b5e90798a22a"
+        },
+        {
+          "id": "yfzezg25p8",
+          "type": "transfer",
+          "amount": 14567,
+          "description": "checking how the transfer works",
+          "date": "2025-07-06T14:34:00.000Z",
+          "source": "manual",
+          "_id": "687f2eca5d84b5e90798a22b"
+        },
+        {
+          "id": "7rakdhitiwc",
+          "type": "add",
+          "amount": 50000,
+          "description": "freelancing",
+          "date": "2025-07-05T23:34:00.000Z",
+          "source": "manual",
+          "_id": "687f2eca5d84b5e90798a22c"
+        }
+      ],
+      "_id": "687f2eca5d84b5e90798a224"
+    }
+  ],
+  "updatedAt": "2025-07-28T08:28:15.521Z"
+}
+]
