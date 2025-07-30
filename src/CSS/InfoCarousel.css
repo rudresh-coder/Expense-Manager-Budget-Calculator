@@ -6,11 +6,8 @@
     justify-content: center;
     gap: 1.2rem;
     margin: 2.5rem auto;
-    max-width: 1400px;
+    max-width: 1200px;
     width: 100%;
-    /* background: rgba(143, 55, 255, 0.15);
-    border: 3px solid rgba(143, 55, 255, 0.4);
-    box-shadow: 0 0px 90px rgba(143, 55, 255, 0.1); */
     border-radius: 24px;
     min-height: 520px;
     padding: 2rem 1.5rem;
@@ -25,7 +22,6 @@
     flex-direction: column;
     align-items: center;
     text-align: left;
-    
 }
 
 .carousel-arrow {

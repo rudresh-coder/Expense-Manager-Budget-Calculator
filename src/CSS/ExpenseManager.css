@@ -18,10 +18,10 @@
   border: 1.5px solid #a78bfa;
 }
 
-.expense-manager-card:hover {
+/* .expense-manager-card:hover {
   transform: scale(1.03);
   box-shadow: 0 12px 36px #a78bfa22;
-}
+} */
 
 .expense-title {
   text-align: center;

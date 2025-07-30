@@ -158,15 +158,15 @@ export default function InfoCarousel() {
   });
 
   // Autoplay timer
-  useEffect(() => {
-    if (paused) return;
+  // useEffect(() => {
+  //   if (paused) return;
     
-    const timer = setTimeout(() => {
-      next();
-    }, 5000);
+  //   const timer = setTimeout(() => {
+  //     next();
+  //   }, 5000);
     
-    return () => clearTimeout(timer);
-  }, [idx, paused, next]);
+  //   return () => clearTimeout(timer);
+  // }, [idx, paused, next]);
 
   // Progress bar animation
   useEffect(() => {

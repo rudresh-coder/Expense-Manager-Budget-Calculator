@@ -23,7 +23,7 @@ body.dark .container .box .content h2 {
 }
 
 body.dark .container {
-  background: #1d061a;
+    background: transparent;
     border-radius: 24px;
     position: relative;
     z-index: 1;

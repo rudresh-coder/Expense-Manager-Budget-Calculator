@@ -21,6 +21,7 @@ import ResetPassword from "./components/ResetPassword";
 import VerifyEmail from "./TSX/VerifyEmail";
 import { Navigate } from "react-router-dom";
 import Analytics from "./TSX/Analytics";
+import FinanceParticlesBackground from "./components/FinanceParticlesBackground";
 
 export default function App() {
   const [userProfileOpen, setUserProfileOpen] = useState(false);
@@ -81,45 +82,48 @@ export default function App() {
   }, [accounts]);
 
   return (
-    <Router>
-      <ScrollToTop />
-      <Navbar onUserProfileClick={() => setUserProfileOpen(true)} user={{ avatarUrl: user.avatarUrl }} />
-      <UserProfile
-        user={user}
-        open={userProfileOpen}
-        onClose={() => setUserProfileOpen(false)}
-      />
-      {profileError && <div className="error-message">{profileError}</div>}
-      {profileLoading ? (
-        <div className="admin-panel"><h1>Loading...</h1></div>
-      ) : (
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/signin" element={<LogIn />} />
-          <Route path="/calculator" element={<BudgetCalculator />} /> 
-          <Route path="/expensemanager" element={<ExpenseManager userId={user._id} />} />
-          <Route path="/debtmanagement" element={<DebtManagement />} />
-          <Route path="/smartinvesting" element={<SmartInvesting />} />
-          <Route path="/behavioralmindset" element={<BehavioralMindset />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route
-            path="/analytics"
-            element={
-              user.isPremium
-                ? <Analytics userId={user._id} />
-                : <Navigate to="/pricing" />
-            }
-          />
-        </Routes>
-      )}
-      <Footer />
-    </Router>
+    <>
+      <FinanceParticlesBackground />
+      <Router>
+        <ScrollToTop />
+        <Navbar onUserProfileClick={() => setUserProfileOpen(true)} user={{ avatarUrl: user.avatarUrl }} />
+        <UserProfile
+          user={user}
+          open={userProfileOpen}
+          onClose={() => setUserProfileOpen(false)}
+        />
+        {profileError && <div className="error-message">{profileError}</div>}
+        {profileLoading ? (
+          <div className="admin-panel"><h1>Loading...</h1></div>
+        ) : (
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/signin" element={<LogIn />} />
+            <Route path="/calculator" element={<BudgetCalculator />} /> 
+            <Route path="/expensemanager" element={<ExpenseManager userId={user._id} />} />
+            <Route path="/debtmanagement" element={<DebtManagement />} />
+            <Route path="/smartinvesting" element={<SmartInvesting />} />
+            <Route path="/behavioralmindset" element={<BehavioralMindset />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route
+              path="/analytics"
+              element={
+                user.isPremium
+                  ? <Analytics userId={user._id} />
+                  : <Navigate to="/pricing" />
+              }
+            />
+          </Routes>
+        )}
+        <Footer />
+      </Router>
+    </>
   );
 }
