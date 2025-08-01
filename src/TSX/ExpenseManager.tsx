@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import "../CSS/ExpenseManager.css";
 import RevealOnScroll from "./RevealOnScroll";
-import bankIcon from "../assets/bank.png";
 import { io } from "socket.io-client";
+import ReceiptScanner from "../components/ReceiptScanner";
 
 type Split = {
   id: string;
@@ -16,8 +16,6 @@ type Account = {
   balance: number;
   splits: Split[];
   transactions?: Transaction[];
-  isBankLinked?: boolean; 
-  bankLinkPaid?: boolean; 
 };
 
 type Transaction = {
@@ -28,9 +26,6 @@ type Transaction = {
   amount: number;
   description: string;
   date: string;
-  source?: "manual" | "bank";
-  bankName?: string;
-  // timestamp?: number; 
 };
 
 type ExpenseManagerProps = {
@@ -72,7 +67,6 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   const [splitNameError, setSplitNameError] = useState("");
   const explanationRef = React.useRef<HTMLDivElement>(null);
   const [sortType, setSortType] = useState<"date-asc" | "date-desc" | "input-asc" | "input-desc">("date-desc");
-  const [filterSource, setFilterSource] = useState<"all" | "manual" | "bank">("all");
   const [page, setPage] = useState(1);
   const pageSize = 25;
 
@@ -82,7 +76,13 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   const isTrialActive = trialExpiresAt && Date.now() < new Date(trialExpiresAt).getTime();
   const hasPremium = isPremium || isTrialActive;
   const [error, setError] = useState<string | null>(null);
-  // Removed unused isLoading state
+  type ScannedData = {
+    vendor: string;
+    date: string;
+    total: number;
+  } | null;
+
+  const [scannedData, setScannedData] = useState<ScannedData>(null);
 
   async function saveAccounts(accounts: Account[]) {
     try {
@@ -120,7 +120,6 @@ useEffect(() => {
 }, []);
 
   useEffect(() => {
-    // Removed isLoading logic
     setError(null);
     fetch("http://localhost:5000/api/expense", {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
@@ -150,7 +149,7 @@ useEffect(() => {
         } else {
           setAccounts([]);
           setActiveAccountId("");
-          setError("No account data found. Please add a bank account.");
+          setError("No account data found. Please add an account.");
         }
       })
       .catch(err => {
@@ -198,7 +197,6 @@ useEffect(() => {
     const socket = io("http://localhost:5000", { withCredentials: true });
     if (userId) socket.emit("join", userId);
 
-    // Define the handler as a named function so it can be removed
     function handleExpenseDataUpdated(newData: { accounts: Account[]; updatedAt: string }) {
       try {
         if (
@@ -226,7 +224,7 @@ useEffect(() => {
     socket.on("expenseDataUpdated", handleExpenseDataUpdated);
 
     return () => {
-      socket.off("expenseDataUpdated", handleExpenseDataUpdated); // <-- Remove listener
+      socket.off("expenseDataUpdated", handleExpenseDataUpdated);
       socket.disconnect();
     };
   }, [userId, accountsUpdatedAt]);
@@ -283,7 +281,6 @@ useEffect(() => {
   };
    const handleSplitNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Only allow letters (no spaces, numbers, or symbols)
     if (/^[A-Za-z]*$/.test(value)) {
       setNewSplitName(value);
       setSplitNameError("");
@@ -309,20 +306,16 @@ useEffect(() => {
       setError("Description is required.");
       return;
     }
-    // ...other validations
     setError(null);
-    // ...proceed with transaction logic
     if (!activeAccountId) return;
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) return;
     let date = form.date;
     if (!date) {
-      // No date selected, use now
       date = new Date().toISOString();
     } else if (!date.includes("T") || date.endsWith("T")) {
-      // Date selected but no time, add current time
       const today = new Date();
-      const time = today.toTimeString().slice(0,5); // "HH:MM"
+      const time = today.toTimeString().slice(0,5);
       date = date.split("T")[0] + "T" + time;
     }
 
@@ -330,13 +323,10 @@ useEffect(() => {
     if (!acc) return;
     let splits = acc.splits;
     if (form.type === "spend" && form.splitId) {
-      // Spend from split
       splits = updateSplitBalance(acc.splits, form.splitId, amount, "spend");
     } else if (form.type === "add" && form.splitId) {
-      // Add to split
       splits = updateSplitBalance(acc.splits, form.splitId, amount, "add");
     } else if (form.type === "transfer") {
-      // Transfer between splits
       splits = transferBetweenSplits(acc.splits, form.fromSplitId, form.toSplitId, amount);
     }
     if (form.type === "spend") {
@@ -423,11 +413,6 @@ useEffect(() => {
   };
   
   const exportCSV = () => {
-    if (!hasPremium) {
-      alert("CSV export is a premium feature. Please upgrade to access this functionality.");
-      return;
-    }
-  
     if (!activeAccount || !activeAccount.transactions?.length) {
       alert("No transactions to export for the selected account.");
       return;
@@ -443,7 +428,7 @@ useEffect(() => {
           tx.type.charAt(0).toUpperCase() + tx.type.slice(1),
           tx.amount.toFixed(2),
           tx.description,
-          tx.source || "manual"
+          "manual"
         ])
     ];
   
@@ -461,12 +446,9 @@ useEffect(() => {
     if (!activeAccount?.transactions) return [];
     return activeAccount.transactions.filter(
       tx =>
-        tx.type !== "transfer" &&
-        (filterSource === "all" ||
-          (filterSource === "manual" && tx.source !== "bank") ||
-          (filterSource === "bank" && tx.source === "bank"))
+        tx.type !== "transfer" 
     );
-  }, [activeAccount?.transactions, filterSource]);
+  }, [activeAccount?.transactions]);
 
   const sortedTransactions = useMemo(() => {
     const txs = [...filteredTransactions];
@@ -477,44 +459,12 @@ useEffect(() => {
     } else if (sortType === "input-desc") {
       txs.reverse();
     }
-    // input-asc is default order
     return txs;
   }, [filteredTransactions, sortType]);
 
   const paginatedTransactions = useMemo(() => {
     return sortedTransactions.slice((page - 1) * pageSize, page * pageSize);
   }, [sortedTransactions, page, pageSize]);
-
-  const goLinkBank = () => {
-    // Logic to connect bank account
-    console.log("Connecting bank account...");
-  };
-
-  async function handlePayExtraBank(): Promise<void> {
-    try {
-      const res = await fetch("http://localhost:5000/api/user/pay-extra-bank", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert("Payment successful! You can now link another bank account.");
-        const updatedAccounts = [...accounts];
-        const activeAccount = updatedAccounts.find(acc => acc.id === activeAccountId);
-        if (activeAccount) {
-          activeAccount.bankLinkPaid = true;
-          setAccounts(updatedAccounts);
-        }
-      } else {
-        alert(data.error || "Payment failed. Please try again.");
-      }
-    } catch {
-      alert("Network error. Please try again later.");
-    }
-  }
 
   return (
     <div className="expense-manager-bg">
@@ -562,7 +512,6 @@ useEffect(() => {
         )}
         {hasPremium ? (
           <div className="premium-features">
-            {/* Show premium features */}
           </div>
         ) : (
           <div className="upgrade-banner">
@@ -579,54 +528,32 @@ useEffect(() => {
             Upgrade to Premium
           </button>
         )}
-        {/* Add/select bank */}
         <div className="expense-row">
-          <input
-            className="expense-input"
-            type="text"
-            placeholder="Add new bank"
-            value={newAccountName}
-            onChange={(e) => setNewAccountName(e.target.value)}
-          />
-          <button
-            className="expense-btn expense-btn-gradient"
-            onClick={handleAddAccount}
-          >
-            Add Bank
-          </button>
-          <select
-            className="expense-input"
-            value={activeAccountId}
-            onChange={(e) => setActiveAccountId(e.target.value)}
-          >
-            <option value="">Select Bank</option>
-            {accounts.map(acc => (
-              <option key={acc.id} value={acc.id}>{acc.name}</option>
-            ))}
-          </select>
+        <input
+          className="expense-input"
+          type="text"
+          placeholder="Add new account"
+          value={newAccountName}
+          onChange={(e) => setNewAccountName(e.target.value)}
+        />
+        <button
+          className="expense-btn expense-btn-gradient"
+          onClick={handleAddAccount}
+        >
+          Add Account
+        </button>
+        <select
+          className="expense-input"
+          value={activeAccountId}
+          onChange={(e) => setActiveAccountId(e.target.value)}
+        >
+          <option value="">Select Account</option>
+          {accounts.map(acc => (
+            <option key={acc.id} value={acc.id}>{acc.name}</option>
+          ))}
+        </select>
         </div>
 
-        {hasPremium && (
-          <>
-            {activeAccount && activeAccount.isBankLinked ? (
-              <span className="bank-linked-badge">Bank Linked</span>
-            ) : (
-              <button className="expense-btn" onClick={goLinkBank}>
-                Connect Bank Account
-              </button>
-            )}
-            {activeAccount && activeAccount.bankLinkPaid === false && (
-              <button className="expense-btn" onClick={handlePayExtraBank}>
-                Pay ₹35 to Link Another Account
-              </button>
-            )}
-          </>
-        )}
-        {!hasPremium && (
-          <span className="manual-account-note">Manual accounts only. Upgrade for bank linking.</span>
-        )}
-
-        {/* Splits */}
         {activeAccount && (
           <div className="expense-section">
             <h3 className="expense-subtitle">Splits (Divided Money)</h3>
@@ -698,7 +625,20 @@ useEffect(() => {
           </div>
         )}
 
-        {/* Transaction form */}
+        <ReceiptScanner onExtract={data => setScannedData({
+          vendor: data.vendor,
+          date: data.date,
+          total: parseFloat(data.total)
+        })} />
+
+        {scannedData && (
+          <form>
+            <input type="text" value={scannedData.vendor} placeholder="Vendor" />
+            <input type="text" value={scannedData.date} placeholder="Date" />
+            <input type="text" value={scannedData.total} placeholder="Total" />
+          </form>
+        )}
+
         <form onSubmit={handleSubmit} className="expense-form">
           <div className="expense-form-row">
             <select
@@ -827,141 +767,105 @@ useEffect(() => {
         </form>
       </div>
       <div className="expense-btn-group" style={{ display: "flex", gap: "1rem", justifyContent: "center", margin: "1.2rem 0" }}>
-          {!hasPremium && (
-            <button className="expense-btn" disabled title="Premium feature.">
-              Connect Bank (Premium)
-            </button>
-          )}
-          {hasPremium && (
-            <button className="expense-btn" onClick={goLinkBank}>
-              Connect Bank Account
-            </button>
-          )}
-          {hasPremium ? (
-          <button className="expense-btn" onClick={exportCSV}>Export CSV</button>
-        ) : (
-          <button className="expense-btn" disabled title="Premium feature">
-            Export CSV (Premium)
-          </button>
-        )}
+        <button className="expense-btn" onClick={exportCSV}>Export CSV</button>
         </div>
-      {/* Transactions Section - outside the card */}
-        <div className="expense-transactions-bg">
-          <div className="expense-transactions-container">
-            <div className="expense-transactions-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.2rem" }}>
-              <h2 className="expense-transactions-title">Transactions</h2>
-              <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-                <select
-                  className="expense-input"
-                  style={{ width: "auto", minWidth: 140 }}
-                  value={sortType}
-                  onChange={e => setSortType(e.target.value as typeof sortType)}
-                >
-                  <option value="date-desc">Newest First (Date/Time)</option>
-                  <option value="date-asc">Oldest First (Date/Time)</option>
-                  <option value="input-desc">Latest Input First</option>
-                  <option value="input-asc">Old Input First</option>
-                </select>
-                <select
-                  className="expense-input"
-                  style={{ width: "auto", minWidth: 140 }}
-                  value={filterSource}
-                  onChange={e => setFilterSource(e.target.value as typeof filterSource)}
-                >
-                  <option value="all">All</option>
-                  <option value="manual">Manual Only</option>
-                  <option value="bank">Bank Only</option>
-                </select>
-              </div>
-            </div>
-            <div className="expense-table-wrapper">
-              <table className="expense-table">
-                <thead>
-                  <tr>
-                    <th>Date & Time</th>
-                    <th>Split</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Description</th>
-                    <th>Source</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeAccount
-                    ? paginatedTransactions.map((tx) => {
-                        const split = activeAccount.splits.find((s) => s.id === tx.splitId);
-                        return (
-                          <tr key={tx.id} className={tx.source === "bank" ? "bank-sync-row" : "manual-row"}>
-                            <td>
-                              {(() => {
-                                const d = new Date(tx.date);
-                                const day = String(d.getDate()).padStart(2, "0");
-                                const month = String(d.getMonth() + 1).padStart(2, "0");
-                                const year = d.getFullYear();
-                                const hours = String(d.getHours()).padStart(2, "0");
-                                const minutes = String(d.getMinutes()).padStart(2, "0");
-                                return `${day}/${month}/${year}, ${hours}:${minutes}`;
-                              })()}
-                            </td>
-                            <td>{split ? split.name : "Main"}</td>
-                            <td>
-                              <span
-                                className={
-                                  tx.type === "add"
-                                    ? "expense-type-add"
-                                    : tx.type === "spend"
-                                    ? "expense-type-spend"
-                                    : "expense-type-transfer"
-                                }
-                              >
-                                {tx.type === "add" ? "Add" : tx.type === "spend" ? "Spend" : "Transfer"}
-                              </span>
-                            </td>
-                            <td>
-                              {tx.type === "add" ? "+" : "-"}₹
-                              {tx.amount.toFixed(2)}
-                            </td>
-                            <td>{tx.description}</td>
-                            <td>
-                              {tx.source === "bank" ? (
-                                <span title={tx.bankName ? `Imported from ${tx.bankName}` : "Bank Sync"} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                  <img src={bankIcon} alt="Bank" style={{ width: 20, height: 20, marginRight: 4 }} />
-                                  Bank‑Sync
-                                </span>
-                              ) : (
-                                "Manual"
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    : (
-                      <tr  key="no-account">
-                        <td colSpan={6} style={{ textAlign: "center", color: "#888" }}>
-                          Please add and select a bank account to view transactions.
-                        </td>
-                      </tr>
-                    )
-                  }
-                </tbody>
-              </table>
-            </div>
-            <div className="pagination-controls">
-              <button disabled={page === 1} onClick={() => setPage(1)}>First</button>
-              <button disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</button>
-              <span>
-                Page {page} of {Math.max(1, Math.ceil(sortedTransactions.length / pageSize))}
-              </span>
-              <button disabled={page * pageSize >= sortedTransactions.length} onClick={() => setPage(page + 1)}>Next</button>
-              <button
-                disabled={page === Math.ceil(sortedTransactions.length / pageSize) || sortedTransactions.length === 0}
-                onClick={() => setPage(Math.ceil(sortedTransactions.length / pageSize))}
+      <div className="expense-transactions-bg">
+        <div className="expense-transactions-container">
+          <div className="expense-transactions-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.2rem" }}>
+            <h2 className="expense-transactions-title">Transactions</h2>
+            <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+              <select
+                className="expense-input"
+                style={{ width: "auto", minWidth: 140 }}
+                value={sortType}
+                onChange={e => setSortType(e.target.value as typeof sortType)}
               >
-                Last
-              </button>
+                <option value="date-desc">Newest First (Date/Time)</option>
+                <option value="date-asc">Oldest First (Date/Time)</option>
+                <option value="input-desc">Latest Input First</option>
+                <option value="input-asc">Old Input First</option>
+              </select>
             </div>
           </div>
+          <div className="expense-table-wrapper">
+            <table className="expense-table">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Split</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Description</th>
+                  <th>Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeAccount
+                  ? paginatedTransactions.map((tx) => {
+                      const split = activeAccount.splits.find((s) => s.id === tx.splitId);
+                      return (
+                        <tr key={tx.id} className="manual-row">
+                          <td>
+                            {(() => {
+                              const d = new Date(tx.date);
+                              const day = String(d.getDate()).padStart(2, "0");
+                              const month = String(d.getMonth() + 1).padStart(2, "0");
+                              const year = d.getFullYear();
+                              const hours = String(d.getHours()).padStart(2, "0");
+                              const minutes = String(d.getMinutes()).padStart(2, "0");
+                              return `${day}/${month}/${year}, ${hours}:${minutes}`;
+                            })()}
+                          </td>
+                          <td>{split ? split.name : "Main"}</td>
+                          <td>
+                            <span
+                              className={
+                                tx.type === "add"
+                                  ? "expense-type-add"
+                                  : tx.type === "spend"
+                                  ? "expense-type-spend"
+                                  : "expense-type-transfer"
+                              }
+                            >
+                              {tx.type === "add" ? "Add" : tx.type === "spend" ? "Spend" : "Transfer"}
+                            </span>
+                          </td>
+                          <td>
+                            {tx.type === "add" ? "+" : "-"}₹
+                            {tx.amount.toFixed(2)}
+                          </td>
+                          <td>{tx.description}</td>
+                          <td>Manual</td>
+                        </tr>
+                      );
+                    })
+                  : (
+                    <tr  key="no-account">
+                      <td colSpan={6} style={{ textAlign: "center", color: "#888" }}>
+                        Please add and select a bank account to view transactions.
+                      </td>
+                    </tr>
+                  )
+                }
+              </tbody>
+            </table>
+          </div>
+          <div className="pagination-controls">
+            <button disabled={page === 1} onClick={() => setPage(1)}>First</button>
+            <button disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</button>
+            <span>
+              Page {page} of {Math.max(1, Math.ceil(sortedTransactions.length / pageSize))}
+            </span>
+            <button disabled={page * pageSize >= sortedTransactions.length} onClick={() => setPage(page + 1)}>Next</button>
+            <button
+              disabled={page === Math.ceil(sortedTransactions.length / pageSize) || sortedTransactions.length === 0}
+              onClick={() => setPage(Math.ceil(sortedTransactions.length / pageSize))}
+            >
+              Last
+            </button>
+          </div>
         </div>
+      </div>
       
       <div className="expense-manager-bg">
         <RevealOnScroll
@@ -981,12 +885,11 @@ useEffect(() => {
           style={{ marginTop: "-1.5rem" }}
         >
           <RevealOnScroll as="p">
-            <b>Step 1:</b> Add your bank or account using the "Add Bank" field.
+            <b>Step 1:</b> Add your account using the "Add Account" field.
             Each account tracks its own balance and splits.
           </RevealOnScroll>
           <RevealOnScroll as="p">
-            <b>Step 2:</b> Select your active bank from the dropdown to manage
-            its money.
+            <b>Step 2:</b> Select your active account from the dropdown to manage its money.
           </RevealOnScroll>
           <RevealOnScroll as="p">
             <b>Step 3:</b> Use "Splits" to divide your money for specific

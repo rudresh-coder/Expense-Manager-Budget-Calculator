@@ -7,7 +7,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import helmet from "helmet";
 import cron from "node-cron";
-import bankRoutes from './routes/bank';
 import adminRoutes from "./routes/admin";
 import rateLimit from "express-rate-limit";
 import winston from "winston";
@@ -453,78 +452,6 @@ app.post("/api/user/upgrade", auth, async (req: express.Request, res: express.Re
     res.json({ message: "Upgraded to premium" });
 });
 
-// Bank linking
-app.post("/api/bank/link", auth, async (req, res) => {
-  try {
-    if (!req.user?.id) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
-
-    const { accountId, bankName, accessToken } = req.body;
-
-    if (!accountId || !bankName || (user.isPremium && !accessToken)) {
-      res.status(400).json({ error: "Missing required bank account information." });
-      return;
-    }
-
-    if (user.bankLinks.some(link => link.accountId === accountId)) {
-      res.status(400).json({ error: "This bank account is already linked." });
-      return;
-    }
-
-    const linkedCount = user.bankLinks.filter(link => link.accessToken).length;
-
-    // Premium: 1 free bank link, others require payment
-    if (user.isPremium) {
-      const paidLinks = user.bankLinks.filter(link => link.paid).length;
-      if (linkedCount >= 1 + paidLinks) {
-        res.status(403).json({
-          error: "You have reached your free bank account link limit. Pay ₹35 to link another account."
-        });
-        return;
-      }
-      user.bankLinks.push({
-        accountId,
-        bankName,
-        accessToken,
-        paid: linkedCount >= 1,
-        linkedAt: new Date(),
-      });
-      await user.save();
-      res.json({ message: "Bank linked successfully", bankLinks: user.bankLinks });
-    } else {
-      // Free users: allow manual accounts only (no accessToken)
-      user.bankLinks.push({
-        accountId,
-        bankName,
-        accessToken: "", // No bank integration for free users
-        paid: false,
-        linkedAt: new Date(),
-      });
-      await user.save();
-      res.json({ message: "Manual account added" });
-    }
-  } catch (err) {
-    res.status(500).json({ error: "Failed to link bank account" });
-  }
-});
-
-// app.post("/api/bank/pay-extra", auth, async (req, res) => {
-//   // Payment integration logic here (Razorpay/Stripe)
-//   // On success:
-//   const user = await User.findById(req.user.id);
-//   // Mark the next bank link as paid
-//   user.bankLinks[user.bankLinks.length - 1].paid = true;
-//   await user.save();
-//   res.json({ message: "Extra bank account unlocked" });
-// });
-
 // Get user profile
 app.get("/api/user/profile", auth, async (req, res) => {
   try {
@@ -554,7 +481,6 @@ app.get("/api/user/profile", auth, async (req, res) => {
   }
 });
 
-app.use("/api/bank", auth, bankRoutes);
 app.use("/api/admin", auth, adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/auth", generalLimiter);
