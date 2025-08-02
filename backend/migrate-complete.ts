@@ -13,7 +13,6 @@ interface TransactionDocument {
     id: string;
     accountId?: string;
     _id?: mongoose.Types.ObjectId;
-    source?: string;
     [key: string]: any;
 }
 
@@ -157,11 +156,6 @@ async function migrate() {
                             txChanged = true;
                         }
 
-                        // Ensure transaction has source field
-                        if (!tx.source) {
-                            tx.source = "manual";
-                            txChanged = true;
-                        }
 
                         if (txChanged) {
                             changed = true;

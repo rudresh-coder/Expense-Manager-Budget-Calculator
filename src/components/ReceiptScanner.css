@@ -1,0 +1,205 @@
+.receipt-ocr-textarea {
+    width: 100%;
+    max-width: 100vw;
+    min-width: 0;
+    min-height: 80px;
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 2px solid #bdbdbd;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: none;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+    box-shadow: 0 2px 8px rgba(124,77,255,0.08);
+    background: #fafafa;
+    color: #222;
+    overflow: hidden;
+    box-sizing: border-box;
+    line-height: 1.5;
+}
+
+body.dark .receipt-ocr-textarea {
+    background: #25102a;
+    color: #f3f3f3;
+    border: 2px solid #a78bfa;
+    box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
+}
+
+.receipt-upload-section {
+  background: var(--receipt-bg, #fff);
+  border-radius: 1.2rem;
+  box-shadow: 0 4px 24px #a78bfa22;
+  padding: 1.5rem 1.5rem 1.2rem 1.5rem;
+  margin-bottom: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 2px solid #a78bfa;
+  transition: background 0.2s, border 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.receipt-upload-label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 1.08rem;
+  color: #7c4dff;
+  margin-bottom: 0.7rem;
+  cursor: pointer;
+  flex-wrap: wrap;
+  word-break: break-word;
+}
+
+.receipt-upload-input {
+  display: block;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.receipt-preview-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+  width: 100%;
+}
+
+.receipt-preview-img {
+  max-width: 90vw;
+  max-height: 40vh;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #a78bfa22;
+  border: 1.5px solid #a78bfa;
+  object-fit: contain;
+}
+
+.receipt-scan-btn {
+  display: block;
+  width: 100%;
+  background: linear-gradient(90deg, #a78bfa 0%, #7c4dff 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.08rem;
+  border: none;
+  border-radius: 8px;
+  padding: 0.9rem 0;
+  margin: 1.2rem 0 0.7rem 0;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  box-sizing: border-box;
+  min-height: 48px;
+}
+
+.receipt-scan-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.receipt-error {
+  color: #e53935;
+  margin-bottom: 0.7rem;
+  text-align: center;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.receipt-ocr-label {
+  display: block;
+  font-weight: 500;
+  margin-top: 1.2rem;
+  color: #7c4dff;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+@media (max-width: 900px) {
+  .receipt-upload-section {
+    max-width: 98vw;
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+    border-radius: 1rem;
+  }
+  .receipt-preview-img {
+    max-width: 98vw;
+    max-height: 32vh;
+  }
+}
+
+@media (max-width: 700px) {
+  .receipt-ocr-textarea {
+    font-size: 0.97rem;
+    padding: 8px 8px;
+    min-height: 60px;
+  }
+  .receipt-upload-section {
+    max-width: 100vw;
+    padding: 1rem 0.3rem 0.7rem 0.3rem;
+    border-radius: 0.7rem;
+  }
+  .receipt-scan-btn {
+    font-size: 1rem;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 500px) {
+  .receipt-ocr-textarea {
+    font-size: 0.92rem;
+    padding: 7px 6px;
+    min-height: 48px;
+  }
+  .receipt-upload-label {
+    font-size: 0.98rem;
+  }
+  .receipt-scan-btn {
+    font-size: 0.98rem;
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 370px) {
+  .receipt-ocr-textarea {
+    font-size: 0.88rem;
+    padding: 5px 2px;
+    min-height: 36px;
+  }
+  .receipt-upload-label {
+    font-size: 0.92rem;
+  }
+  .receipt-scan-btn {
+    font-size: 0.92rem;
+    min-height: 36px;
+  }
+}
+
+/* Dark mode */
+body.dark .receipt-upload-section {
+  background: #25102a;
+  border: 2px solid #a78bfa;
+  box-shadow: 0 4px 24px #7c4dff22;
+}
+
+body.dark .receipt-upload-label,
+body.dark .receipt-ocr-label {
+  color: #bfa3e6;
+}
+
+body.dark .receipt-preview-img {
+  border: 1.5px solid #bfa3e6;
+}
+
+body.dark .receipt-scan-btn {
+  background: linear-gradient(90deg, #a78bfa 0%, #8f37ff 100%);
+  color: #1d061a;
+}
+
+body.dark .receipt-ocr-textarea {
+  background: #25102a;
+  color: #f3f3f3;
+  border: 2px solid #a78bfa;
+  box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
+}

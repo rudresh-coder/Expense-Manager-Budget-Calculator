@@ -79,7 +79,10 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   type ScannedData = {
     vendor: string;
     date: string;
+    time?: string;
     total: number;
+    items?: string[];
+    raw?: string;
   } | null;
 
   const [scannedData, setScannedData] = useState<ScannedData>(null);
@@ -390,27 +393,6 @@ useEffect(() => {
       setError("Failed to save transaction. Please try again.");
     }
   }
-  const handleUpgrade = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/user/upgrade", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json"
-        }
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert("Upgraded to premium!");
-        localStorage.setItem("isPremium", "true");
-        setIsPremium(true);
-      } else {
-        alert(data.error || "Upgrade failed.");
-      }
-    } catch {
-      alert("Network error. Please try again.");
-    }
-  };
   
   const exportCSV = () => {
     if (!activeAccount || !activeAccount.transactions?.length) {
@@ -419,7 +401,7 @@ useEffect(() => {
     }
   
     const rows = [
-      ["Date", "Split", "Type", "Amount", "Description", "Source"],
+      ["Date", "Split", "Type", "Amount", "Description"],
       ...activeAccount.transactions
         .filter(tx => tx.type !== "transfer")
         .map(tx => [
@@ -466,6 +448,26 @@ useEffect(() => {
     return sortedTransactions.slice((page - 1) * pageSize, page * pageSize);
   }, [sortedTransactions, page, pageSize]);
 
+  useEffect(() => {
+    if (scannedData) {
+      let time = scannedData.time || "00:00";
+      const timeMatch = time.match(/^(\d{1,2}):(\d{2})(?::\d{2})?/);
+      if (timeMatch) {
+        time = `${timeMatch[1].padStart(2, "0")}:${timeMatch[2]}`;
+      } else if (/^\d{1,2}\.\d{2}/.test(time)) {
+        const parts = time.split(".");
+        time = `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`;
+      }
+      setForm(form => ({
+        ...form,
+        amount: scannedData.total && scannedData.total > 0 ? scannedData.total.toString() : "",
+        date: scannedData.date
+          ? scannedData.date + "T" + time
+          : form.date,
+      }));
+    }
+  }, [scannedData]);
+
   return (
     <div className="expense-manager-bg">
       <div
@@ -491,42 +493,9 @@ useEffect(() => {
           <div className="error-message" style={{ color: "#e53935", margin: "1rem 0", textAlign: "center" }}>
             {error}
             <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
-              <button
-                className="expense-btn"
-                onClick={() => window.location.reload()}
-                style={{ width: "50%", marginLeft: 0 }}
-              >
-                Retry
-              </button>
-              {!hasPremium && (
-                <button
-                  className="expense-btn"
-                  onClick={handleUpgrade}
-                  style={{ width: "50%" }}
-                >
-                  Upgrade to Premium
-                </button>
-              )}
+
             </div>
           </div>
-        )}
-        {hasPremium ? (
-          <div className="premium-features">
-          </div>
-        ) : (
-          <div className="upgrade-banner">
-            <b>Upgrade to Premium</b> for unlimited history, cross-device sync, and permanent backup!
-          </div>
-        )}
-        {isTrialActive && (
-          <div className="upgrade-banner">
-            <b>Premium Trial:</b> You have free premium access until {new Date(trialExpiresAt).toLocaleDateString()}!
-          </div>
-        )}
-        {!hasPremium && (
-          <button className="expense-btn" onClick={handleUpgrade}>
-            Upgrade to Premium
-          </button>
         )}
         <div className="expense-row">
         <input
@@ -628,16 +597,13 @@ useEffect(() => {
         <ReceiptScanner onExtract={data => setScannedData({
           vendor: data.vendor,
           date: data.date,
-          total: parseFloat(data.total)
+          time: data.time,
+          total: typeof data.total === "number" && data.total > 0
+            ? data.total
+            : (typeof data.grandTotal === "number" && data.grandTotal > 0
+              ? data.grandTotal
+              : 0)
         })} />
-
-        {scannedData && (
-          <form>
-            <input type="text" value={scannedData.vendor} placeholder="Vendor" />
-            <input type="text" value={scannedData.date} placeholder="Date" />
-            <input type="text" value={scannedData.total} placeholder="Total" />
-          </form>
-        )}
 
         <form onSubmit={handleSubmit} className="expense-form">
           <div className="expense-form-row">
@@ -796,7 +762,6 @@ useEffect(() => {
                   <th>Type</th>
                   <th>Amount</th>
                   <th>Description</th>
-                  <th>Source</th>
                 </tr>
               </thead>
               <tbody>
@@ -834,8 +799,7 @@ useEffect(() => {
                             {tx.type === "add" ? "+" : "-"}₹
                             {tx.amount.toFixed(2)}
                           </td>
-                          <td>{tx.description}</td>
-                          <td>Manual</td>
+                          <td className="expense-description-cell">{tx.description}</td>
                         </tr>
                       );
                     })

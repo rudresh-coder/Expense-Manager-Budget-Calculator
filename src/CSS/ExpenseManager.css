@@ -201,6 +201,19 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
+.expense-table td.expense-description-cell {
+  white-space: pre-line; 
+  word-break: break-word;  
+  max-width: 220px;       
+  text-align: left;
+  vertical-align: top;
+}
+
+.expense-table th,
+.expense-table td {
+  white-space: nowrap;
+}
+
 .expense-table tr.bank-sync-row {
   background: #f5f5fa;
 }
@@ -314,6 +327,10 @@
   .pagination-controls span {
     margin: 0.5em 0;
     font-size: 1rem;
+  }
+  .expense-table td.expense-description-cell {
+    max-width: 120px;
+    font-size: 0.95rem;
   }
 }
 
