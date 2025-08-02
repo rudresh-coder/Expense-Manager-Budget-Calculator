@@ -80,11 +80,11 @@ body.dark .receipt-ocr-textarea {
 
 .receipt-scan-btn {
   display: block;
-  width: 100%;
+  width: 50%;
   background: linear-gradient(90deg, #a78bfa 0%, #7c4dff 100%);
   color: #fff;
   font-weight: 700;
-  font-size: 1.08rem;
+  font-size: 1.1rem;
   border: none;
   border-radius: 8px;
   padding: 0.9rem 0;
@@ -98,6 +98,28 @@ body.dark .receipt-ocr-textarea {
 .receipt-scan-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.receipt-clear-btn {
+  display: block;
+  width: 50%;
+  background: linear-gradient(90deg, #a78bfa 0%, #7c4dff 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  padding: 0.9rem 0;
+  margin: 1.2rem 0 0.7rem 0;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  box-sizing: border-box;
+  min-height: 48px;
+}
+
+.receipt-clear-btn:hover {
+  background: #f7f4ff;
+  color: #a78bfa;
 }
 
 .receipt-error {
@@ -202,4 +224,15 @@ body.dark .receipt-ocr-textarea {
   color: #f3f3f3;
   border: 2px solid #a78bfa;
   box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
+}
+
+body.dark .receipt-clear-btn {
+  background: linear-gradient(90deg, #a78bfa 0%, #8f37ff 100%);
+  color: #1d061a;
+  border: none;
+}
+
+body.dark .receipt-clear-btn:hover {
+  background: #1d061a;
+  color: #fff;
 }

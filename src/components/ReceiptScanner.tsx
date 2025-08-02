@@ -32,13 +32,20 @@ interface ReceiptData {
   raw:string;
 }
 
-export default function ReceiptScanner({ onExtract }: { onExtract: (data: ReceiptData) => void }) {
+export default function ReceiptScanner({
+  onExtract,
+  clear,
+}: {
+  onExtract: (data: ReceiptData) => void;
+  clear?: boolean;
+}) {
   const [image,setImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [ocrText, setOcrText] = useState("");
   const [error, setError] = useState("");
   const ocrTextRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return () => {
@@ -52,6 +59,12 @@ export default function ReceiptScanner({ onExtract }: { onExtract: (data: Receip
       ocrTextRef.current.style.height = ocrTextRef.current.scrollHeight + "px";
     }
   }, [ocrText]);
+
+  useEffect(() => {
+    if (clear) {
+      handleClear();
+    }
+  }, [clear]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -84,6 +97,16 @@ export default function ReceiptScanner({ onExtract }: { onExtract: (data: Receip
     if (ocrTextRef.current) {
       ocrTextRef.current.style.height = "auto";
       ocrTextRef.current.style.height = ocrTextRef.current.scrollHeight + "px";
+    }
+  }
+
+  function handleClear() {
+    setImage(null);
+    setPreviewUrl(null);
+    setOcrText("");
+    setError("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   }
 
@@ -141,11 +164,11 @@ export default function ReceiptScanner({ onExtract }: { onExtract: (data: Receip
 
   function extractGSTIN(lines: string[]): string {
     const gstPatterns = [
-      /GSTIN[:\s-]*([0-9A-Z]+)/i,
-      /GST\s*No[:\s-]*([0-9A-Z]+)/i,
-      /GST\s*Number[:\s-]*([0-9A-Z]+)/i,
-      /GSTIN\s*No[:\s-]*([0-9A-Z]+)/i,
-      /GST\s*Registration[:\s-]*([0-9A-Z]+)/i,
+      /GST[\s\-_]?IN[:\s-]*([0-9A-Z]+)/i,
+      /GST[\s\-_]?No[:\s-]*([0-9A-Z]+)/i,
+      /GST[\s\-_]?Number[:\s-]*([0-9A-Z]+)/i,
+      /GST[\s\-_]?IN[\s\-_]?No[:\s-]*([0-9A-Z]+)/i,
+      /GST[\s\-_]?Registration[:\s-]*([0-9A-Z]+)/i,
     ];
     for (const line of lines) {
       for (const pattern of gstPatterns) {
@@ -158,10 +181,10 @@ export default function ReceiptScanner({ onExtract }: { onExtract: (data: Receip
 
   function extractReceiptNumber(lines: string[]): string {
     const receiptPatterns = [
-      /(?:Receipt|Invoice|Bill)[\s\-#:]*([A-Za-z0-9-]+)/i,
-      /ReceiptNumber[:\s-]*([A-Za-z0-9-]+)/i,
-      /Receipt\s*ID[:\s-]*([A-Za-z0-9-]+)/i,
-      /Txn\s*ID[:\s-]*([A-Za-z0-9-]+)/i,
+      /(?:Receipt|Invoice|Bill)[\s\-_#:]*([A-Za-z0-9-]+)/i,
+      /Receipt[\s\-_]?Number[:\s-]*([A-Za-z0-9-]+)/i,
+      /Receipt[\s\-_]?ID[:\s-]*([A-Za-z0-9-]+)/i,
+      /Txn[\s\-_]?ID[:\s-]*([A-Za-z0-9-]+)/i,
     ];
     for (const line of lines) {
       for (const pattern of receiptPatterns) {
@@ -173,6 +196,7 @@ export default function ReceiptScanner({ onExtract }: { onExtract: (data: Receip
   }
 
   function extractDate(lines: string[]): string {
+    // Matches: 12/05/2024, 12-05-2024, 2024.05.12, etc.
     const dateRegex = /\b(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4}|\d{4}[/\-.]\d{1,2}[/\-.]\d{1,2})\b/;
     for (const line of lines) {
       const match = line.match(dateRegex);
@@ -286,12 +310,12 @@ export default function ReceiptScanner({ onExtract }: { onExtract: (data: Receip
 
   function extractPaymentMode(lines: string[]): string {
     const paymentPatterns = [
-      /Payment\s*Mode[:\s-]*([A-Za-z0-9\s]+)/i,
-      /Mode\s*of\s*Payment[:\s-]*([A-Za-z0-9\s]+)/i,
-      /Paid\s*By[:\s-]*([A-Za-z0-9\s]+)/i,
-      /PaymentMethod[:\s-]*([A-Za-z0-9\s]+)/i,
-      /Pay\s*Via[:\s-]*([A-Za-z0-9\s]+)/i,
-      /(Cash|Card|UPI|Net\s*Banking)/i, 
+      /Payment[\s\-_]?Mode[:\s-]*([A-Za-z0-9\s]+)/i,
+      /Mode[\s\-_]?of[\s\-_]?Payment[:\s-]*([A-Za-z0-9\s]+)/i,
+      /Paid[\s\-_]?By[:\s-]*([A-Za-z0-9\s]+)/i,
+      /Payment[\s\-_]?Method[:\s-]*([A-Za-z0-9\s]+)/i,
+      /Pay[\s\-_]?Via[:\s-]*([A-Za-z0-9\s]+)/i,
+      /(Cash|Card|UPI|Net[\s\-_]?Banking)/i,
     ];
     for (const line of lines) {
       for (const pattern of paymentPatterns) {
@@ -323,45 +347,51 @@ export default function ReceiptScanner({ onExtract }: { onExtract: (data: Receip
   }
 
   function extractSubtotal(lines: string[]): number {
-    const match = lines.find(line => /subtotal/i.test(line));
+    const match = lines.find(line => /sub[\s\-_]?total/i.test(line));
     if (match) {
-      const numMatch = match.match(/subtotal[:\s]*₹?([\d.]+)/i);
+      const numMatch = match.match(/sub[\s\-_]?total[:\s]*₹?([\d.]+)/i);
       return numMatch ? parseFloat(numMatch[1]) : 0;
     }
     return 0;
   }
 
   function extractDiscount(lines: string[]): number {
+    // Matches: Discount, Discount Amount, etc.
     const match = lines.find(line => /discount/i.test(line));
     if (match) {
-      const numMatch = match.match(/discount[:\s]*₹?([\d.]+)/i);
+      const numMatch = match.match(/discount(?:[\s\-_]?amount)?[:\s]*₹?([\d.]+)/i);
       return numMatch ? parseFloat(numMatch[1]) : 0;
     }
     return 0;
   }
 
   function extractTaxTotal(lines: string[]): number {
-    const match = lines.find(line => /total\s*tax/i.test(line));
+    // Matches: Total Tax, Total-Tax, Total_Tax, etc.
+    const match = lines.find(line => /total[\s\-_]?tax/i.test(line));
     if (match) {
-      const numMatch = match.match(/total\s*tax[:\s]*₹?([\d.]+)/i);
+      const numMatch = match.match(/total[\s\-_]?tax[:\s]*₹?([\d.]+)/i);
       return numMatch ? parseFloat(numMatch[1]) : 0;
     }
     return 0;
   }
 
   function extractTax(lines: string[], type: string): number {
-    const match = lines.find(line => new RegExp(`${type}`, "i").test(line));
+    // Matches: CGST, C-GST, C_GST, etc.
+    const match = lines.find(line => new RegExp(`${type.split('').join('[\\s\\-_]?')}`, "i").test(line));
     if (match) {
-      const numMatch = match.match(new RegExp(`${type}[:\\s]*₹?([\\d.]+)`, "i"));
+      const numMatch = match.match(new RegExp(`${type.split('').join('[\\s\\-_]?')}[:\\s]*₹?([\\d.]+)`, "i"));
       return numMatch ? parseFloat(numMatch[1]) : 0;
     }
     return 0;
   }
 
   function extractGrandTotal(lines: string[]): number {
-    const match = lines.find(line => /(grand\s*total|total\s*amount|amount\s*payable)/i.test(line));
+    // Add more variants as needed
+    const match = lines.find(line =>
+      /(grand[\s\-_]?total|total[\s\-_]?amount|amount[\s\-_]?payable|bill[\s\-_]?amount|net[\s\-_]?amount)/i.test(line)
+    );
     if (match) {
-      const numMatch = match.match(/(?:grand\s*total|total\s*amount|amount\s*payable)[:\s]*₹?([\d.]+)/i);
+      const numMatch = match.match(/(?:grand[\s\-_]?total|total[\s\-_]?amount|amount[\s\-_]?payable|bill[\s\-_]?amount|net[\s\-_]?amount)[:\s]*₹?([\d.]+)/i);
       return numMatch ? parseFloat(numMatch[1]) : 0;
     }
     return 0;
@@ -397,6 +427,7 @@ export default function ReceiptScanner({ onExtract }: { onExtract: (data: Receip
         Upload Receipt Image
       </label>
       <input
+        ref={fileInputRef}
         id="receipt-image"
         type="file"
         accept="image/*"
@@ -416,15 +447,27 @@ export default function ReceiptScanner({ onExtract }: { onExtract: (data: Receip
         </div>
       )}
 
-      <button
-        className="receipt-scan-btn"
-        onClick={handleScan}
-        disabled={!image || loading}
-        aria-label="Scan receipt for items"
-      >
-        {loading ? <span className="spinner" aria-label="Scanning..."></span> : null}
-        {loading ? "Scanning..." : "Scan Receipt"}
-      </button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+        <button
+          className="receipt-scan-btn"
+          onClick={handleScan}
+          disabled={!image || loading}
+          aria-label="Scan receipt for items"
+          style={{ flex: 1, marginRight: 8 }}
+        >
+          {loading ? <span className="spinner" aria-label="Scanning..."></span> : null}
+          {loading ? "Scanning..." : "Scan Receipt"}
+        </button>
+        <button
+          type="button"
+          onClick={handleClear}
+          aria-label="Clear receipt"
+          className="receipt-clear-btn"
+          title="Clear"
+        >
+          Clear
+        </button>
+      </div>
 
       {error && <div className="receipt-error">{error}</div>}
 

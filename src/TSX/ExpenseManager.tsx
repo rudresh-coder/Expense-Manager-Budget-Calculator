@@ -86,6 +86,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   } | null;
 
   const [scannedData, setScannedData] = useState<ScannedData>(null);
+  const [clearScanner, setClearScanner] = useState(false);
 
   async function saveAccounts(accounts: Account[]) {
     try {
@@ -386,6 +387,8 @@ useEffect(() => {
     const prevAccounts = accounts; 
     setAccounts(newAccounts);
     setForm({ splitId: "", type: "add", amount: "", description: "", date: "", fromSplitId: "", toSplitId: "" });
+    setClearScanner(true);
+    setTimeout(() => setClearScanner(false), 100);
     try {
       await saveAccounts(newAccounts);
     } catch {
@@ -465,6 +468,7 @@ useEffect(() => {
           ? scannedData.date + "T" + time
           : form.date,
       }));
+      setScannedData(null);
     }
   }, [scannedData]);
 
@@ -594,16 +598,20 @@ useEffect(() => {
           </div>
         )}
 
-        <ReceiptScanner onExtract={data => setScannedData({
-          vendor: data.vendor,
-          date: data.date,
-          time: data.time,
-          total: typeof data.total === "number" && data.total > 0
-            ? data.total
-            : (typeof data.grandTotal === "number" && data.grandTotal > 0
-              ? data.grandTotal
-              : 0)
-        })} />
+        <ReceiptScanner
+          onExtract={data => setScannedData({
+            vendor: data.vendor,
+            date: data.date,
+            time: data.time,
+            total:
+              (typeof data.grandTotal === "number" && data.grandTotal > 0 && data.grandTotal) ||
+              (typeof data.total === "number" && data.total > 0 && data.total) ||
+              (typeof data.subtotal === "number" && data.subtotal > 0 && data.subtotal) ||
+              (typeof data.taxTotal === "number" && data.taxTotal > 0 && data.taxTotal) ||
+              0
+          })}
+          clear={clearScanner}
+        />
 
         <form onSubmit={handleSubmit} className="expense-form">
           <div className="expense-form-row">
