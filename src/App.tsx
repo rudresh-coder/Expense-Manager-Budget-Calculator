@@ -22,6 +22,7 @@ import VerifyEmail from "./TSX/VerifyEmail";
 import { Navigate } from "react-router-dom";
 import Analytics from "./TSX/Analytics";
 import FinanceParticlesBackground from "./components/FinanceParticlesBackground";
+import { authFetch } from "./utils/authFetch";
 
 export default function App() {
   const [userProfileOpen, setUserProfileOpen] = useState(false);
@@ -40,6 +41,11 @@ export default function App() {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!navigator.onLine) {
+        setProfileError("You are offline. Cannot fetch user profile.");
+        setProfileLoading(false);
+        return;
+      }
       const token = localStorage.getItem("token");
       if (!token) {
         setProfileError("No authentication token found. Please log in.");
@@ -47,7 +53,7 @@ export default function App() {
         return;
       }
       try {
-        const res = await fetch("http://localhost:5000/api/user/profile", {
+        const res = await authFetch("http://localhost:5000/api/user/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {
@@ -80,6 +86,11 @@ export default function App() {
     };
     fetchProfile();
   }, [accounts]);
+
+  useEffect(() => {
+    window.addEventListener("online", syncTransactions);
+    return () => window.removeEventListener("online", syncTransactions);
+  }, []);
 
   return (
     <>
@@ -126,4 +137,38 @@ export default function App() {
       </Router>
     </>
   );
+}
+async function syncTransactions() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    console.warn("No authentication token found. Cannot sync transactions.");
+    return;
+  }
+
+  try {
+    const unsyncedTransactions = JSON.parse(localStorage.getItem("unsyncedTransactions") || "[]");
+    if (unsyncedTransactions.length === 0) {
+      console.log("No transactions to sync.");
+      return;
+    }
+
+    const res = await authFetch("http://localhost:5000/api/transactions/sync", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ transactions: unsyncedTransactions }),
+    });
+
+    if (!res.ok) {
+      console.error("Failed to sync transactions.");
+      return;
+    }
+
+    console.log("Transactions synced successfully.");
+    localStorage.removeItem("unsyncedTransactions");
+  } catch (error) {
+    console.error("Error syncing transactions:", error);
+  }
 }

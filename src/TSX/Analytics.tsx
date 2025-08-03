@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { Pie, Bar } from "react-chartjs-2";
+import { authFetch } from "../utils/authFetch";
 import "../CSS/Analytics.css";
 import {
   Chart,
@@ -82,7 +83,7 @@ export default function Analytics({ userId }: AnalyticsProps) {
     const queryString = query ? `?${query}` : "";
 
     Promise.all([
-      fetch(`http://localhost:5000/api/analytics/spending-trends${queryString}`, {
+      authFetch(`http://localhost:5000/api/analytics/spending-trends${queryString}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       }).then(async res => {
         if (!res.ok) {
@@ -91,7 +92,7 @@ export default function Analytics({ userId }: AnalyticsProps) {
         }
         return res.json();
       }),
-      fetch(`http://localhost:5000/api/analytics/income-expense${queryString}`, {
+      authFetch(`http://localhost:5000/api/analytics/income-expense${queryString}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       }).then(async res => {
         if (!res.ok) {
@@ -100,7 +101,7 @@ export default function Analytics({ userId }: AnalyticsProps) {
         }
         return res.json();
       }),
-      fetch(`http://localhost:5000/api/expense`, {
+      authFetch(`http://localhost:5000/api/expense`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       }).then(async res => {
         if (!res.ok) {

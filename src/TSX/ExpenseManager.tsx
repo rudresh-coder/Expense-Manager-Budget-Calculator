@@ -3,6 +3,8 @@ import "../CSS/ExpenseManager.css";
 import RevealOnScroll from "./RevealOnScroll";
 import { io } from "socket.io-client";
 import ReceiptScanner from "../components/ReceiptScanner";
+import { authFetch } from "../utils/authFetch";
+import { saveAccounts, getAccountsFromLocalDb } from "../utils/sync"; // or localDb
 
 type Split = {
   id: string;
@@ -88,44 +90,19 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   const [scannedData, setScannedData] = useState<ScannedData>(null);
   const [clearScanner, setClearScanner] = useState(false);
 
-  async function saveAccounts(accounts: Account[]) {
-    try {
-      const res = await fetch("http://localhost:5000/api/expense", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ accounts })
-      });
-      const data = await res.json();
-      if (res.ok && data.data?.updatedAt) {
-        setAccountsUpdatedAt(data.data.updatedAt);
-      }
-      if (!res.ok) {
-        console.error("Save failed:", data.error || "Unknown error");
-        alert(data.error || "Failed to save expense data.");
-      }
-    } catch (err) {
-      console.error("Network error while saving expense data:", err);
-      alert("Network error while saving expense data.");
-    }
-  }
-
-useEffect(() => {
-  function handleStorageChange(e: StorageEvent) {
-    if (e.key === "trialExpiresAt" || e.key === "isPremium") {
-      setTrialExpiresAt(localStorage.getItem("trialExpiresAt"));
-      setIsPremium(JSON.parse(localStorage.getItem("isPremium") || "false"));
-    }
-  }
-  window.addEventListener("storage", handleStorageChange);
-  return () => window.removeEventListener("storage", handleStorageChange);
-}, []);
-
   useEffect(() => {
     setError(null);
-    fetch("http://localhost:5000/api/expense", {
+    if (!navigator.onLine) {
+      getAccountsFromLocalDb().then(localAccounts => {
+        setAccounts(localAccounts);
+        setError("You are offline. Showing cached data.");
+      }).catch(() => {
+        setAccounts([]);
+        setError("You are offline and no cached data is available.");
+      });
+      return;
+    }
+    authFetch("http://localhost:5000/api/expense", {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
     })
       .then(async res => {
@@ -138,7 +115,8 @@ useEffect(() => {
       .then(data => {
         if (data && data.hasData && Array.isArray(data.accounts)) {
           setAccounts(data.accounts);
-          setAccountsUpdatedAt(data.updatedAt); 
+          setAccountsUpdatedAt(data.updatedAt);
+          saveAccounts(data.accounts); // Save to offline cache
           const savedActiveAccountId = localStorage.getItem("expenseManagerActiveAccountId");
           if (
             savedActiveAccountId &&
@@ -162,7 +140,18 @@ useEffect(() => {
         setError(err.message || "Network error. Please try again.");
       });
   }, []);
-  
+
+  useEffect(() => {
+    function handleStorageChange(e: StorageEvent) {
+      if (e.key === "trialExpiresAt" || e.key === "isPremium") {
+        setTrialExpiresAt(localStorage.getItem("trialExpiresAt"));
+        setIsPremium(JSON.parse(localStorage.getItem("isPremium") || "false"));
+      }
+    }
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   useEffect(() => {
     if (activeAccountId) {
       localStorage.setItem("expenseManagerActiveAccountId", activeAccountId);
@@ -250,7 +239,10 @@ useEffect(() => {
     setAccounts(newAccounts);
     setActiveAccountId(newAccount.id);
     setNewAccountName("");
-    saveAccounts(newAccounts);
+    saveAccounts(newAccounts.map(acc => ({
+      ...acc,
+      transactions: acc.transactions || [],
+    })));
   };
 
   const handleAddSplit = () => {
@@ -261,7 +253,7 @@ useEffect(() => {
     }
     const amount = parseFloat(newSplitAmount);
     if (!amount || amount <= 0) return;
-    const newAccounts = accounts.map((acc) => {
+    const newAccounts = accounts.map(acc => {
       if (acc.id !== activeAccountId) return acc;
       if (acc.balance < amount) return acc;
       return {
@@ -281,7 +273,10 @@ useEffect(() => {
     setNewSplitName("");
     setNewSplitAmount("");
     setSplitNameError("");
-    saveAccounts(newAccounts);
+    saveAccounts(newAccounts.map(acc => ({
+      ...acc,
+      transactions: acc.transactions || [],
+    }))); // <-- Ensures splits are saved offline
   };
    const handleSplitNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -390,7 +385,10 @@ useEffect(() => {
     setClearScanner(true);
     setTimeout(() => setClearScanner(false), 100);
     try {
-      await saveAccounts(newAccounts);
+      await saveAccounts(newAccounts.map(acc => ({
+        ...acc,
+        transactions: acc.transactions || [],
+      })));
     } catch {
       setAccounts(prevAccounts);
       setError("Failed to save transaction. Please try again.");

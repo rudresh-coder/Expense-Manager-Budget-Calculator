@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { authFetch } from "../utils/authFetch";
 import "../CSS/SignUp.css";
 
 export default function LogIn() {
@@ -19,7 +20,7 @@ export default function LogIn() {
     setGeneralError("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await authFetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

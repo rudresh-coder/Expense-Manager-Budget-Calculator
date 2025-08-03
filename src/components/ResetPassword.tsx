@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { authFetch } from "../utils/authFetch";
 import "../CSS/AuthForms.css";
 
 function useQuery() {
@@ -31,7 +32,7 @@ export default function ResetPassword() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/reset-password", {
+      const res = await authFetch("http://localhost:5000/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, token, newPassword }),

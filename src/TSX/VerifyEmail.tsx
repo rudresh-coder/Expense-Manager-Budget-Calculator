@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { authFetch } from "../utils/authFetch";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
@@ -15,7 +16,7 @@ export default function VerifyEmail() {
       setMessage("Invalid verification link.");
       return;
     }
-    fetch(
+    authFetch(
       `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/auth/verify-email?token=${encodeURIComponent(
         token
       )}&email=${encodeURIComponent(email)}`

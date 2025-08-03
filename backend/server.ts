@@ -437,7 +437,16 @@ app.post("/api/expense", auth, async (req, res) => {
     const result = await ExpenseManagerData.findOneAndUpdate(filter, update, options);
     logger.info(`Expense data saved for user: ${req.user?.id}`);
 
-    res.json({ message: "Expense data saved", data: result });
+    // After saving accounts and transactions...
+    const savedTransactionIds = [];
+    for (const account of accounts) {
+      if (Array.isArray(account.transactions)) {
+        for (const tx of account.transactions) {
+          if (tx.id) savedTransactionIds.push(tx.id);
+        }
+      }
+    }
+    res.json({ message: "Expense data saved", data: result, savedTransactionIds });
     io.to(`user-${req.user?.id}`).emit('expenseDataUpdated', result);
   } catch (err) {
     logger.error("Expense save error:", err);

@@ -1,0 +1,14 @@
+{
+    "name": "Expense Manager",
+    "short_name": "ExpenseMgr",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#25102a",
+    "theme_color": "#7c4dff",
+    "description": "Track expenses and budgets, even offline!",
+    "icons": [
+      { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+      { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    ]
+  }
+  
