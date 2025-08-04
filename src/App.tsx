@@ -42,7 +42,13 @@ export default function App() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (!navigator.onLine) {
-        setProfileError("You are offline. Cannot fetch user profile.");
+        const cached = localStorage.getItem("userProfile");
+        if (cached) {
+          setUser(JSON.parse(cached));
+          setProfileError("You are offline. Showing cached profile.");
+        } else {
+          setProfileError("You are offline. Cannot fetch user profile.");
+        }
         setProfileLoading(false);
         return;
       }
@@ -72,6 +78,15 @@ export default function App() {
           isPremium: data.isPremium,
           isAdmin: data.isAdmin
         });
+        localStorage.setItem("userProfile", JSON.stringify({
+          _id: data._id || "",
+          name: data.fullName,
+          email: data.email,
+          avatarUrl: data.avatarUrl || "",
+          banks: data.banks || [],
+          isPremium: data.isPremium,
+          isAdmin: data.isAdmin
+        }));
         if (data.trialExpiresAt) {
           localStorage.setItem("trialExpiresAt", data.trialExpiresAt);
         } else {

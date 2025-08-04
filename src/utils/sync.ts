@@ -1,4 +1,4 @@
-import { getAllTransactions, removeTransaction } from "./localDb";
+// Removed unused imports from "./localDb"
 import localforage from "localforage";
 import { authFetch } from "../utils/authFetch";
 
@@ -17,6 +17,7 @@ interface Account {
   balance: number;
   splits: Split[];
   transactions: Transaction[];
+  unsynced?: boolean | undefined | false;
 }
 
 interface Transaction {
@@ -27,7 +28,7 @@ interface Transaction {
   amount: number;
   description: string;
   date: string;
-  unsynced?: boolean;
+  unsynced?: boolean | undefined | false;
   source?: string;
 }
 
@@ -51,70 +52,59 @@ export async function getAccountById(accountId: string): Promise<Account | null>
 }
 
 export async function syncTransactions() {
-  if (syncInProgress) {
-    console.warn("Sync already in progress, skipping.");
-    return;
-  }
+  if (syncInProgress) return;
   syncInProgress = true;
   try {
     if (!navigator.onLine) return;
-
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    const txs: Transaction[] = await getAllTransactions();
+   
+    const allAccounts: Account[] = await getAccountsFromLocalDb();
+   
+    const accountsToSync = allAccounts.filter(acc =>
+      acc.unsynced ||
+      (acc.transactions && acc.transactions.some(tx => tx.unsynced))
+    ).map(acc => ({
+      ...acc,
+    
+      unsynced: undefined,
+      transactions: acc.transactions?.map(tx => ({ ...tx, unsynced: undefined })) || [],
+    }));
 
-    // Group unsynced transactions by accountId
-    const accountMap: Record<string, Transaction[]> = {};
-    for (const tx of txs) {
-      if (tx.unsynced && tx.accountId) {
-        if (!accountMap[tx.accountId]) accountMap[tx.accountId] = [];
-        accountMap[tx.accountId].push({ ...tx, unsynced: undefined });
-      }
-    }
+    if (accountsToSync.length === 0) return;
 
-    // Prepare accounts payload with required fields, skip if local account not found
-    const accounts: Account[] = [];
-    for (const [accountId, transactions] of Object.entries(accountMap)) {
-      const localAccount = await getAccountById(accountId);
-      if (!localAccount) {
-        console.warn(`Skipping sync for accountId=${accountId}: local account data not found.`);
-        continue;
-      }
-      accounts.push({
-        id: localAccount.id,
-        name: localAccount.name,
-        balance: localAccount.balance,
-        splits: localAccount.splits,
-        transactions,
-      });
-    }
+    const res = await authFetch("http://localhost:5000/api/expense", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ accounts: accountsToSync })
+    });
 
-    if (accounts.length === 0) return;
+    if (res.ok) {
+      const responseData = await res.json();
+      const savedTxIds: string[] = responseData.savedTransactionIds || [];
+      const savedAccIds: string[] = responseData.savedAccountIds || [];
 
-    try {
-      const res = await authFetch("http://localhost:5000/api/expense", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ accounts })
-      });
-
-      if (res.ok) {
-        const responseData = await res.json();
-        const savedIds: string[] = responseData.savedTransactionIds || [];
-        for (const id of savedIds) {
-          await removeTransaction(id);
+      for (const acc of accountsToSync) {
+        if (savedAccIds.includes(acc.id)) {
+          acc.unsynced = undefined;
         }
-      } else {
-        const err = await res.json().catch(() => ({}));
-        console.error("Sync failed:", err.error || res.statusText);
+        if (acc.transactions) {
+          acc.transactions.forEach(tx => {
+            if (savedTxIds.includes(tx.id)) tx.unsynced = undefined;
+          });
+        }
+        await accountsStore.setItem(acc.id, acc);
       }
-    } catch (err) {
-      console.error("Network error during sync:", err);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      console.error("Sync failed:", err.error || res.statusText);
     }
+  } catch (err) {
+    console.error("Network error during sync:", err);
   } finally {
     syncInProgress = false;
   }

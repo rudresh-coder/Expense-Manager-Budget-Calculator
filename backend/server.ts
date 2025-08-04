@@ -342,114 +342,108 @@ app.post("/api/expense", auth, async (req, res) => {
     const { accounts } = req.body;
     const user = await User.findById(req.user?.id);
 
-    // Limit free users to 100 transactions per account
-    if (user && !user.isPremium) {
-      for (const account of accounts) {
-        if (account.transactions && account.transactions.length > 100) {
-          res.status(403).json({ error: "Free users can only store up to 100 transactions per account. Please export or upgrade for unlimited history." });
-          return;
-        }
-      }
-    }
-
-    // Get existing data first
-    const existingData = await ExpenseManagerData.findOne({ userId: req.user?.id });
-    
-    // If we're about to save empty transactions but existing data has transactions, prevent it
-    if (existingData && existingData.accounts) {
-      for (let i = 0; i < accounts.length; i++) {
-        const newAccount = accounts[i];
-        const existingAccount = existingData.accounts.find(acc => acc.id === newAccount.id);
-        
-        if (existingAccount && 
-            existingAccount.transactions && 
-            existingAccount.transactions.length > 0 && 
-            (!newAccount.transactions || newAccount.transactions.length === 0)) {
-          
-          logger.warn(`Preventing transaction data loss for account ${newAccount.name}`);
-          // Keep existing transactions instead of overwriting with empty array
-          newAccount.transactions = existingAccount.transactions;
-        }
-      }
-    }
-
     // Validate accounts is an array
     if (!Array.isArray(accounts)) {
       res.status(400).json({ error: "Accounts must be an array." });
-      return; 
+      return;
     }
 
-    // Check for duplicate account IDs and names
-    const accountIds = new Set();
-    const accountNames = new Set();
-    for (const account of accounts) {
-      if (accountIds.has(account.id)) {
-        res.status(400).json({ error: `Duplicate account id found: ${account.id}` });
-        return;
-      }
-      if (accountNames.has(account.name)) {
-        res.status(400).json({ error: `Duplicate account name found: ${account.name}` });
-        return;
-      }
-      accountIds.add(account.id);
-      accountNames.add(account.name);
+    const savedAccountIds: string[] = [];
+    const savedTransactionIds: string[] = [];
+    const failedAccounts: { id?: string; error: string }[] = [];
+    const failedTransactions: { id?: string; error: string }[] = [];
+
+    // Get existing data
+    let existingData = await ExpenseManagerData.findOne({ userId: req.user?.id });
+    if (!existingData) {
+      existingData = new ExpenseManagerData({ userId: req.user?.id, accounts: [] });
     }
 
-    // Validate each account
-    for (const account of accounts) {
-      if (typeof account.name !== "string" || typeof account.balance !== "number") {
-        res.status(400).json({ error: "Invalid account data." });
-        return;
-      }
-      if (!Array.isArray(account.splits) || !Array.isArray(account.transactions)) {
-        res.status(400).json({ error: "Splits and transactions must be arrays." });
-        return;
-      }
-      // Validate splits
-      for (const split of account.splits) {
-        if (typeof split.name !== "string" || typeof split.balance !== "number") {
-          res.status(400).json({ error: "Invalid split data." });
-          return;
+    for (const newAccount of accounts) {
+      try {
+        // Validate account
+        if (typeof newAccount.name !== "string" || typeof newAccount.balance !== "number") {
+          throw new Error("Invalid account data.");
         }
-      }
-      // Validate transactions
-      for (const tx of account.transactions) {
-        if (
-          typeof tx.id !== "string" ||
-          typeof tx.type !== "string" ||
-          typeof tx.amount !== "number" ||
-          typeof tx.date !== "string"
-        ) {
-          res.status(400).json({ error: "Invalid transaction data." });
-          return;
+        if (!Array.isArray(newAccount.splits) || !Array.isArray(newAccount.transactions)) {
+          throw new Error("Splits and transactions must be arrays.");
         }
+        // Validate splits
+        for (const split of newAccount.splits) {
+          if (typeof split.name !== "string" || typeof split.balance !== "number") {
+            throw new Error("Invalid split data.");
+          }
+        }
+        // Validate transactions
+        for (const tx of newAccount.transactions) {
+          if (
+            typeof tx.id !== "string" ||
+            typeof tx.type !== "string" ||
+            typeof tx.amount !== "number" ||
+            typeof tx.date !== "string"
+          ) {
+            failedTransactions.push({ id: tx.id, error: "Invalid transaction data." });
+            continue; // Skip this transaction
+          }
+        }
+
+        // Find or add account
+        let existingAccount = existingData.accounts.find(acc => acc.id === newAccount.id);
+        if (!existingAccount) {
+          existingData.accounts.push(newAccount);
+          savedAccountIds.push(newAccount.id);
+        } else {
+          // Compare account-level modifiedAt
+          if (
+            !existingAccount.modifiedAt ||
+            !newAccount.modifiedAt ||
+            new Date(newAccount.modifiedAt) > new Date(existingAccount.modifiedAt)
+          ) {
+            existingAccount.name = newAccount.name;
+            existingAccount.balance = newAccount.balance;
+            existingAccount.splits = newAccount.splits;
+            existingAccount.modifiedAt = newAccount.modifiedAt;
+            savedAccountIds.push(newAccount.id);
+          }
+
+          // Merge transactions by id, using last write wins
+          const txMap = new Map<string, any>();
+          for (const tx of existingAccount.transactions) {
+            txMap.set(tx.id, tx);
+          }
+          for (const tx of newAccount.transactions) {
+            const existingTx = txMap.get(tx.id);
+            if (
+              !existingTx ||
+              !existingTx.modifiedAt ||
+              !tx.modifiedAt ||
+              new Date(tx.modifiedAt) > new Date(existingTx.modifiedAt)
+            ) {
+              txMap.set(tx.id, tx);
+              savedTransactionIds.push(tx.id);
+            }
+          }
+          existingAccount.transactions.splice(
+            0,
+            existingAccount.transactions.length,
+            ...Array.from(txMap.values())
+          );
+        }
+      } catch (err: any) {
+        failedAccounts.push({ id: newAccount.id, error: err.message });
       }
     }
 
-    // Proceed with saving
-    const filter = { userId: req.user?.id };
-    const update = {
-        accounts: accounts || [],
-        updatedAt: new Date(),
-    };
-    const options = { upsert: true, new: true, setDefaultsOnInsert: true };
+    await existingData.save();
 
-    const result = await ExpenseManagerData.findOneAndUpdate(filter, update, options);
-    logger.info(`Expense data saved for user: ${req.user?.id}`);
-
-    // After saving accounts and transactions...
-    const savedTransactionIds = [];
-    for (const account of accounts) {
-      if (Array.isArray(account.transactions)) {
-        for (const tx of account.transactions) {
-          if (tx.id) savedTransactionIds.push(tx.id);
-        }
-      }
-    }
-    res.json({ message: "Expense data saved", data: result, savedTransactionIds });
-    io.to(`user-${req.user?.id}`).emit('expenseDataUpdated', result);
+    res.json({
+      message: "Expense data saved",
+      savedAccountIds,
+      savedTransactionIds,
+      failedAccounts,
+      failedTransactions
+    });
   } catch (err) {
-    logger.error("Expense save error:", err);
     res.status(500).json({ error: "Failed to save expense data" });
   }
 });

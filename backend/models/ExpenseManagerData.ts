@@ -23,6 +23,7 @@ const accountSchema = new mongoose.Schema({
     balance: Number,
     splits: [splitSchema],
     transactions: [transactionSchema],
+    modifiedAt: { type: Date, default: Date.now },
 });
 
 const expenseManagerDataSchema = new mongoose.Schema({

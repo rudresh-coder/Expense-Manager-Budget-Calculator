@@ -4,7 +4,7 @@ import RevealOnScroll from "./RevealOnScroll";
 import { io } from "socket.io-client";
 import ReceiptScanner from "../components/ReceiptScanner";
 import { authFetch } from "../utils/authFetch";
-import { saveAccounts, getAccountsFromLocalDb } from "../utils/sync"; // or localDb
+import { saveAccounts, getAccountsFromLocalDb, syncTransactions } from "../utils/sync"; 
 
 type Split = {
   id: string;
@@ -18,6 +18,8 @@ type Account = {
   balance: number;
   splits: Split[];
   transactions?: Transaction[];
+  unsynced?: boolean; 
+  modifiedAt?: string;
 };
 
 type Transaction = {
@@ -28,6 +30,8 @@ type Transaction = {
   amount: number;
   description: string;
   date: string;
+  modifiedAt?: string; 
+  unsynced?: boolean; 
 };
 
 type ExpenseManagerProps = {
@@ -91,54 +95,41 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   const [clearScanner, setClearScanner] = useState(false);
 
   useEffect(() => {
-    setError(null);
-    if (!navigator.onLine) {
-      getAccountsFromLocalDb().then(localAccounts => {
-        setAccounts(localAccounts);
-        setError("You are offline. Showing cached data.");
-      }).catch(() => {
-        setAccounts([]);
-        setError("You are offline and no cached data is available.");
+    let cancelled = false;
+    async function loadData() {
+      setError(null);
+      if (!navigator.onLine) {
+        const localAccounts = await getAccountsFromLocalDb();
+        if (!cancelled) {
+          setAccounts(localAccounts);
+          setError("You are offline. Showing cached data.");
+        }
+        return;
+      }
+     
+      await syncTransactions();
+      const res = await authFetch("http://localhost:5000/api/expense", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
-      return;
-    }
-    authFetch("http://localhost:5000/api/expense", {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-    })
-      .then(async res => {
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Failed to fetch expense data");
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data && data.hasData && Array.isArray(data.accounts)) {
-          setAccounts(data.accounts);
-          setAccountsUpdatedAt(data.updatedAt);
-          saveAccounts(data.accounts); // Save to offline cache
-          const savedActiveAccountId = localStorage.getItem("expenseManagerActiveAccountId");
-          if (
-            savedActiveAccountId &&
-            data.accounts.some((acc: Account) => acc.id === savedActiveAccountId)
-          ) {
-            setActiveAccountId(savedActiveAccountId);
-          } else if (data.accounts.length > 0) {
-            setActiveAccountId(data.accounts[0].id);
-          } else {
-            setActiveAccountId("");
-          }
-        } else {
-          setAccounts([]);
-          setActiveAccountId("");
-          setError("No account data found. Please add an account.");
-        }
-      })
-      .catch(err => {
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to fetch expense data");
+        return;
+      }
+      const data = await res.json();
+      if (data && data.hasData && Array.isArray(data.accounts)) {
+        setAccounts(data.accounts);
+        setAccountsUpdatedAt(data.updatedAt);
+        saveAccounts(data.accounts); // Overwrite local cache only after sync
+        // ...rest of your logic
+      } else {
         setAccounts([]);
         setActiveAccountId("");
-        setError(err.message || "Network error. Please try again.");
-      });
+        setError("No account data found. Please add an account.");
+      }
+    }
+    loadData();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -234,6 +225,8 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       balance: 0,
       splits: [],
       transactions: [],
+      modifiedAt: new Date().toISOString(),
+      unsynced: !navigator.onLine,
     };
     const newAccounts = [...accounts, newAccount];
     setAccounts(newAccounts);
@@ -242,6 +235,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
     saveAccounts(newAccounts.map(acc => ({
       ...acc,
       transactions: acc.transactions || [],
+      unsynced: acc.unsynced ?? false, // Ensure 'unsynced' is explicitly set
     })));
   };
 
@@ -267,6 +261,8 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
             balance: amount,
           },
         ],
+        unsynced: !navigator.onLine || acc.unsynced,
+        modifiedAt: new Date().toISOString(),
       };
     });
     setAccounts(newAccounts);
@@ -276,6 +272,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
     saveAccounts(newAccounts.map(acc => ({
       ...acc,
       transactions: acc.transactions || [],
+      unsynced: acc.unsynced ?? false, // Ensure 'unsynced' is explicitly set
     }))); // <-- Ensures splits are saved offline
   };
    const handleSplitNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -354,6 +351,8 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       amount,
       description: form.description,
       date,
+      modifiedAt: new Date().toISOString(),
+      unsynced: !navigator.onLine,
     };
     const newAccounts = accounts.map((acc) => {
       if (acc.id !== activeAccountId) return acc;
@@ -367,6 +366,8 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
           ...acc,
           transactions: updatedTransactions,
           splits,
+          modifiedAt: new Date().toISOString(),
+          unsynced: !navigator.onLine,
         };
       } else {
         return {
@@ -376,6 +377,8 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
             form.type === "add"
               ? acc.balance + amount
               : acc.balance - amount,
+          modifiedAt: new Date().toISOString(),
+          unsynced: !navigator.onLine,
         };
       }
     });
@@ -388,6 +391,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       await saveAccounts(newAccounts.map(acc => ({
         ...acc,
         transactions: acc.transactions || [],
+        unsynced: acc.unsynced ?? false, // Ensure 'unsynced' is explicitly set
       })));
     } catch {
       setAccounts(prevAccounts);
@@ -917,30 +921,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
                 You create a <b>Groceries split</b> and allocate ₹3,000 from
                 your main balance.
               </li>
-              <li key="split-balance">
-                Now, your <b>Main</b> balance is ₹7,000 and your{" "}
-                <b>Groceries split</b> is ₹3,000.
-              </li>
-              <li key="total-money">
-                Your <b>Total</b> money tracked is still ₹10,000 (₹7,000 main +
-                ₹3,000 split).
-              </li>
-            </RevealOnScroll>
-          <RevealOnScroll as="p">
-            When you spend ₹500 on groceries, you record it under the Groceries
-            split. The split balance drops to ₹2,500, and your main balance
-            stays at ₹7,000.
-          </RevealOnScroll>
-          <RevealOnScroll as="h3">Why use splits?</RevealOnScroll>
-          <RevealOnScroll as="p">
-            Splits help you budget for different needs, prevent overspending in
-            any category, and give you a clear view of where your money goes.
-            You can create as many splits as you need for things like Rent,
-            Savings, Entertainment, or any custom goal.
-          </RevealOnScroll>
-          <RevealOnScroll as="p">
-            <b>Example:</b> Add a bank, create splits for "Groceries" and
-            "Entertainment", allocate ₹5000 and ₹2000, then record your daily
+            2000, then record your daily
             expenses. Watch your balances and splits update in real time!
           </RevealOnScroll>
         </div>

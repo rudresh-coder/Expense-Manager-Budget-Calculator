@@ -14,8 +14,9 @@ interface Transaction {
     amount: number;
     description: string;
     date: string;
-    unsynced?: boolean; // for offline sync
-    source?: string;    // optional, e.g. "manual"
+    modifiedAt: string; 
+    unsynced?: boolean; 
+    source?: string;    
   }
 
 export function saveTransaction(tx: Transaction) {
