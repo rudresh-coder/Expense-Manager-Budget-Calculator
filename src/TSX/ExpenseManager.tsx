@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import "../CSS/ExpenseManager.css";
 import RevealOnScroll from "./RevealOnScroll";
 import { io } from "socket.io-client";
 import ReceiptScanner from "../components/ReceiptScanner";
 import { authFetch } from "../utils/authFetch";
-import { saveAccounts, getAccountsFromLocalDb, syncTransactions } from "../utils/sync"; 
+import { saveAccounts, getAccountsFromLocalDb, syncTransactions } from "../utils/sync";
 
 type Split = {
   id: string;
@@ -18,7 +18,7 @@ type Account = {
   balance: number;
   splits: Split[];
   transactions?: Transaction[];
-  unsynced?: boolean; 
+  unsynced?: boolean;
   modifiedAt?: string;
 };
 
@@ -30,8 +30,8 @@ type Transaction = {
   amount: number;
   description: string;
   date: string;
-  modifiedAt?: string; 
-  unsynced?: boolean; 
+  modifiedAt?: string;
+  unsynced?: boolean;
 };
 
 type ExpenseManagerProps = {
@@ -55,6 +55,8 @@ function updateSplitBalance(splits: Split[], splitId: string, amount: number, ty
 }
 
 export default function ExpenseManager({ userId }: ExpenseManagerProps) {
+
+  const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "offline" | "error">("idle");
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [accountsUpdatedAt, setAccountsUpdatedAt] = useState<string | null>(null);
   const [activeAccountId, setActiveAccountId] = useState<string>("");
@@ -94,11 +96,15 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   const [scannedData, setScannedData] = useState<ScannedData>(null);
   const [clearScanner, setClearScanner] = useState(false);
 
+  const accountsRef = useRef(accounts);
+  accountsRef.current = accounts;
+
   useEffect(() => {
     let cancelled = false;
     async function loadData() {
       setError(null);
       if (!navigator.onLine) {
+        setSyncStatus("offline");
         const localAccounts = await getAccountsFromLocalDb();
         if (!cancelled) {
           setAccounts(localAccounts);
@@ -106,8 +112,19 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
         }
         return;
       }
-     
-      await syncTransactions();
+
+      setSyncStatus("syncing");
+      try {
+        await syncTransactions();
+        setSyncStatus("success");
+        setTimeout(() => setSyncStatus("idle"), 2000);
+      } catch (err) {
+        setSyncStatus("error");
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(`Sync failed: ${errorMessage}. Your changes are saved locally and will sync when online.`);
+        setTimeout(() => setSyncStatus("idle"), 5000); // Longer timeout for errors
+      }
+
       const res = await authFetch("http://localhost:5000/api/expense", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
@@ -118,10 +135,34 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       }
       const data = await res.json();
       if (data && data.hasData && Array.isArray(data.accounts)) {
-        setAccounts(data.accounts);
+        const localAccounts = await getAccountsFromLocalDb();
+        const unsyncedAccounts = localAccounts.filter(acc =>
+          acc.unsynced || (acc.transactions && acc.transactions.some(tx => tx.unsynced))
+        );
+
+        // Merge unsynced local accounts/transactions into server data
+        const mergedAccounts: Account[] = data.accounts.map((serverAcc: Account) => {
+          const localAcc: Account | undefined = unsyncedAccounts.find(acc => acc.id === serverAcc.id);
+          if (!localAcc) return serverAcc;
+          // Merge transactions
+          const mergedTransactions: Transaction[] = [
+            ...(serverAcc.transactions ?? []).filter(
+              (tx: Transaction) => !localAcc.transactions?.some((localTx: Transaction) => localTx.id === tx.id && localTx.unsynced)
+            ),
+            ...(localAcc.transactions?.filter((tx: Transaction) => tx.unsynced) || [])
+          ];
+          return {
+            ...serverAcc,
+            ...localAcc,
+            transactions: mergedTransactions
+          };
+        });
+        setAccounts(mergedAccounts);
+        saveAccounts(mergedAccounts.map(acc => ({
+          ...acc,
+          transactions: acc.transactions || [], // Ensure transactions is always an array
+        })));
         setAccountsUpdatedAt(data.updatedAt);
-        saveAccounts(data.accounts); // Overwrite local cache only after sync
-        // ...rest of your logic
       } else {
         setAccounts([]);
         setActiveAccountId("");
@@ -150,8 +191,8 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   }, [activeAccountId]);
 
   useEffect(() => {
-    const savedActiveAccountId = hasPremium 
-      ? localStorage.getItem("expenseManagerActiveAccountId") 
+    const savedActiveAccountId = hasPremium
+      ? localStorage.getItem("expenseManagerActiveAccountId")
       : null;
 
     if (savedActiveAccountId && accounts.length > 0) {
@@ -161,7 +202,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       }
     }
   }, [accounts, hasPremium]);
-  
+
   useEffect(() => {
     accounts.forEach(acc => {
       if (acc.transactions) {
@@ -192,6 +233,17 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
           setError("Received invalid data from server. Please reload.");
           return;
         }
+        
+        // Use ref to get current accounts (fixes stale closure)
+        const currentAccounts = accountsRef.current;
+        const hasUnsynced = currentAccounts.some(acc =>
+          acc.unsynced || (acc.transactions && acc.transactions.some(tx => tx.unsynced))
+        );
+        if (hasUnsynced) {
+          console.warn("Ignoring server update because of unsynced local changes.");
+          return;
+        }
+        
         if (
           !accountsUpdatedAt ||
           (new Date(newData.updatedAt) > new Date(accountsUpdatedAt))
@@ -211,9 +263,9 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       socket.off("expenseDataUpdated", handleExpenseDataUpdated);
       socket.disconnect();
     };
-  }, [userId, accountsUpdatedAt]);
+  }, [userId, accountsUpdatedAt]); // Remove accounts from dependencies
 
-  const handleAddAccount = () => {
+  const handleAddAccount = async () => {
     if (!newAccountName.trim()) return;
     if (accounts.some(acc => acc.name === newAccountName)) {
       setError("Bank name already exists. Please choose a different name.");
@@ -226,20 +278,38 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       splits: [],
       transactions: [],
       modifiedAt: new Date().toISOString(),
-      unsynced: !navigator.onLine,
+      unsynced: true, 
     };
     const newAccounts = [...accounts, newAccount];
     setAccounts(newAccounts);
     setActiveAccountId(newAccount.id);
     setNewAccountName("");
-    saveAccounts(newAccounts.map(acc => ({
-      ...acc,
-      transactions: acc.transactions || [],
-      unsynced: acc.unsynced ?? false, // Ensure 'unsynced' is explicitly set
-    })));
+    
+    try {
+      await saveAccounts(newAccounts.map(acc => ({
+        ...acc,
+        transactions: acc.transactions || [], // Ensure transactions is always an array
+      })));
+      if (navigator.onLine) {
+        setSyncStatus("syncing");
+        try {
+          await syncTransactions();
+          setSyncStatus("success");
+          setTimeout(() => setSyncStatus("idle"), 2000);
+        } catch (err) {
+          setSyncStatus("error");
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+          setError(`Sync failed: ${errorMessage}. Your changes are saved locally and will sync when online.`);
+          setTimeout(() => setSyncStatus("idle"), 5000); // Longer timeout for errors
+        }
+      }
+    } catch {
+      setAccounts(accounts);
+      setError("Failed to save transaction. Please try again.");
+    }
   };
 
-  const handleAddSplit = () => {
+  const handleAddSplit = async () => {
     if (!newSplitName.trim() || !activeAccountId) return;
     if (!/^[A-Za-z]+$/.test(newSplitName)) {
       setSplitNameError("Split name must contain only letters.");
@@ -261,7 +331,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
             balance: amount,
           },
         ],
-        unsynced: !navigator.onLine || acc.unsynced,
+        unsynced: true, 
         modifiedAt: new Date().toISOString(),
       };
     });
@@ -269,13 +339,33 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
     setNewSplitName("");
     setNewSplitAmount("");
     setSplitNameError("");
-    saveAccounts(newAccounts.map(acc => ({
-      ...acc,
-      transactions: acc.transactions || [],
-      unsynced: acc.unsynced ?? false, // Ensure 'unsynced' is explicitly set
-    }))); // <-- Ensures splits are saved offline
+    
+    try {
+      await saveAccounts(newAccounts.map(acc => ({
+        ...acc,
+        transactions: acc.transactions || [], // Ensure transactions is always an array
+      })));
+      if (navigator.onLine) {
+        setSyncStatus("syncing");
+        try {
+          await syncTransactions();
+          setSyncStatus("success");
+          setTimeout(() => setSyncStatus("idle"), 2000);
+        } catch (err) {
+          setSyncStatus("error");
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+          setError(`Sync failed: ${errorMessage}. Your changes are saved locally and will sync when online.`);
+          setTimeout(() => setSyncStatus("idle"), 5000); // Longer timeout for errors
+        }
+      }
+    } catch {
+      setAccounts(accounts);
+      setError("Failed to save transaction. Please try again.");
+    }
   };
-   const handleSplitNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+
+  const handleSplitNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (/^[A-Za-z]*$/.test(value)) {
       setNewSplitName(value);
@@ -284,7 +374,6 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       setSplitNameError("Split name must contain only letters.");
     }
   };
-  
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -311,7 +400,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       date = new Date().toISOString();
     } else if (!date.includes("T") || date.endsWith("T")) {
       const today = new Date();
-      const time = today.toTimeString().slice(0,5);
+      const time = today.toTimeString().slice(0, 5);
       date = date.split("T")[0] + "T" + time;
     }
 
@@ -352,14 +441,14 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       description: form.description,
       date,
       modifiedAt: new Date().toISOString(),
-      unsynced: !navigator.onLine,
+      unsynced: true,
     };
     const newAccounts = accounts.map((acc) => {
       if (acc.id !== activeAccountId) return acc;
       const updatedTransactions = acc.transactions
         ? [...acc.transactions, newTransaction].sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          )
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        )
         : [newTransaction];
       if (form.splitId) {
         return {
@@ -367,7 +456,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
           transactions: updatedTransactions,
           splits,
           modifiedAt: new Date().toISOString(),
-          unsynced: !navigator.onLine,
+          unsynced: true,
         };
       } else {
         return {
@@ -378,11 +467,11 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
               ? acc.balance + amount
               : acc.balance - amount,
           modifiedAt: new Date().toISOString(),
-          unsynced: !navigator.onLine,
+          unsynced: true,
         };
       }
     });
-    const prevAccounts = accounts; 
+    const prevAccounts = accounts;
     setAccounts(newAccounts);
     setForm({ splitId: "", type: "add", amount: "", description: "", date: "", fromSplitId: "", toSplitId: "" });
     setClearScanner(true);
@@ -390,21 +479,33 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
     try {
       await saveAccounts(newAccounts.map(acc => ({
         ...acc,
-        transactions: acc.transactions || [],
-        unsynced: acc.unsynced ?? false, // Ensure 'unsynced' is explicitly set
+        transactions: acc.transactions || [], 
       })));
+      if (navigator.onLine) {
+        setSyncStatus("syncing");
+        try {
+          await syncTransactions();
+          setSyncStatus("success");
+          setTimeout(() => setSyncStatus("idle"), 2000);
+        } catch (err) {
+          setSyncStatus("error");
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+          setError(`Sync failed: ${errorMessage}. Your changes are saved locally and will sync when online.`);
+          setTimeout(() => setSyncStatus("idle"), 5000); // Longer timeout for errors
+        }
+      }
     } catch {
       setAccounts(prevAccounts);
       setError("Failed to save transaction. Please try again.");
     }
   }
-  
+
   const exportCSV = () => {
     if (!activeAccount || !activeAccount.transactions?.length) {
       alert("No transactions to export for the selected account.");
       return;
     }
-  
+
     const rows = [
       ["Date", "Split", "Type", "Amount", "Description"],
       ...activeAccount.transactions
@@ -418,10 +519,10 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
           "manual"
         ])
     ];
-  
-    const csvContent = "data:text/csv;charset=utf-8," + 
+
+    const csvContent = "data:text/csv;charset=utf-8," +
       rows.map(row => row.map(field => `"${field}"`).join(",")).join("\n");
-    
+
     const link = document.createElement("a");
     link.href = csvContent;
     link.download = `${activeAccount.name}_transactions.csv`;
@@ -433,7 +534,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
     if (!activeAccount?.transactions) return [];
     return activeAccount.transactions.filter(
       tx =>
-        tx.type !== "transfer" 
+        tx.type !== "transfer"
     );
   }, [activeAccount?.transactions]);
 
@@ -503,30 +604,42 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
             </div>
           </div>
         )}
+        {syncStatus === "syncing" && (
+          <div className="sync-status syncing">Syncing...</div>
+        )}
+        {syncStatus === "success" && (
+          <div className="sync-status success">All changes saved</div>
+        )}
+        {syncStatus === "offline" && (
+          <div className="sync-status offline">Offline: changes will sync when online</div>
+        )}
+        {syncStatus === "error" && (
+          <div className="sync-status error">Sync failed: retrying...</div>
+        )}
         <div className="expense-row">
-        <input
-          className="expense-input"
-          type="text"
-          placeholder="Add new account"
-          value={newAccountName}
-          onChange={(e) => setNewAccountName(e.target.value)}
-        />
-        <button
-          className="expense-btn expense-btn-gradient"
-          onClick={handleAddAccount}
-        >
-          Add Account
-        </button>
-        <select
-          className="expense-input"
-          value={activeAccountId}
-          onChange={(e) => setActiveAccountId(e.target.value)}
-        >
-          <option value="">Select Account</option>
-          {accounts.map(acc => (
-            <option key={acc.id} value={acc.id}>{acc.name}</option>
-          ))}
-        </select>
+          <input
+            className="expense-input"
+            type="text"
+            placeholder="Add new account"
+            value={newAccountName}
+            onChange={(e) => setNewAccountName(e.target.value)}
+          />
+          <button
+            className="expense-btn expense-btn-gradient"
+            onClick={handleAddAccount}
+          >
+            Add Account
+          </button>
+          <select
+            className="expense-input"
+            value={activeAccountId}
+            onChange={(e) => setActiveAccountId(e.target.value)}
+          >
+            <option value="">Select Account</option>
+            {accounts.map(acc => (
+              <option key={acc.id} value={acc.id}>{acc.name}</option>
+            ))}
+          </select>
         </div>
 
         {activeAccount && (
@@ -744,7 +857,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       </div>
       <div className="expense-btn-group" style={{ display: "flex", gap: "1rem", justifyContent: "center", margin: "1.2rem 0" }}>
         <button className="expense-btn" onClick={exportCSV}>Export CSV</button>
-        </div>
+      </div>
       <div className="expense-transactions-bg">
         <div className="expense-transactions-container">
           <div className="expense-transactions-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.2rem" }}>
@@ -777,44 +890,44 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
               <tbody>
                 {activeAccount
                   ? paginatedTransactions.map((tx) => {
-                      const split = activeAccount.splits.find((s) => s.id === tx.splitId);
-                      return (
-                        <tr key={tx.id} className="manual-row">
-                          <td>
-                            {(() => {
-                              const d = new Date(tx.date);
-                              const day = String(d.getDate()).padStart(2, "0");
-                              const month = String(d.getMonth() + 1).padStart(2, "0");
-                              const year = d.getFullYear();
-                              const hours = String(d.getHours()).padStart(2, "0");
-                              const minutes = String(d.getMinutes()).padStart(2, "0");
-                              return `${day}/${month}/${year}, ${hours}:${minutes}`;
-                            })()}
-                          </td>
-                          <td>{split ? split.name : "Main"}</td>
-                          <td>
-                            <span
-                              className={
-                                tx.type === "add"
-                                  ? "expense-type-add"
-                                  : tx.type === "spend"
+                    const split = activeAccount.splits.find((s) => s.id === tx.splitId);
+                    return (
+                      <tr key={tx.id} className="manual-row">
+                        <td>
+                          {(() => {
+                            const d = new Date(tx.date);
+                            const day = String(d.getDate()).padStart(2, "0");
+                            const month = String(d.getMonth() + 1).padStart(2, "0");
+                            const year = d.getFullYear();
+                            const hours = String(d.getHours()).padStart(2, "0");
+                            const minutes = String(d.getMinutes()).padStart(2, "0");
+                            return `${day}/${month}/${year}, ${hours}:${minutes}`;
+                          })()}
+                        </td>
+                        <td>{split ? split.name : "Main"}</td>
+                        <td>
+                          <span
+                            className={
+                              tx.type === "add"
+                                ? "expense-type-add"
+                                : tx.type === "spend"
                                   ? "expense-type-spend"
                                   : "expense-type-transfer"
-                              }
-                            >
-                              {tx.type === "add" ? "Add" : tx.type === "spend" ? "Spend" : "Transfer"}
-                            </span>
-                          </td>
-                          <td>
-                            {tx.type === "add" ? "+" : "-"}₹
-                            {tx.amount.toFixed(2)}
-                          </td>
-                          <td className="expense-description-cell">{tx.description}</td>
-                        </tr>
-                      );
-                    })
+                            }
+                          >
+                            {tx.type === "add" ? "Add" : tx.type === "spend" ? "Spend" : "Transfer"}
+                          </span>
+                        </td>
+                        <td>
+                          {tx.type === "add" ? "+" : "-"}₹
+                          {tx.amount.toFixed(2)}
+                        </td>
+                        <td className="expense-description-cell">{tx.description}</td>
+                      </tr>
+                    );
+                  })
                   : (
-                    <tr  key="no-account">
+                    <tr key="no-account">
                       <td colSpan={6} style={{ textAlign: "center", color: "#888" }}>
                         Please add and select a bank account to view transactions.
                       </td>
@@ -840,7 +953,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
           </div>
         </div>
       </div>
-      
+
       <div className="expense-manager-bg">
         <RevealOnScroll
           as="h1"
@@ -885,22 +998,22 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
             automatically.
           </RevealOnScroll>
           <div>
-          <RevealOnScroll as="ul">
-            <li key="add-bank">
-              <b>Add Bank:</b> Create a new account for tracking.
-            </li>
-            <li key="add-split">
-              <b>Add Split:</b> Allocate money for a specific purpose.
-            </li>
-            <li key="add-spend">
-              <b>Add/Spend Money:</b> Record every transaction for accurate
-              tracking.
-            </li>
-            <li key="table">
-              <b>Transactions Table:</b> Review your history and stay on top of
-              your finances.
-            </li>
-          </RevealOnScroll>
+            <RevealOnScroll as="ul">
+              <li key="add-bank">
+                <b>Add Bank:</b> Create a new account for tracking.
+              </li>
+              <li key="add-split">
+                <b>Add Split:</b> Allocate money for a specific purpose.
+              </li>
+              <li key="add-spend">
+                <b>Add/Spend Money:</b> Record every transaction for accurate
+                tracking.
+              </li>
+              <li key="table">
+                <b>Transactions Table:</b> Review your history and stay on top of
+                your finances.
+              </li>
+            </RevealOnScroll>
           </div>
           <RevealOnScroll as="h3" >What is a Split?</RevealOnScroll>
           <RevealOnScroll as="p">
@@ -909,18 +1022,18 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
             This helps you organize your money and track spending in each
             category separately.
           </RevealOnScroll>
-          
-            <RevealOnScroll as="h3" >Detailed Example:</RevealOnScroll>
-            <RevealOnScroll as="p">
+
+          <RevealOnScroll as="h3" >Detailed Example:</RevealOnScroll>
+          <RevealOnScroll as="p">
             Suppose you add a new bank account with ₹10,000 as your main
             balance. You want to set aside ₹3,000 for Groceries.
-            </RevealOnScroll>
-            <RevealOnScroll as="ul">
-              <li key="main-balance">Your <b>Main</b> balance starts at ₹10,000.</li>
-              <li key="create-split">
-                You create a <b>Groceries split</b> and allocate ₹3,000 from
-                your main balance.
-              </li>
+          </RevealOnScroll>
+          <RevealOnScroll as="ul">
+            <li key="main-balance">Your <b>Main</b> balance starts at ₹10,000.</li>
+            <li key="create-split">
+              You create a <b>Groceries split</b> and allocate ₹3,000 from
+              your main balance.
+            </li>
             2000, then record your daily
             expenses. Watch your balances and splits update in real time!
           </RevealOnScroll>

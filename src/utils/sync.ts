@@ -1,10 +1,10 @@
-// Removed unused imports from "./localDb"
 import localforage from "localforage";
 import { authFetch } from "../utils/authFetch";
 
 // NOTE: If you update the backend Account/Transaction/Split schema, update these interfaces and sync payload accordingly!
 
 let syncInProgress = false;
+
 interface Split {
   id: string;
   name: string;
@@ -18,6 +18,7 @@ interface Account {
   splits: Split[];
   transactions: Transaction[];
   unsynced?: boolean | undefined | false;
+  modifiedAt?: string; 
 }
 
 interface Transaction {
@@ -30,6 +31,7 @@ interface Transaction {
   date: string;
   unsynced?: boolean | undefined | false;
   source?: string;
+  modifiedAt?: string; 
 }
 
 export const accountsStore = localforage.createInstance({
@@ -59,20 +61,21 @@ export async function syncTransactions() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-   
     const allAccounts: Account[] = await getAccountsFromLocalDb();
-   
+
     const accountsToSync = allAccounts.filter(acc =>
       acc.unsynced ||
       (acc.transactions && acc.transactions.some(tx => tx.unsynced))
-    ).map(acc => ({
+    );
+
+    if (accountsToSync.length === 0) return;
+
+    // Send a copy with unsynced removed
+    const accountsForRequest = accountsToSync.map(acc => ({
       ...acc,
-    
       unsynced: undefined,
       transactions: acc.transactions?.map(tx => ({ ...tx, unsynced: undefined })) || [],
     }));
-
-    if (accountsToSync.length === 0) return;
 
     const res = await authFetch("http://localhost:5000/api/expense", {
       method: "POST",
@@ -80,7 +83,7 @@ export async function syncTransactions() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ accounts: accountsToSync })
+      body: JSON.stringify({ accounts: accountsForRequest })
     });
 
     if (res.ok) {
@@ -88,6 +91,7 @@ export async function syncTransactions() {
       const savedTxIds: string[] = responseData.savedTransactionIds || [];
       const savedAccIds: string[] = responseData.savedAccountIds || [];
 
+      // Update the ORIGINAL accounts and save them back
       for (const acc of accountsToSync) {
         if (savedAccIds.includes(acc.id)) {
           acc.unsynced = undefined;
@@ -102,9 +106,11 @@ export async function syncTransactions() {
     } else {
       const err = await res.json().catch(() => ({}));
       console.error("Sync failed:", err.error || res.statusText);
+      throw new Error(err.error || "Sync failed");
     }
   } catch (err) {
     console.error("Network error during sync:", err);
+    throw err;
   } finally {
     syncInProgress = false;
   }

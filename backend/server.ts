@@ -19,6 +19,7 @@ import { checkPremium } from "./middleware/checkPremium";
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import analyticsRoutes from "./routes/analytics";
+import xss from "xss-clean";
 
 dotenv.config();
 
@@ -83,7 +84,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
+app.use(xss());
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -340,60 +341,93 @@ app.get("/api/expense", auth, checkPremium, async (req, res) => {
 app.post("/api/expense", auth, async (req, res) => {
   try {
     const { accounts } = req.body;
-    const user = await User.findById(req.user?.id);
-
-    // Validate accounts is an array
     if (!Array.isArray(accounts)) {
       res.status(400).json({ error: "Accounts must be an array." });
       return;
     }
-
-    const savedAccountIds: string[] = [];
-    const savedTransactionIds: string[] = [];
-    const failedAccounts: { id?: string; error: string }[] = [];
-    const failedTransactions: { id?: string; error: string }[] = [];
-
-    // Get existing data
-    let existingData = await ExpenseManagerData.findOne({ userId: req.user?.id });
-    if (!existingData) {
-      existingData = new ExpenseManagerData({ userId: req.user?.id, accounts: [] });
+    
+    // Validation (keep existing validation code)
+    for (const acc of accounts) {
+      if (typeof acc.name !== "string" || acc.name.length > 100) {
+        res.status(400).json({ error: "Invalid account name." });
+        return;
+      }
+      if (typeof acc.balance !== "number" || isNaN(acc.balance)) {
+        res.status(400).json({ error: "Invalid account balance." });
+        return;
+      }
+      if (!Array.isArray(acc.splits) || !Array.isArray(acc.transactions)) {
+        res.status(400).json({ error: "Splits and transactions must be arrays." });
+        return;
+      }
+      for (const split of acc.splits) {
+        if (typeof split.name !== "string" || split.name.length > 50) {
+          res.status(400).json({ error: "Invalid split name." });
+          return;
+        }
+        if (typeof split.balance !== "number" || isNaN(split.balance)) {
+          res.status(400).json({ error: "Invalid split balance." });
+          return;
+        }
+      }
+      for (const tx of acc.transactions) {
+        if (
+          typeof tx.id !== "string" ||
+          typeof tx.type !== "string" ||
+          typeof tx.amount !== "number" ||
+          typeof tx.date !== "string" ||
+          typeof tx.description !== "string"
+        ) {
+          res.status(400).json({ error: "Invalid transaction data." });
+          return;
+        }
+        if (tx.description.length > 200) {
+          res.status(400).json({ error: "Description too long." });
+          return;
+        }
+      }
     }
 
-    for (const newAccount of accounts) {
-      try {
-        // Validate account
-        if (typeof newAccount.name !== "string" || typeof newAccount.balance !== "number") {
-          throw new Error("Invalid account data.");
-        }
-        if (!Array.isArray(newAccount.splits) || !Array.isArray(newAccount.transactions)) {
-          throw new Error("Splits and transactions must be arrays.");
-        }
-        // Validate splits
-        for (const split of newAccount.splits) {
-          if (typeof split.name !== "string" || typeof split.balance !== "number") {
-            throw new Error("Invalid split data.");
-          }
-        }
-        // Validate transactions
-        for (const tx of newAccount.transactions) {
-          if (
-            typeof tx.id !== "string" ||
-            typeof tx.type !== "string" ||
-            typeof tx.amount !== "number" ||
-            typeof tx.date !== "string"
-          ) {
-            failedTransactions.push({ id: tx.id, error: "Invalid transaction data." });
-            continue; // Skip this transaction
-          }
-        }
+    // **ADD THIS: ACTUAL SAVE LOGIC**
+    let existingData = await ExpenseManagerData.findOne({ userId: req.user?.id });
+    const savedAccountIds: string[] = [];
+    const savedTransactionIds: string[] = [];
 
-        // Find or add account
-        let existingAccount = existingData.accounts.find(acc => acc.id === newAccount.id);
-        if (!existingAccount) {
+    if (!existingData) {
+      // Create new document
+      existingData = new ExpenseManagerData({
+        userId: req.user?.id,
+        accounts: accounts,
+      });
+      await existingData.save();
+      
+      // Mark all accounts and transactions as saved
+      for (const acc of accounts) {
+        savedAccountIds.push(acc.id);
+        if (acc.transactions) {
+          for (const tx of acc.transactions) {
+            savedTransactionIds.push(tx.id);
+          }
+        }
+      }
+    } else {
+      // Merge with existing data using modifiedAt for conflict resolution
+      for (const newAccount of accounts) {
+        const existingAccountIndex = existingData.accounts.findIndex(acc => acc.id === newAccount.id);
+        
+        if (existingAccountIndex === -1) {
+          // New account
           existingData.accounts.push(newAccount);
           savedAccountIds.push(newAccount.id);
+          if (newAccount.transactions) {
+            for (const tx of newAccount.transactions) {
+              savedTransactionIds.push(tx.id);
+            }
+          }
         } else {
-          // Compare account-level modifiedAt
+          // Existing account - use modifiedAt for "last write wins"
+          const existingAccount = existingData.accounts[existingAccountIndex];
+          
           if (
             !existingAccount.modifiedAt ||
             !newAccount.modifiedAt ||
@@ -429,21 +463,23 @@ app.post("/api/expense", auth, async (req, res) => {
             ...Array.from(txMap.values())
           );
         }
-      } catch (err: any) {
-        failedAccounts.push({ id: newAccount.id, error: err.message });
       }
+      await existingData.save();
     }
 
-    await existingData.save();
+    // Emit socket update
+    io.to(`user-${req.user?.id}`).emit("expenseDataUpdated", {
+      accounts: existingData.accounts,
+      updatedAt: existingData.updatedAt
+    });
 
-    res.json({
-      message: "Expense data saved",
+    res.status(200).json({ 
+      message: "Expense data saved successfully.",
       savedAccountIds,
-      savedTransactionIds,
-      failedAccounts,
-      failedTransactions
+      savedTransactionIds
     });
   } catch (err) {
+    console.error("Expense save error:", err);
     res.status(500).json({ error: "Failed to save expense data" });
   }
 });
