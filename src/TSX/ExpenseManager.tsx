@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import "../CSS/ExpenseManager.css";
-import RevealOnScroll from "./RevealOnScroll";
+// import RevealOnScroll from "./RevealOnScroll";
 import { io } from "socket.io-client";
 import ReceiptScanner from "../components/ReceiptScanner";
 import { authFetch } from "../utils/authFetch";
+import Accordion from "../components/Accordion";
 import { saveAccounts, getAccountsFromLocalDb, syncTransactions } from "../utils/sync";
 
 type Split = {
@@ -600,7 +601,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
           <div className="sync-status success">All changes saved</div>
         )}
         {syncStatus === "offline" && (
-          <div className="sync-status offline">Offline: changes will sync when online</div>
+          <div className="sync-status offline">Offline: changes will sync when online so reload after you come online</div>
         )}
         {syncStatus === "error" && (
           <div className="sync-status error">Sync failed: retrying...</div>
@@ -943,90 +944,98 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
         </div>
       </div>
 
-      <div className="expense-manager-bg">
-        <RevealOnScroll
-          as="h1"
-          className="expense-explanation-title"
-          style={{
-            textAlign: "center",
-            margin: "2rem 0 1rem 0",
-            color: "#7c4dff",
-          }}
-        >
-          How to Use the Expense Manager :
-        </RevealOnScroll>
-        <div
-          className="expense-explanation"
-          ref={explanationRef}
-          style={{ marginTop: "-1.5rem" }}
-        >
-          <RevealOnScroll as="p">
-            <b>Step 1:</b> Add your account using the "Add Account" field.
-            Each account tracks its own balance and splits.
-          </RevealOnScroll>
-          <RevealOnScroll as="p">
-            <b>Step 2:</b> Select your active account from the dropdown to manage its money.
-          </RevealOnScroll>
-          <RevealOnScroll as="p">
-            <b>Step 3:</b> Use "Splits" to divide your money for specific
-            purposes (e.g., Groceries, Rent, Fun). Give each split a name and
-            allocate an amount from your main balance.
-          </RevealOnScroll>
-          <RevealOnScroll as="p">
-            <b>Step 4:</b> Record transactions using the form. Choose whether to
-            add or spend money, select a split (or main), enter the amount,
-            description, and date.
-          </RevealOnScroll>
-          <RevealOnScroll as="p">
-            <b>Step 5:</b> All transactions appear in the table below, showing
-            date, split, type, amount, and description.
-          </RevealOnScroll>
-          <RevealOnScroll as="p">
-            <b>Tip:</b> Use splits to budget for categories, and update daily to
-            track your spending and savings. The total balance updates
-            automatically.
-          </RevealOnScroll>
-          <div>
-            <RevealOnScroll as="ul">
-              <li key="add-bank">
-                <b>Add Bank:</b> Create a new account for tracking.
-              </li>
-              <li key="add-split">
-                <b>Add Split:</b> Allocate money for a specific purpose.
-              </li>
-              <li key="add-spend">
-                <b>Add/Spend Money:</b> Record every transaction for accurate
-                tracking.
-              </li>
-              <li key="table">
-                <b>Transactions Table:</b> Review your history and stay on top of
-                your finances.
-              </li>
-            </RevealOnScroll>
-          </div>
-          <RevealOnScroll as="h3" >What is a Split?</RevealOnScroll>
-          <RevealOnScroll as="p">
-            A <b>split</b> lets you divide your main account balance into
-            smaller buckets for specific purposes—like Groceries, Rent, or Fun.
-            This helps you organize your money and track spending in each
-            category separately.
-          </RevealOnScroll>
-
-          <RevealOnScroll as="h3" >Detailed Example:</RevealOnScroll>
-          <RevealOnScroll as="p">
-            Suppose you add a new bank account with ₹10,000 as your main
-            balance. You want to set aside ₹3,000 for Groceries.
-          </RevealOnScroll>
-          <RevealOnScroll as="ul">
-            <li key="main-balance">Your <b>Main</b> balance starts at ₹10,000.</li>
-            <li key="create-split">
-              You create a <b>Groceries split</b> and allocate ₹3,000 from
-              your main balance.
-            </li>
-            2000, then record your daily
-            expenses. Watch your balances and splits update in real time!
-          </RevealOnScroll>
-        </div>
+      <div className="expense-manager-bg" ref={explanationRef}>
+        <Accordion
+          sections={[
+            {
+              title: "How to Use the Expense Manager",
+              content: (
+                <>
+                  <div className="accordion-section-title">Getting Started</div>
+                  <ol className="accordion-steps">
+                    <li><span className="step-num">1</span> <b>Add your account</b> using the <span className="highlight">"Add Account"</span> field. Each account tracks its own balance and splits.</li>
+                    <li><span className="step-num">2</span> <b>Select your active account</b> from the dropdown to manage its money.</li>
+                    <li><span className="step-num">3</span> <b>Use "Splits"</b> to divide your money for specific purposes (e.g., <span className="highlight">Groceries</span>, <span className="highlight">Rent</span>, <span className="highlight">Fun</span>).</li>
+                    <li><span className="step-num">4</span> <b>Record transactions</b> using the form. Choose whether to add or spend money, select a split (or main), enter the amount, description, and date.</li>
+                    <li><span className="step-num">5</span> <b>View transactions</b> in the table below, showing date, split, type, amount, and description.</li>
+                  </ol>
+                  <div className="accordion-example">
+                    <b>Example:</b> You add an account <span className="highlight">"HDFC Bank"</span> with ₹20,000. You create splits for <span className="highlight">"Groceries"</span> (₹5,000), <span className="highlight">"Rent"</span> (₹8,000), and <span className="highlight">"Fun"</span> (₹2,000). As you record expenses, each split updates separately, and your main balance reflects what's left.
+                  </div>
+                  <div className="accordion-tip">
+                    <b>Tip:</b> Use splits to budget for categories, and update daily to track your spending and savings. The total balance updates automatically.
+                  </div>
+                  <div className="accordion-note">
+                    <b>Note:</b> Free users can store up to 100 transactions per account. Export or upgrade for unlimited history.
+                  </div>
+                </>
+              )
+            },
+            {
+              title: "What is a Split?",
+              content: (
+                <>
+                  <div className="accordion-section-title">What is a Split?</div>
+                  <div className="accordion-desc">
+                    <span className="highlight"><b>Split</b></span> lets you divide your main account balance into smaller buckets for specific purposes—like <span className="highlight">Groceries</span>, <span className="highlight">Rent</span>, or <span className="highlight">Fun</span>. This helps you organize your money and track spending in each category separately.
+                  </div>
+                  <div className="accordion-example">
+                    <b>Detailed Example:</b>
+                    <ul className="accordion-list">
+                      <li>Your <span className="highlight">Main</span> balance starts at <b>₹10,000</b>.</li>
+                      <li>You create a <span className="highlight">Groceries split</span> and allocate <b>₹3,000</b> from your main balance.</li>
+                      <li>When you spend <b>₹500</b> on groceries, the Groceries split drops to <b>₹2,500</b>, and your main balance remains unchanged.</li>
+                    </ul>
+                  </div>
+                  <div className="accordion-tip">
+                    <b>Tip:</b> Use splits to avoid overspending in any category. If a split runs out, you know you’ve hit your budget for that purpose.
+                  </div>
+                </>
+              )
+            },
+            {
+              title: "How to Use the Receipt Scanner",
+              content: (
+                <>
+                  <div className="accordion-section-title">Receipt Scanner</div>
+                  <ul className="accordion-list">
+                    <li>Click <span className="highlight">Upload Receipt Image</span> and select a photo of your bill.</li>
+                    <li>Press <span className="highlight">Scan Receipt</span> to extract the total, date, and vendor automatically.</li>
+                    <li>Review the extracted details and adjust if needed before submitting.</li>
+                    <li>This saves time and ensures accuracy for expense tracking.</li>
+                  </ul>
+                  <div className="accordion-example">
+                    <b>Example:</b> You upload a restaurant bill. The scanner reads <span className="highlight">₹850</span> and <span className="highlight">Cafe Coffee Day</span> and fills in the transaction form for you. You just confirm and submit!
+                  </div>
+                  <div className="accordion-tip">
+                    <b>Tip:</b> Always check the scanned details before saving, especially for handwritten or faded receipts.
+                  </div>
+                </>
+              )
+            },
+            {
+              title: "How to Use the Transfer Option",
+              content: (
+                <>
+                  <div className="accordion-section-title">Transfer Option</div>
+                  <ul className="accordion-list">
+                    <li><span className="highlight">Do NOT select "Main"</span>. Select <span className="highlight">Transfer Money</span> in the transaction form.</li>
+                    <li>Choose the <span className="highlight">split</span> to transfer <b>FROM</b> and the split to transfer <b>TO</b>.</li>
+                    <li>Enter the amount and description (no need to set date and time), then submit.</li>
+                    <li>This helps you reallocate funds between categories (e.g., move unused grocery money to savings).</li>
+                    <li>Transfers do not affect your main account balance, only the splits.</li>
+                  </ul>
+                  <div className="accordion-example">
+                    <b>Example:</b> You have <span className="highlight">₹1,000</span> left in <span className="highlight">Groceries</span> but need more for <span className="highlight">Transport</span>. Use Transfer to move <b>₹500</b> from Groceries to Transport—no change to your main balance.
+                  </div>
+                  <div className="accordion-tip">
+                    <b>Tip:</b> Use transfers to adjust your budget mid-month without losing track of your original allocations.
+                  </div>
+                </>
+              )
+            }
+          ]}
+        />
       </div>
     </div>
   );

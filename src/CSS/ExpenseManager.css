@@ -1,7 +1,7 @@
 .expense-manager-bg {
   min-height: 100vh;
   background: #f7f4ff;
-  display: block; 
+  display: block;
   padding: 2rem 0 0 0;
 }
 
@@ -13,23 +13,16 @@
   box-shadow: 0 8px 32px rgba(91, 66, 243, 0.10), 0 1.5px 6px rgba(0,0,0,0.06);
   padding: 2.8rem 2.5rem 2rem 2.5rem;
   color: #222;
-  margin: 3rem auto 2.5rem auto; 
-  transition: 0.4s ease-in-out;
+  margin: 3rem auto 2.5rem auto;
   border: 1.5px solid #a78bfa;
 }
 
 .expense-title {
   text-align: center;
   font-size: 2.2rem;
-  line-height: 2rem;
   font-weight: 700;
   color: #4b267d;
-  letter-spacing: 1px;
   margin-bottom: 1.5rem;
-  background: none;
-  -webkit-background-clip: unset;
-  -webkit-text-fill-color: unset;
-  background-clip: unset;
 }
 
 .expense-row,
@@ -66,7 +59,6 @@
   width: 100%;
   border-radius: 0.5rem;
   border: 1.5px solid #c7b3fa;
-  outline: 0;
   background-color: #fff;
   padding: 0.75rem 1rem;
   color: #222;
@@ -111,7 +103,6 @@
   justify-content: center;
   align-items: center;
   gap: 2rem;
-  justify-content: center;
   margin: 2rem 0 2rem 0;
   padding: 0.5rem 0;
   width: 100%;
@@ -197,24 +188,11 @@
 }
 
 .expense-table td.expense-description-cell {
-  white-space: pre-line; 
-  word-break: break-word;  
-  max-width: 220px;       
+  white-space: pre-line;
+  word-break: break-word;
+  max-width: 220px;
   text-align: left;
   vertical-align: top;
-}
-
-.expense-table th,
-.expense-table td {
-  white-space: nowrap;
-}
-
-.expense-table tr.bank-sync-row {
-  background: #f5f5fa;
-}
-
-.expense-table tr.manual-row {
-  background: #fff;
 }
 
 .expense-type-add {
@@ -226,21 +204,18 @@
   color: #ff4d6d;
 }
 
+.expense-type-transfer {
+  color: #a78bfa;
+}
+
 .expense-transactions-bg {
   width: 100vw;
   background: #f7f4ff;
-  padding: 0 0 3.5rem 0; 
+  padding: 0 0 3.5rem 0;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 340px;
-}
-
-.expense-transactions-header .expense-input {
-  font-size: 1rem;
-  padding: 0.4rem 1rem;
-  border-radius: 0.5rem;
-  margin-left: 1rem;
 }
 
 .expense-transactions-container {
@@ -320,93 +295,200 @@
 .sync-status.offline { background: #fff3e0; color: #ff9800; border: 1.5px solid #ff9800; }
 .sync-status.error { background: #ffebee; color: #c62828; border: 1.5px solid #f44336; }
 
-@media (max-width: 700px) {
-  .pagination-controls {
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.5rem 0;
-  }
-  .pagination-controls button {
-    width: 100%;
-    padding: 0.5em 0;
-    font-size: 0.98rem;
-  }
-  .pagination-controls span {
-    margin: 0.5em 0;
-    font-size: 1rem;
-  }
-  .expense-table td.expense-description-cell {
-    max-width: 120px;
-    font-size: 0.95rem;
-  }
-}
-
-.expense-explanation {
-  max-width: 1200px;
+.expense-accordion {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  text-align: left;
-  gap: 1rem;
-  margin: 3rem auto 2rem auto;
+  max-width: 900px;
+  margin: 2.5rem auto 2rem auto;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #f7f4ff 60%, #f0e7ff 100%);
+  box-shadow: 0 8px 32px rgba(91, 66, 243, 0.10), 0 1.5px 6px rgba(0,0,0,0.06);
   padding: 2rem 2rem 1.5rem 2rem;
-  font-size: 1.18rem;
+  font-size: 1.15rem;
   line-height: 1.7;
 }
 
-.expense-explanation-title {
-  font-size: 2.2rem;
-  font-weight: 800;
-  text-align: center;
+.accordion-section {
+  border-bottom: 1.5px solid #a78bfa;
   margin-bottom: 1.2rem;
-  margin-top: 0.5rem;
-  background: linear-gradient(90deg, #5b42f3 0%, #00ddeb 100%);
-  background-size: 200% 200%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
-  animation: gradientFlow 4s linear infinite;
-  letter-spacing: 1px;
+  transition: background 0.3s;
 }
 
-.expense-explanation h3 {
-  font-size: 1.8rem;
+.accordion-title {
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 1.25rem;
   font-weight: 700;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  color: #7c4dff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.accordion-title:hover {
+  color: #4b267d;
+}
+
+.accordion-arrow {
+  font-size: 1.2rem;
+  margin-left: 1rem;
   color: #a78bfa;
+  transition: transform 0.3s;
 }
 
-.expense-explanation ul {
-  font-size: 1.08rem;
-  margin: 0 0 0.8rem 1.2rem;
-  padding: 0;
+.accordion-section.open .accordion-arrow {
+  transform: rotate(180deg);
 }
 
-.expense-explanation li {
-  margin-bottom: 0.3rem;
-  line-height: 1.6;
+.accordion-content {
+  overflow-y: auto;
+  max-height: 420px;
+  padding: 0.7rem 0 0.7rem 0;
+  color: #222;
+  background: none;
+  transition: max-height 0.5s, opacity 0.5s;
+  scroll-padding-bottom: 2.5rem;
 }
 
-.expense-explanation b {
-  color: #5b42f3;
-  font-size: 1.15rem;
+/* Custom scrollbar for accordion-content */
+.accordion-content::-webkit-scrollbar {
+  width: 10px;
+  background: #f7f4ff;
+  border-radius: 8px;
 }
 
-.expense-explanation h1,
-.expense-explanation h2,
-.expense-explanation h3,
-.expense-explanation b,
-.expense-gradient-text {
+.accordion-content::-webkit-scrollbar-thumb {
+  background: #a78bfa;
+  border-radius: 8px;
+}
+
+body.dark .accordion-content::-webkit-scrollbar {
+  background: #25102a;
+}
+
+body.dark .accordion-content::-webkit-scrollbar-thumb {
+  background: #44225a;
+}
+
+/* For Firefox */
+.accordion-content {
+  scrollbar-width: thin;
+  scrollbar-color: #a78bfa #f7f4ff;
+}
+
+body.dark .accordion-content {
+  scrollbar-color: #44225a #25102a;
+}
+
+.accordion-section-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
   background: linear-gradient(90deg, #5b42f3 0%, #00ddeb 100%);
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   color: transparent;
+  letter-spacing: 1px;
+  animation: gradientFlow 4s linear infinite;
+}
+
+.accordion-steps {
+  margin: 0 0 1.2rem 0;
+  padding: 0 0 0 1.5rem;
+  list-style: none;
+}
+
+.accordion-steps li {
+  margin-bottom: 0.7rem;
+  font-size: 1.08rem;
+  position: relative;
+  padding-left: 2.2rem;
+}
+
+.accordion-steps .step-num {
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  background: linear-gradient(135deg, #af40ff 60%, #00ddeb 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px #a78bfa22;
+}
+
+.accordion-desc {
+  font-size: 1.08rem;
+  margin-bottom: 1rem;
+  color: #444;
+}
+
+.accordion-list {
+  margin: 0 0 1.2rem 0;
+  padding: 0 0 0 1.5rem;
+  list-style: none;
+}
+
+.accordion-list li {
+  margin-bottom: 0.7rem;
+  font-size: 1.08rem;
+  position: relative;
+  padding-left: 1.6rem;
+}
+
+.accordion-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #a78bfa;
+  font-size: 1.2rem;
+  top: 0.1rem;
+}
+
+.highlight {
+  background: linear-gradient(90deg, #a78bfa 0%, #61d887 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+}
+
+.accordion-example, .accordion-tip, .accordion-note {
+  margin: 1rem 0;
+  padding: 1rem 1.2rem;
+  border-radius: 10px;
+  font-size: 1.08rem;
+  box-shadow: 0 2px 8px #a78bfa11;
+}
+
+.accordion-example {
+  background: linear-gradient(90deg, #f7f4ff 60%, #e0e7ff 100%);
+  border-left: 4px solid #a78bfa;
+}
+
+.accordion-tip {
+  background: linear-gradient(90deg, #e0f7fa 60%, #f7f4ff 100%);
+  border-left: 4px solid #61d887;
+  color: #237efd;
+}
+
+.accordion-note {
+  background: linear-gradient(90deg, #fffbe7 60%, #f7f4ff 100%);
+  border-left: 4px solid #ff9800;
+  color: #a78bfa;
 }
 
 @keyframes gradientFlow {
@@ -415,186 +497,183 @@
   100% { background-position: 0% 50%; }
 }
 
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .expense-accordion {
+    max-width: 98vw;
+    padding: 1.5rem 1rem 1rem 1rem;
+    font-size: 1.08rem;
+  }
+}
+
 @media (max-width: 900px) {
-    .expense-transactions-container {
-      padding: 1.2rem 0.5rem;
-      border-radius: 1rem;
-    }
-    .expense-transactions-title {
-      font-size: 1.1rem;
-    }
-  }
-  
-@media (max-width: 700px) {
-  .expense-table th,
-  .expense-table td {
-    padding: 0.5rem 0.3rem;
-    font-size: 0.92rem;
-  }
-  .expense-transactions-title {
+  .expense-accordion {
+    max-width: 100vw;
+    padding: 1.2rem 0.5rem 1rem 0.5rem;
     font-size: 1rem;
+    border-radius: 0.7rem;
   }
-  .expense-transactions-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.7rem;
+  .accordion-title {
+    font-size: 1.1rem;
+    padding: 0.8rem 0;
   }
-  .expense-table-wrapper {
-    margin-top: 0.7rem;
+  .accordion-section-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.7rem;
   }
-  .expense-table {
-    min-width: 520px;
-  }
-  .expense-table th,
-  .expense-table td {
-    white-space: nowrap;
-  }
-  .expense-table {
-    font-size: 0.92rem;
-  }
-  .expense-btn,
-  .expense-btn-gradient {
-    font-size: 0.98rem;
-    padding: 0.6rem;
-  }
-  .expense-input {
-    font-size: 0.95rem;
-    padding: 0.5rem 0.7rem;
+  .accordion-content {
+    max-height: 320px;
+    padding: 0.5rem 0 0.5rem 0;
   }
 }
 
 @media (max-width: 700px) {
-  .expense-transactions-header > div,
-  .expense-transactions-header > select {
-    width: 100%;
-    margin-left: 0;
+  .expense-accordion {
+    padding: 0.7rem 0.2rem 0.7rem 0.2rem;
+    font-size: 0.98rem;
+    border-radius: 0.5rem;
+  }
+  .accordion-title {
+    font-size: 1rem;
+    padding: 0.7rem 0;
+  }
+  .accordion-section-title {
+    font-size: 1rem;
     margin-bottom: 0.5rem;
   }
+  .accordion-content {
+    max-height: 220px;
+    padding: 0.3rem 0 0.3rem 0;
+  }
 }
 
-@media (max-width: 700px) {
-  .expense-btn-group {
-    flex-direction: column;
-    gap: 1rem;
-    margin: 1.2rem 0;
-    padding: 0.3rem 0;
+@media (max-width: 370px) {
+  .expense-accordion {
+    padding: 0.3rem 0.1rem 0.3rem 0.1rem;
+    font-size: 0.92rem;
+    border-radius: 0.3rem;
   }
-  .expense-btn-group .expense-btn {
-    width: 100%;
-    min-width: 120px;
-    font-size: 1rem;
+  .accordion-title {
+    font-size: 0.92rem;
+    padding: 0.5rem 0;
+  }
+  .accordion-section-title {
+    font-size: 0.92rem;
+    margin-bottom: 0.3rem;
+  }
+  .accordion-content {
+    max-height: 120px;
+    padding: 0.2rem 0 0.2rem 0;
   }
 }
-  
+
+/* Galaxy Z Fold 5 (portrait: 344px x 720px, landscape: 720px x 344px) */
+@media (max-width: 400px) {
+  .expense-accordion {
+    padding: 0.2rem 0.05rem 0.2rem 0.05rem;
+    font-size: 0.89rem;
+    border-radius: 0.2rem;
+  }
+  .accordion-title {
+    font-size: 0.89rem;
+    padding: 0.4rem 0;
+  }
+  .accordion-section-title {
+    font-size: 0.89rem;
+    margin-bottom: 0.2rem;
+  }
+  .accordion-content {
+    max-height: 90px;
+    padding: 0.1rem 0 0.1rem 0;
+  }
+}
+
+/* Dark mode styles */
 body.dark .expense-manager-bg {
-    background: #25102a;
-  }
-  
-  body.dark .expense-manager-card {
-    background: #25102a;;
-    color: #fff;
-    border: 1.5px solid #a78bfa;
-    box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
-  }
-  
-  body.dark .expense-manager-card:hover {
-    box-shadow: 0 12px 36px #a78bfa33;
-  }
-  
-  body.dark .expense-title {
-    color: #fff;
-    background: none;
-    -webkit-background-clip: unset;
-    -webkit-text-fill-color: unset;
-    background-clip: unset;
-  }
-  
-  body.dark .expense-subtitle {
-    color: #fff;
-  }
-  
-  body.dark .expense-split-name {
-    color: #fff;
-  }
-  
-  body.dark .expense-input,
-  body.dark .expense-splits-list li {
-    background-color: #25102a;
-    color: #fff;
-    border-color: #44225a;
-  }
-  
-  body.dark .expense-input:focus {
-    border-color: #a78bfa;
-    background-color: #1d061a;
-  }
-  
-  body.dark .expense-btn,
-  body.dark .expense-btn-gradient {
-    background: linear-gradient(90deg, #a78bfa 0%, #8f37ff 100%);
-    color: #1d061a;
-  }
-  
-  body.dark .expense-btn:hover,
-  body.dark .expense-btn-gradient:hover {
-    background: linear-gradient(90deg, #8f37ff 0%, #a78bfa 100%);
-    color: #fff;
-  }
-  
-  body.dark .expense-table-wrapper {
-    background: #25102a;
-    box-shadow: 0 2px 8px rgba(91, 66, 243, 0.12);
-  }
-  
-  body.dark .expense-table th {
-    background: #1d061a;
-    color: #bfa3e6;
-    border-bottom: 2px solid #a78bfa;
-  }
-  
-  body.dark .expense-table td {
-    color: #fff;
-    border-bottom: 1px solid #44225a;
-  }
-  
-  body.dark .expense-type-add {
-    color: #00ddeb;
-  }
-  
-  body.dark .expense-type-spend {
-    color: #ff4d6d;
-  }
+  background: #25102a;
+}
 
-  body.dark .expense-transactions-bg {
-    background: #25102a;
-  }
-  
-  body.dark .expense-transactions-container {
-    background: #25102a;
-    color: #fff;
-    border: 1.5px solid #a78bfa;
-    box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
-  }
-  
-  body.dark .expense-transactions-title {
-    color: #bfa3e6;
-  }
-  
-  body.dark .expense-split-amount {
-    color: #fff;
-  }
-  
-  body.dark .expense-total {
-    color: #fff;
-  }
+body.dark .expense-manager-card {
+  background: #25102a;
+  color: #fff;
+  border: 1.5px solid #a78bfa;
+  box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
+}
 
-  body.dark .expense-table tr.bank-sync-row {
-    background: #1d061a;
-  }
-  
-  body.dark .expense-table tr.manual-row {
-    background: #25102a;
-  }
+body.dark .expense-title,
+body.dark .expense-subtitle,
+body.dark .expense-split-name,
+body.dark .expense-split-amount,
+body.dark .expense-total {
+  color: #fff;
+}
+
+body.dark .expense-input,
+body.dark .expense-splits-list li {
+  background-color: #25102a;
+  color: #fff;
+  border-color: #44225a;
+}
+
+body.dark .expense-input:focus {
+  border-color: #a78bfa;
+  background-color: #1d061a;
+}
+
+body.dark .expense-btn,
+body.dark .expense-btn-gradient {
+  background: linear-gradient(90deg, #a78bfa 0%, #8f37ff 100%);
+  color: #1d061a;
+}
+
+body.dark .expense-btn:hover,
+body.dark .expense-btn-gradient:hover {
+  background: linear-gradient(90deg, #8f37ff 0%, #a78bfa 100%);
+  color: #fff;
+}
+
+body.dark .expense-table-wrapper {
+  background: #25102a;
+  box-shadow: 0 2px 8px rgba(91, 66, 243, 0.12);
+}
+
+body.dark .expense-table th {
+  background: #1d061a;
+  color: #bfa3e6;
+  border-bottom: 2px solid #a78bfa;
+}
+
+body.dark .expense-table td {
+  color: #fff;
+  border-bottom: 1px solid #44225a;
+}
+
+body.dark .expense-type-add {
+  color: #00ddeb;
+}
+
+body.dark .expense-type-spend {
+  color: #ff4d6d;
+}
+
+body.dark .expense-type-transfer {
+  color: #a78bfa;
+}
+
+body.dark .expense-transactions-bg {
+  background: #25102a;
+}
+
+body.dark .expense-transactions-container {
+  background: #25102a;
+  color: #fff;
+  border: 1.5px solid #a78bfa;
+  box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
+}
+
+body.dark .expense-transactions-title {
+  color: #bfa3e6;
+}
 
 body.dark .pagination-controls {
   background: #25102a;
@@ -617,4 +696,59 @@ body.dark .pagination-controls button:disabled {
   color: #fff;
   text-decoration: none;
   opacity: 0.7;
+}
+
+body.dark .expense-accordion {
+  background: linear-gradient(135deg, #25102a 60%, #1d061a 100%);
+  color: #fff;
+  border: 1.5px solid #a78bfa;
+  box-shadow: 0 8px 32px rgba(91, 66, 243, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
+}
+
+body.dark .accordion-section-title {
+  background: linear-gradient(90deg, #a78bfa 0%, #61d887 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+body.dark .accordion-title {
+  color: #fff;
+}
+
+body.dark .accordion-title:hover {
+  color: #fff;
+}
+
+body.dark .accordion-arrow {
+  color: #bfa3e6;
+}
+
+body.dark .accordion-content {
+  color: #fff;
+  background: none;
+}
+
+body.dark .accordion-example {
+  background: linear-gradient(90deg, #25102a 60%, #1d061a 100%);
+  border-left: 4px solid #a78bfa;
+  color: #bfa3e6;
+}
+
+body.dark .accordion-desc,
+body.dark .accordion-list li {
+  color: #bfa3e6;
+}
+
+body.dark .accordion-tip {
+  background: linear-gradient(90deg, #1d4739 60%, #25102a 100%);
+  border-left: 4px solid #61d887;
+  color: #61d887;
+}
+
+body.dark .accordion-note {
+  background: linear-gradient(90deg, #4a1c1c 60%, #25102a 100%);
+  border-left: 4px solid #ff9800;
+  color: #ff9800;
 }
