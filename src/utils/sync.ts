@@ -70,11 +70,33 @@ export async function syncTransactions() {
 
     if (accountsToSync.length === 0) return;
 
-    // Send a copy with unsynced removed
+    // Send a copy with unsynced removed AND properly formatted
     const accountsForRequest = accountsToSync.map(acc => ({
       ...acc,
-      unsynced: undefined,
-      transactions: acc.transactions?.map(tx => ({ ...tx, unsynced: undefined })) || [],
+      id: acc.id,
+      name: acc.name || "",
+      balance: Number(acc.balance) || 0,
+      splits: (acc.splits || []).map(split => ({
+        ...split,
+        id: split.id,
+        name: split.name || "",
+        balance: Number(split.balance) || 0,
+      })),
+      transactions: (acc.transactions || []).map(tx => ({
+        ...tx,
+        id: tx.id,
+        accountId: tx.accountId || acc.id,
+        type: tx.type,
+        amount: Number(tx.amount) || 0,
+        description: String(tx.description || ""),
+        date: tx.date,
+        splitId: tx.splitId || undefined,
+        modifiedAt: tx.modifiedAt || new Date().toISOString(),
+        source: tx.source || undefined,
+        unsynced: undefined, // Remove unsynced flag
+      })),
+      modifiedAt: acc.modifiedAt || new Date().toISOString(),
+      unsynced: undefined, // Remove unsynced flag
     }));
 
     const res = await authFetch("http://localhost:5000/api/expense", {

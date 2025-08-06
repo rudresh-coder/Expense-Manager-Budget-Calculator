@@ -23,6 +23,7 @@ import { Navigate } from "react-router-dom";
 import Analytics from "./TSX/Analytics";
 import FinanceParticlesBackground from "./components/FinanceParticlesBackground";
 import { authFetch } from "./utils/authFetch";
+import { syncTransactions } from "./utils/sync";
 
 export default function App() {
   const [userProfileOpen, setUserProfileOpen] = useState(false);
@@ -103,8 +104,8 @@ export default function App() {
   }, [accounts]);
 
   useEffect(() => {
-    window.addEventListener("online", syncTransactions);
-    return () => window.removeEventListener("online", syncTransactions);
+    window.addEventListener("online", localSyncTransactions);
+    return () => window.removeEventListener("online", localSyncTransactions);
   }, []);
 
   return (
@@ -153,37 +154,11 @@ export default function App() {
     </>
   );
 }
-async function syncTransactions() {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    console.warn("No authentication token found. Cannot sync transactions.");
-    return;
-  }
-
+async function localSyncTransactions() {
   try {
-    const unsyncedTransactions = JSON.parse(localStorage.getItem("unsyncedTransactions") || "[]");
-    if (unsyncedTransactions.length === 0) {
-      console.log("No transactions to sync.");
-      return;
-    }
-
-    const res = await authFetch("http://localhost:5000/api/transactions/sync", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ transactions: unsyncedTransactions }),
-    });
-
-    if (!res.ok) {
-      console.error("Failed to sync transactions.");
-      return;
-    }
-
-    console.log("Transactions synced successfully.");
-    localStorage.removeItem("unsyncedTransactions");
+    await syncTransactions();
+    console.log("Transactions synced successfully on coming online.");
   } catch (error) {
-    console.error("Error syncing transactions:", error);
+    console.error("Error syncing transactions when coming online:", error);
   }
 }

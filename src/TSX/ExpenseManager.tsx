@@ -17,7 +17,7 @@ type Account = {
   name: string;
   balance: number;
   splits: Split[];
-  transactions?: Transaction[];
+  transactions: Transaction[];
   unsynced?: boolean;
   modifiedAt?: string;
 };
@@ -158,11 +158,8 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
           };
         });
         setAccounts(mergedAccounts);
-        saveAccounts(mergedAccounts.map(acc => ({
-          ...acc,
-          transactions: acc.transactions || [], // Ensure transactions is always an array
-        })));
         setAccountsUpdatedAt(data.updatedAt);
+        await saveAccounts(mergedAccounts);
       } else {
         setAccounts([]);
         setActiveAccountId("");
@@ -286,10 +283,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
     setNewAccountName("");
     
     try {
-      await saveAccounts(newAccounts.map(acc => ({
-        ...acc,
-        transactions: acc.transactions || [], // Ensure transactions is always an array
-      })));
+      await saveAccounts(newAccounts);
       if (navigator.onLine) {
         setSyncStatus("syncing");
         try {
@@ -300,19 +294,19 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
           setSyncStatus("error");
           const errorMessage = err instanceof Error ? err.message : 'Unknown error';
           setError(`Sync failed: ${errorMessage}. Your changes are saved locally and will sync when online.`);
-          setTimeout(() => setSyncStatus("idle"), 5000); // Longer timeout for errors
+          setTimeout(() => setSyncStatus("idle"), 5000);
         }
       }
     } catch {
       setAccounts(accounts);
-      setError("Failed to save transaction. Please try again.");
+      setError("Failed to save account. Please try again."); // Fixed message
     }
   };
 
   const handleAddSplit = async () => {
     if (!newSplitName.trim() || !activeAccountId) return;
-    if (!/^[A-Za-z]+$/.test(newSplitName)) {
-      setSplitNameError("Split name must contain only letters.");
+    if (!/^[A-Za-z ]+$/.test(newSplitName)) { // Allow spaces
+      setSplitNameError("Split name must contain only letters and spaces.");
       return;
     }
     const amount = parseFloat(newSplitAmount);
@@ -341,10 +335,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
     setSplitNameError("");
     
     try {
-      await saveAccounts(newAccounts.map(acc => ({
-        ...acc,
-        transactions: acc.transactions || [], // Ensure transactions is always an array
-      })));
+      await saveAccounts(newAccounts);
       if (navigator.onLine) {
         setSyncStatus("syncing");
         try {
@@ -355,12 +346,12 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
           setSyncStatus("error");
           const errorMessage = err instanceof Error ? err.message : 'Unknown error';
           setError(`Sync failed: ${errorMessage}. Your changes are saved locally and will sync when online.`);
-          setTimeout(() => setSyncStatus("idle"), 5000); // Longer timeout for errors
+          setTimeout(() => setSyncStatus("idle"), 5000);
         }
       }
     } catch {
       setAccounts(accounts);
-      setError("Failed to save transaction. Please try again.");
+      setError("Failed to save split. Please try again."); // Fixed message
     }
   };
 
@@ -477,10 +468,8 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
     setClearScanner(true);
     setTimeout(() => setClearScanner(false), 100);
     try {
-      await saveAccounts(newAccounts.map(acc => ({
-        ...acc,
-        transactions: acc.transactions || [], 
-      })));
+      await saveAccounts(newAccounts);
+
       if (navigator.onLine) {
         setSyncStatus("syncing");
         try {

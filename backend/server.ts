@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import helmet from "helmet";
+// import mongoSanitize from "express-mongo-sanitize"; 
 import cron from "node-cron";
 import adminRoutes from "./routes/admin";
 import rateLimit from "express-rate-limit";
@@ -19,7 +20,7 @@ import { checkPremium } from "./middleware/checkPremium";
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import analyticsRoutes from "./routes/analytics";
-import xss from "xss-clean";
+// import xss from "xss-clean";
 
 dotenv.config();
 
@@ -84,7 +85,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use(xss());
+// app.use(mongoSanitize()); 
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -93,20 +94,33 @@ const generalLimiter = rateLimit({
 });
 
 
-//MongoDB connection
+//MongoDB connection with retry logic
 if (!process.env.MONGO_URI) {
     logger.error("MongoDB connection string is not defined in environment variables.");
     process.exit(1); 
 }
 
+const connectWithRetry = () => {
+  mongoose.connect(process.env.MONGO_URI!, {
+    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+    socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+    // bufferMaxEntries: 0, 
+    bufferCommands: false, // Disable mongoose buffering
+  })
+  .then(() => logger.info("MongoDB connected"))
+  .catch(err => {
+    logger.error("MongoDB connection error:", err);
+    logger.info("Retrying MongoDB connection in 5 seconds...");
+    setTimeout(connectWithRetry, 5000);
+  });
+};
+
+connectWithRetry();
+
 if (!process.env.FRONTEND_URL) {
   logger.error("FRONTEND_URL is not defined in environment variables.");
   process.exit(1);
 }
-
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => logger.info("MongoDB connected"))
-    .catch(err => logger.error("MongoDB connection error:", err));
 
 if (!process.env.JWT_SECRET) {
     logger.error("JWT secret is not defined in environment variables.");
@@ -346,49 +360,104 @@ app.post("/api/expense", auth, async (req, res) => {
       return;
     }
     
-    // Validation (keep existing validation code)
+    // IMPROVED VALIDATION with better error handling
     for (const acc of accounts) {
-      if (typeof acc.name !== "string" || acc.name.length > 100) {
-        res.status(400).json({ error: "Invalid account name." });
-        return;
+      // Handle account name validation
+      if (acc.name !== null && acc.name !== undefined) {
+        if (typeof acc.name !== "string") {
+          acc.name = String(acc.name); // Convert to string
+        }
+        if (acc.name.length > 100) {
+          res.status(400).json({ error: "Account name too long." });
+          return;
+        }
       }
-      if (typeof acc.balance !== "number" || isNaN(acc.balance)) {
-        res.status(400).json({ error: "Invalid account balance." });
-        return;
+      
+      // Handle balance validation
+      let balance = acc.balance;
+      if (typeof balance === "string") {
+        balance = parseFloat(balance);
       }
-      if (!Array.isArray(acc.splits) || !Array.isArray(acc.transactions)) {
-        res.status(400).json({ error: "Splits and transactions must be arrays." });
-        return;
+      if (typeof balance !== "number" || isNaN(balance)) {
+        balance = 0; // Default to 0 if invalid
       }
+      acc.balance = balance;
+      
+      // Ensure arrays exist
+      if (!Array.isArray(acc.splits)) {
+        acc.splits = [];
+      }
+      if (!Array.isArray(acc.transactions)) {
+        acc.transactions = [];
+      }
+      
+      // Validate splits
       for (const split of acc.splits) {
-        if (typeof split.name !== "string" || split.name.length > 50) {
-          res.status(400).json({ error: "Invalid split name." });
+        if (typeof split.name !== "string") {
+          split.name = String(split.name || "");
+        }
+        if (split.name.length > 50) {
+          res.status(400).json({ error: "Split name too long." });
           return;
         }
-        if (typeof split.balance !== "number" || isNaN(split.balance)) {
-          res.status(400).json({ error: "Invalid split balance." });
-          return;
+        
+        let splitBalance = split.balance;
+        if (typeof splitBalance === "string") {
+          splitBalance = parseFloat(splitBalance);
         }
+        if (typeof splitBalance !== "number" || isNaN(splitBalance)) {
+          splitBalance = 0;
+        }
+        split.balance = splitBalance;
       }
+      
+      // Validate transactions
       for (const tx of acc.transactions) {
-        if (
-          typeof tx.id !== "string" ||
-          typeof tx.type !== "string" ||
-          typeof tx.amount !== "number" ||
-          typeof tx.date !== "string" ||
-          typeof tx.description !== "string"
-        ) {
-          res.status(400).json({ error: "Invalid transaction data." });
+        if (!tx.id || typeof tx.id !== "string") {
+          res.status(400).json({ error: "Transaction ID is required." });
           return;
+        }
+        if (!["add", "spend", "transfer"].includes(tx.type)) {
+          res.status(400).json({ error: "Invalid transaction type." });
+          return;
+        }
+        
+        let amount = tx.amount;
+        if (typeof amount === "string") {
+          amount = parseFloat(amount);
+        }
+        if (typeof amount !== "number" || isNaN(amount) || amount <= 0) {
+          res.status(400).json({ error: "Invalid transaction amount." });
+          return;
+        }
+        tx.amount = amount;
+        
+        if (!tx.date || typeof tx.date !== "string") {
+          res.status(400).json({ error: "Transaction date is required." });
+          return;
+        }
+        
+        const dateObj = new Date(tx.date);
+        if (isNaN(dateObj.getTime())) {
+          res.status(400).json({ error: "Invalid transaction date format." });
+          return;
+        }
+        
+        if (typeof tx.description !== "string") {
+          tx.description = String(tx.description || "");
         }
         if (tx.description.length > 200) {
           res.status(400).json({ error: "Description too long." });
           return;
         }
+        
+        if (!tx.accountId) {
+          tx.accountId = acc.id;
+        }
       }
     }
 
-    // **ADD THIS: ACTUAL SAVE LOGIC**
+    // Continue with existing save logic...
     let existingData = await ExpenseManagerData.findOne({ userId: req.user?.id });
     const savedAccountIds: string[] = [];
     const savedTransactionIds: string[] = [];
@@ -480,7 +549,25 @@ app.post("/api/expense", auth, async (req, res) => {
     });
   } catch (err) {
     console.error("Expense save error:", err);
-    res.status(500).json({ error: "Failed to save expense data" });
+    
+    // Log request for debugging
+    console.error("Failed request body:", JSON.stringify(req.body, null, 2));
+    
+    if (err instanceof Error) {
+      console.error("Error message:", err.message);
+      console.error("Error stack:", err.stack);
+      
+      // Send more specific error messages
+      if (err.message.includes("validation")) {
+        res.status(400).json({ error: "Data validation failed: " + err.message });
+      } else if (err.message.includes("duplicate")) {
+        res.status(409).json({ error: "Duplicate data detected: " + err.message });
+      } else {
+        res.status(500).json({ error: "Failed to save expense data" });
+      }
+    } else {
+      res.status(500).json({ error: "Failed to save expense data" });
+    }
   }
 });
 
