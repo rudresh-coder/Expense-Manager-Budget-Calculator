@@ -213,6 +213,17 @@ body.dark .footer-dropdown-content .footer-link:hover {
     color: #00ddeb;
 }
 
+@media (max-width: 900px) {
+    .site-footer {
+        padding: 1.5rem 0.7rem 1rem 0.7rem;
+        font-size: 0.98rem;
+    }
+    .footer-links-3col {
+        max-width: 95vw;
+        gap: 0.7rem 1.2rem;
+    }
+}
+
 @media (max-width: 700px) {
     .footer-links-3col {
         grid-template-columns: 1fr;
@@ -222,5 +233,136 @@ body.dark .footer-dropdown-content .footer-link:hover {
     .footer-social-col,
     .footer-links-col {
         align-items: center;
+    }
+}
+
+@media (max-width: 600px) {
+    .site-footer {
+        padding: 1.2rem 0.3rem 0.7rem 0.3rem;
+        font-size: 0.95rem;
+    }
+    .footer-brand {
+        font-size: 1.08rem;
+        margin-bottom: 0.25rem;
+    }
+    .footer-logo-img {
+        height: 38px;
+    }
+    .footer-links-home a {
+        font-size: 0.92rem;
+        margin-bottom: 0.3rem;
+    }
+    .footer-links-3col {
+        grid-template-columns: 1fr;
+        gap: 0.5rem 0;
+        padding: 0 0.05rem;
+        max-width: 99vw;
+    }
+    .footer-social-col a,
+    .footer-links-col a,
+    .footer-dropdown-content a,
+    .footer-dropdown-content .footer-link {
+        font-size: 0.9rem;
+        gap: 0.2em;
+    }
+    .footer-dropdown-btn {
+        font-size: 0.9rem;
+        padding: 0.4em 0.5em;
+    }
+    .footer-dropdown-content {
+        padding: 0.4em 0.2em;
+        gap: 0.3em;
+    }
+}
+
+@media (max-width: 400px) {
+    .site-footer {
+        padding: 1rem 0.2rem 0.7rem 0.2rem;
+        font-size: 0.92rem;
+    }
+    .footer-brand {
+        font-size: 1rem;
+        margin-bottom: 0.3rem;
+    }
+    .footer-logo-img {
+        height: 48px;
+    }
+    .footer-logo {
+        font-size: 1.1rem;
+        margin-right: 0.3rem;
+    }
+    .footer-desc {
+        font-size: 0.85rem;
+        margin-top: 0.1rem;
+    }
+    .footer-links-home a {
+        font-size: 0.95rem;
+        margin-bottom: 0.4rem;
+    }
+    .footer-links-3col {
+        gap: 0.3rem 0;
+        max-width: 99vw;
+        padding: 0 0.1rem;
+    }
+    .footer-social-col a,
+    .footer-links-col a,
+    .footer-dropdown-content a,
+    .footer-dropdown-content .footer-link {
+        font-size: 0.92rem;
+        gap: 0.3em;
+    }
+    .footer-dropdowns {
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .footer-dropdown {
+        max-width: 99vw;
+    }
+    .footer-dropdown-btn {
+        font-size: 0.92rem;
+        padding: 0.5em 0.7em;
+    }
+    .footer-dropdown-content {
+        padding: 0.5em 0.3em;
+        gap: 0.4em;
+    }
+    .footer-copyright {
+        font-size: 0.82rem;
+        margin-bottom: 2.5rem;
+    }
+}
+
+@media (max-width: 350px) {
+    .site-footer {
+        padding: 0.7rem 0.05rem 0.5rem 0.05rem;
+        font-size: 0.88rem;
+    }
+    .footer-brand {
+        font-size: 0.92rem;
+    }
+    .footer-logo-img {
+        height: 28px;
+    }
+    .footer-links-home a {
+        font-size: 0.85rem;
+    }
+    .footer-links-3col {
+        gap: 0.2rem 0;
+        padding: 0 0.01rem;
+    }
+    .footer-social-col a,
+    .footer-links-col a,
+    .footer-dropdown-content a,
+    .footer-dropdown-content .footer-link {
+        font-size: 0.85rem;
+        gap: 0.15em;
+    }
+    .footer-dropdown-btn {
+        font-size: 0.85rem;
+        padding: 0.3em 0.3em;
+    }
+    .footer-dropdown-content {
+        padding: 0.3em 0.1em;
+        gap: 0.2em;
     }
 }

@@ -319,6 +319,104 @@
   }    
 }
 
+@media (max-width: 400px) {
+  .a-section,
+  .b-section,
+  .c-section {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.7rem 0 0.3rem 0;
+    padding: 0 0.05rem;
+    max-width: 100vw;
+    width: 100%;
+    border-radius: 8px;
+  }
+  .a-info,
+  .b-info,
+  .c-info {
+    align-items: center;
+    text-align: center;
+    max-width: 100%;
+    width: 100%;
+    padding: 0;
+    font-size: 0.92rem;
+    gap: 0.3rem;
+  }
+  .a-title,
+  .b-title,
+  .c-title,
+  .d-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.1rem;
+    margin-top: 0.7rem;
+  }
+  .a-why,
+  .b-why,
+  .c-why {
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+  }
+  .a-how-title,
+  .b-how-title,
+  .c-how-title {
+    font-size: 0.98rem;
+    margin-bottom: 0.1rem;
+  }
+  .a-how,
+  .b-how,
+  .c-how {
+    font-size: 0.92rem;
+    padding-left: 0;
+  }
+  .a-how li,
+  .b-how li,
+  .c-how li {
+    padding-left: 1.5em;
+    font-size: 0.92rem;
+  }
+  .a-example,
+  .b-example,
+  .c-example {
+    font-size: 0.92rem;
+  }
+  .a-image,
+  .b-image,
+  .c-image {
+    width: 125px;
+    border-radius: 10px;
+  }
+  .a1-image,
+  .b1-image,
+  .c1-image {
+    width: 180px;
+    height: 130px;
+    border-radius: 10px;
+  }
+  .image-gradient-shadow-wrapper img {
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 350px) {
+  .a-title,
+  .b-title,
+  .c-title,
+  .d-title {
+    font-size: 1.05rem;
+  }
+  .a-image,
+  .b-image,
+  .c-image {
+    width: 105px;
+  }
+  .a1-image,
+  .b1-image,
+  .c1-image {
+    width: 150px;
+    height: 100px;
+  }
+}
+
 body.dark .a-strategy-desc,
 body.dark .a-why,
 body.dark .b-why,

@@ -112,6 +112,56 @@ body.dark .terms-link {
   100% { background-position: 0% 50%; }
 }
 
+@media (max-width: 900px) {
+  .terms-container {
+    max-width: 98vw;
+    padding: 2rem 1.2rem 1.2rem 1.2rem;
+    border-radius: 1.2rem;
+    font-size: 1.08rem;
+    margin: 2rem auto 2rem auto;
+  }
+  .terms-title {
+    font-size: 1.8rem;
+  }
+  .terms-updated {
+    font-size: 1.08rem;
+  }
+  .terms-container h2 {
+    font-size: 1.18rem;
+    margin-top: 2rem;
+    margin-bottom: 0.9rem;
+  }
+  .terms-container p,
+  .terms-container li {
+    font-size: 1.08rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .terms-container {
+    max-width: 99vw;
+    padding: 1.5rem 0.7rem;
+    border-radius: 1rem;
+    font-size: 1rem;
+    margin: 1.5rem auto 1.5rem auto;
+  }
+  .terms-title {
+    font-size: 1.25rem;
+  }
+  .terms-updated {
+    font-size: 1rem;
+  }
+  .terms-container h2 {
+    font-size: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.7rem;
+  }
+  .terms-container p,
+  .terms-container li {
+    font-size: 0.98rem;
+  }
+}
+
 @media (max-width: 600px) {
   .terms-container {
     padding: 1.2rem 0.5rem;
@@ -119,9 +169,77 @@ body.dark .terms-link {
     font-size: 1.03rem;
   }
   .terms-title {
-    font-size: 1.4rem;
+    font-size: 1.1rem;
+  }
+  .terms-updated {
+    font-size: 0.95rem;
   }
   .terms-container h2 {
+    font-size: 0.95rem;
+  }
+  .terms-container p,
+  .terms-container li {
+    font-size: 0.92rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .terms-container {
+    padding: 0.5rem 0.05rem;
+    border-radius: 0.6rem;
+    font-size: 0.92rem;
+    margin: 1.2rem 0.1rem 1.2rem 0.1rem;
+  }
+  .terms-title {
     font-size: 1.08rem;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+  }
+  .terms-updated {
+    font-size: 0.92rem;
+    margin-bottom: 1.2rem;
+  }
+  .terms-container h2 {
+    font-size: 0.95rem;
+    margin-top: 1.2rem;
+    margin-bottom: 0.7rem;
+  }
+  .terms-container p {
+    font-size: 0.92rem;
+    margin-bottom: 0.7rem;
+    margin-top: 0.1rem;
+  }
+  .terms-container ul {
+    margin: 0 0 0.7rem 1rem;
+  }
+  .terms-container li {
+    font-size: 0.89rem;
+    margin-bottom: 0.4rem;
+    padding-left: 0.1rem;
+  }
+  .terms-link {
+    font-size: 0.92rem;
+  }
+}
+
+@media (max-width: 350px) {
+  .terms-container {
+    padding: 0.2rem 0.01rem;
+    font-size: 0.85rem;
+    border-radius: 0.4rem;
+  }
+  .terms-title {
+    font-size: 0.92rem;
+  }
+  .terms-updated {
+    font-size: 0.85rem;
+  }
+  .terms-container h2 {
+    font-size: 0.85rem;
+  }
+  .terms-container p,
+  .terms-container li,
+  .terms-link {
+    font-size: 0.85rem;
   }
 }

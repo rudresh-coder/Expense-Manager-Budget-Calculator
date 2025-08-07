@@ -157,17 +157,6 @@ export default function InfoCarousel() {
     trackMouse: true,
   });
 
-  // Autoplay timer
-  // useEffect(() => {
-  //   if (paused) return;
-    
-  //   const timer = setTimeout(() => {
-  //     next();
-  //   }, 5000);
-    
-  //   return () => clearTimeout(timer);
-  // }, [idx, paused, next]);
-
   // Progress bar animation
   useEffect(() => {
     if (paused) return;

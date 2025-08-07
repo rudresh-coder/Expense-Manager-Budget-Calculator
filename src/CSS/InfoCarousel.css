@@ -393,3 +393,60 @@
         min-width: 60px;
     }
 }
+
+@media (max-width: 400px) {
+    .info-carousel {
+        padding: 0.15rem 0.005rem;
+        min-height: 90px;
+        border-radius: 4px;
+        gap: 0.15rem;
+    }
+    .carousel-slide {
+        min-height: 60px;
+        padding: 0.1rem 0.05rem;
+    }
+    .carousel-title {
+        font-size: 0.82rem;
+        margin-bottom: 0.15rem;
+    }
+    .carousel-title-big {
+        font-size: 1.1rem;
+        min-height: 24px;
+    }
+    .carousel-h1 {
+        font-size: 0.7rem;
+    }
+    .carousel-content {
+        font-size: 0.7rem;
+        margin-bottom: 0.3rem;
+    }
+    .carousel-content ol li,
+    .carousel-content ul li {
+        font-size: 0.7rem;
+        padding-left: 0.7em;
+        margin-bottom: 0.15em;
+    }
+    .carousel-bottom-controls {
+        margin-top: 0.2rem;
+        gap: 0.15rem;
+        max-width: 99vw;
+    }
+    .animation-controls {
+        gap: 0.05rem;
+        flex-wrap: wrap;
+    }
+    .animation-btn {
+        padding: 0.15rem 0.3rem;
+        font-size: 0.6rem;
+        min-width: 28px;
+        border-radius: 8px;
+    }
+    .carousel-indicator-segment {
+        width: 6px;
+        height: 6px;
+    }
+    .carousel-arrow {
+        font-size: 1rem;
+        padding: 0.1rem;
+    }
+}
