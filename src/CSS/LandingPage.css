@@ -354,6 +354,10 @@ body.dark .budgeting-description {
 } */
 
 @media (max-width: 900px) {
+  .budgeting-tooltip-row {
+    gap: 1.2rem 1.2rem;
+    margin: 1rem 0;
+  }
   .cta-cards-row {
     flex-direction: column;
     align-items: center;
@@ -392,6 +396,38 @@ body.dark .budgeting-description {
     width: 120px;
     height: 120px;
   }
+  .saving-strategies,
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    padding: 2rem 1rem;
+    margin: 1.5rem 0;
+  }
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .saving-strategies,
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 1.2rem 0.5rem;
+    margin: 1.5rem 0 1rem 0;
+    max-width: 100vw;
+    width: 100%;
+    border-radius: 18px;
+  }
+  .automate-how,
+  .roundup-how,
+  .emergency-how {
+    font-size: 1rem;
+    padding-left: 0.7rem;
+    margin-bottom: 0.7rem;
+  }
 }
 
 /* @media (max-width: 600px) {
@@ -416,6 +452,12 @@ body.dark .budgeting-description {
 } */
 
 @media (max-width: 700px) {
+  .budgeting-tooltip-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    margin: 0.7rem 0;
+  }
   .landing-main {
      padding-left: 0;
      padding-right: 0;
@@ -431,9 +473,41 @@ body.dark .budgeting-description {
      align-items: center;
      padding: 0 0.2rem;
    }
+   .saving-strategies,
+   .automate-section,
+   .roundup-section,
+   .emergency-section {
+     padding: 1.2rem 0.5rem;
+     margin: 1rem 0;
+   }
+   .automate-section,
+   .roundup-section,
+   .emergency-section {
+     flex-direction: column;
+     gap: 1rem;
+   }
+   .saving-strategies,
+   .automate-section,
+   .roundup-section,
+   .emergency-section {
+    padding: 0.7rem 0.2rem;
+    gap: 0.7rem;
+    border-radius: 14px;
+  }
+  .automate-how,
+  .roundup-how,
+  .emergency-how {
+    font-size: 0.95rem;
+    padding-left: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
  }
 
 @media (max-width: 600px) {
+  .budgeting-tooltip-row {
+    gap: 0.7rem;
+    margin: 0.5rem 0;
+  }
   .landing-title {
       font-size: 1.3rem;
       margin-top: 1rem;
@@ -453,6 +527,46 @@ body.dark .budgeting-description {
     grid-template-columns: 1fr;
     gap: 1.2rem;
     padding: 1.2rem 0.2rem;
+  }
+  .saving-strategies,
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    padding: 0.7rem 0.2rem;
+    margin: 1rem 0;
+  }
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    gap: 0.7rem;
+  }
+  .saving-strategies h2,
+  .automate-section h2,
+  .roundup-section h2,
+  .emergency-section h2 {
+    font-size: 1.1rem;
+  }
+  .saving-strategies p,
+  .automate-section p,
+  .roundup-section p,
+  .emergency-section p {
+    font-size: 0.98rem;
+  }
+  .saving-strategies,
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    padding: 0.5rem 0.1rem;
+    gap: 0.5rem;
+    border-radius: 10px;
+    margin: 0.7rem 0;
+  }
+  .automate-how,
+  .roundup-how,
+  .emergency-how {
+    font-size: 0.92rem;
+    padding-left: 0.2rem;
+    margin-bottom: 0.3rem;
   }
 }
 
@@ -549,5 +663,88 @@ body.dark .budgeting-description {
     padding: 0.5rem 0 !important;
     grid-template-columns: 1fr;
     gap: 0.5rem;
+  }
+  .saving-strategies,
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    padding: 0.3rem 0.05rem;
+    margin: 0.5rem 0;
+  }
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    gap: 0.4rem;
+  }
+  .saving-strategies h2,
+  .automate-section h2,
+  .roundup-section h2,
+  .emergency-section h2 {
+    font-size: 0.92rem;
+  }
+  .saving-strategies p,
+  .automate-section p,
+  .roundup-section p,
+  .emergency-section p {
+    font-size: 0.85rem;
+  }
+  .saving-strategies,
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    padding: 0.3rem 0.05rem;
+    gap: 0.4rem;
+    border-radius: 7px;
+    margin: 0.5rem 0;
+  }
+  .automate-how,
+  .roundup-how,
+  .emergency-how {
+    font-size: 0.85rem;
+    padding-left: 0.1rem;
+    margin-bottom: 0.2rem;
+  }
+}
+
+@media (max-width: 350px) {
+  .saving-strategies,
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    padding: 0.1rem 0.01rem;
+    margin: 0.2rem 0;
+  }
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    gap: 0.2rem;
+  }
+  .saving-strategies h2,
+  .automate-section h2,
+  .roundup-section h2,
+  .emergency-section h2 {
+    font-size: 0.78rem;
+  }
+  .saving-strategies p,
+  .automate-section p,
+  .roundup-section p,
+  .emergency-section p {
+    font-size: 0.75rem;
+  }
+  .saving-strategies,
+  .automate-section,
+  .roundup-section,
+  .emergency-section {
+    padding: 0.1rem 0.01rem;
+    gap: 0.2rem;
+    border-radius: 4px;
+    margin: 0.2rem 0;
+  }
+  .automate-how,
+  .roundup-how,
+  .emergency-how {
+    font-size: 0.78rem;
+    padding-left: 0;
+    margin-bottom: 0.1rem;
   }
 }

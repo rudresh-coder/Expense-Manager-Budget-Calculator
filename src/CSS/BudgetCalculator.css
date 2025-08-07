@@ -203,6 +203,71 @@
     }
 }
 
+@media (max-width: 900px) {
+  .budget-card {
+    max-width: 92vw;
+    padding: 2rem 1.2rem 1.2rem 1.2rem;
+    margin: 2rem auto 1.5rem auto;
+    border-radius: 1.5rem;
+  }
+  .budget-explanation {
+    max-width: 98vw;
+    padding: 1.5rem 1rem 1rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .budget-card {
+    max-width: 97vw;
+    padding: 1.2rem 0.7rem;
+    margin: 1rem auto 1rem auto;
+    border-radius: 1rem;
+  }
+  .budget-explanation {
+    max-width: 99vw;
+    padding: 1rem 0.5rem 0.7rem 0.5rem;
+    font-size: 0.97rem;
+  }
+  .budget-card-title {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .budget-card {
+    max-width: 99vw;
+    padding: 0.7rem 0.2rem;
+    margin: 0.7rem auto 0.7rem auto;
+    border-radius: 0.7rem;
+  }
+  .budget-explanation {
+    max-width: 100vw;
+    padding: 0.7rem 0.1rem 0.5rem 0.1rem;
+    font-size: 0.92rem;
+  }
+  .budget-card-title {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .budget-card {
+    max-width: 99vw;
+    padding: 0.4rem 0.05rem;
+    margin: 0.4rem auto 0.4rem auto;
+    border-radius: 0.5rem;
+  }
+  .budget-explanation {
+    max-width: 100vw;
+    padding: 0.3rem 0.01rem 0.3rem 0.01rem;
+    font-size: 0.85rem;
+  }
+  .budget-card-title {
+    font-size: 0.92rem;
+  }
+}
+
 body.dark .budget-bg {
     background: #25102a;
 }
