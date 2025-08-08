@@ -163,6 +163,20 @@ async function migrate() {
                         }
                     }
 
+                    // === MIGRATION: Fill splitName for all transactions with splitId and a matching split ===
+                    if (account.transactions && Array.isArray(account.transactions) && account.splits && Array.isArray(account.splits)) {
+                        for (const tx of account.transactions) {
+                            if (tx.splitId && (!tx.splitName || typeof tx.splitName !== "string")) {
+                                const split = account.splits.find((s: any) => s.id === tx.splitId);
+                                if (split && split.name) {
+                                    tx.splitName = split.name;
+                                    changed = true;
+                                    console.log(`Filled splitName for tx ${tx.id} in account ${account.name}: ${split.name}`);
+                                }
+                            }
+                        }
+                    }
+
                     // Ensure splits array exists
                     if (!Array.isArray(account.splits)) {
                         account.splits = new mongoose.Types.DocumentArray([]);
@@ -179,6 +193,7 @@ async function migrate() {
                         }
                     }
                 }
+
 
                 // Step 3: Remove any duplicate transactions (by id)
                 for (const account of doc.accounts) {

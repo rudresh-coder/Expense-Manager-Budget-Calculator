@@ -27,6 +27,7 @@ type Transaction = {
   id: string;
   accountId: string;
   splitId?: string;
+  splitName?: string; 
   type: "add" | "spend" | "transfer";
   amount: number;
   description: string;
@@ -81,6 +82,10 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
 
   const [trialExpiresAt, setTrialExpiresAt] = useState(localStorage.getItem("trialExpiresAt"));
   const [isPremium, setIsPremium] = useState(JSON.parse(localStorage.getItem("isPremium") || "false"));
+
+  const [showSplitsModal, setShowSplitsModal] = useState(false);
+  const [editSplitId, setEditSplitId] = useState<string | null>(null);
+  const [editSplitName, setEditSplitName] = useState("");
 
   const isTrialActive = trialExpiresAt && Date.now() < new Date(trialExpiresAt).getTime();
   const hasPremium = isPremium || isTrialActive;
@@ -428,6 +433,9 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
       id: Math.random().toString(36).slice(2),
       accountId: activeAccountId,
       splitId: form.splitId || undefined,
+      splitName: form.splitId
+        ? (activeAccount?.splits.find(s => s.id === form.splitId)?.name || "")
+        : undefined,
       type: form.type as "add" | "spend" | "transfer",
       amount,
       description: form.description,
@@ -633,73 +641,184 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
         </div>
 
         {activeAccount && (
-          <div className="expense-section">
+          <div className="expense-splits-header-row">
             <h3 className="expense-subtitle">Splits (Divided Money)</h3>
-            <div className="expense-row">
-              <input
-                className="expense-input"
-                type="text"
-                placeholder="Name Your Split"
-                value={newSplitName}
-                onChange={handleSplitNameChange}
-                disabled={activeAccount.balance <= 0}
-              />
-              <input
-                className="expense-input"
-                type="number"
-                placeholder="Amount"
-                value={newSplitAmount}
-                min="0"
-                max={activeAccount.balance}
-                onChange={(e) => setNewSplitAmount(e.target.value)}
-                disabled={activeAccount.balance <= 0}
-              />
-              <button
-                className="expense-btn"
-                onClick={handleAddSplit}
-                disabled={
-                  activeAccount.balance <= 0 ||
-                  !newSplitName ||
-                  !newSplitAmount ||
-                  !!splitNameError
-                }
-              >
-                Add Split
-              </button>
-            </div>
-            {splitNameError && (
-              <div
-                className="error-message"
-                style={{ color: "#e53935", marginTop: 4 }}
-              >
-                {splitNameError}
-              </div>
-            )}
-            <ul className="expense-splits-list">
-              <li key="main">
-                <span className="expense-split-name">Main</span>
-                <span className="expense-split-amount">
-                  ₹{activeAccount.balance.toFixed(2)}
-                </span>
-              </li>
-              {activeAccount.splits.map((split) => (
-                <li key={split.id}>
-                  <span className="expense-split-name">{split.name}</span>
-                  <span className="expense-split-amount">
-                    ₹{split.balance.toFixed(2)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <button
+              className="expense-btn"
+              onClick={() => setShowSplitsModal(true)}
+              type="button"
+            >
+              Manage Splits
+            </button>
           </div>
         )}
+
         {activeAccount && (
-          <div className="expense-total">
-            Total Balance: ₹
-            {(
+          <div className="expense-total-balance">
+            Total Balance: ₹{(
               activeAccount.balance +
               activeAccount.splits.reduce((sum, split) => sum + split.balance, 0)
             ).toFixed(2)}
+          </div>
+        )}
+
+        {showSplitsModal && activeAccount && (
+          <div className="splits-modal-overlay" onClick={() => setShowSplitsModal(false)}>
+            <div className="splits-modal" onClick={e => e.stopPropagation()}>
+              <button className="close-btn" onClick={() => setShowSplitsModal(false)}>×</button>
+              <h2>Manage Splits</h2>
+              <div style={{ marginBottom: 12, fontWeight: 600 }}>
+                Main Balance: ₹{activeAccount.balance.toFixed(2)}
+              </div>
+              <div style={{ marginBottom: 12, fontWeight: 600 }}>
+                Total Balance: ₹{(
+                  activeAccount.balance +
+                  activeAccount.splits.reduce((sum, split) => sum + split.balance, 0)
+                ).toFixed(2)}
+              </div>
+              <table className="splits-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Balance</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeAccount.splits.map(split => (
+                    <tr key={split.id}>
+                      <td>
+                        {editSplitId === split.id ? (
+                          <input
+                            value={editSplitName}
+                            onChange={e => setEditSplitName(e.target.value)}
+                            style={{ width: 100 }}
+                          />
+                        ) : (
+                          split.name
+                        )}
+                      </td>
+                      <td>
+                        {/* Only show the balance, never an input */}
+                        ₹{split.balance.toFixed(2)}
+                      </td>
+                      <td>
+                        {editSplitId === split.id ? (
+                          <>
+                            <button
+                              className="expense-btn"
+                              style={{ minWidth: 60, fontSize: 13, marginRight: 4 }}
+                              onClick={() => {
+                                // Save edit (only name)
+                                if (!editSplitName.trim() || !/^[A-Za-z ]+$/.test(editSplitName)) return;
+                                setAccounts(accounts =>
+                                  accounts.map(acc =>
+                                    acc.id !== activeAccount.id
+                                      ? acc
+                                      : {
+                                          ...acc,
+                                          splits: acc.splits.map(s =>
+                                            s.id === split.id
+                                              ? { ...s, name: editSplitName }
+                                              : s
+                                          ),
+                                          unsynced: true,
+                                          modifiedAt: new Date().toISOString(),
+                                        }
+                                  )
+                                );
+                                setEditSplitId(null);
+                              }}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="expense-btn"
+                              style={{ minWidth: 60, fontSize: 13 }}
+                              onClick={() => setEditSplitId(null)}
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              className="expense-btn"
+                              style={{ minWidth: 60, fontSize: 13, marginRight: 4 }}
+                              onClick={() => {
+                                setEditSplitId(split.id);
+                                setEditSplitName(split.name);
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="expense-btn"
+                              style={{ minWidth: 60, fontSize: 13, background: "#e53935", color: "#fff" }}
+                              onClick={() => {
+                                if (!window.confirm("Delete this split?")) return;
+                                setAccounts(accounts =>
+                                  accounts.map(acc =>
+                                    acc.id !== activeAccount.id
+                                      ? acc
+                                      : {
+                                          ...acc,
+                                          balance: acc.balance + split.balance,
+                                          splits: acc.splits.filter(s => s.id !== split.id),
+                                          unsynced: true,
+                                          modifiedAt: new Date().toISOString(),
+                                        }
+                                  )
+                                );
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ marginTop: 16 }}>
+                <h4>Add New Split</h4>
+                <input
+                  className="expense-input"
+                  type="text"
+                  placeholder="Split Name"
+                  value={newSplitName}
+                  onChange={handleSplitNameChange}
+                />
+                <input
+                  className="expense-input"
+                  type="number"
+                  placeholder="Amount"
+                  value={newSplitAmount}
+                  min="0"
+                  max={activeAccount.balance}
+                  onChange={e => setNewSplitAmount(e.target.value)}
+                />
+                <button
+                  className="expense-btn"
+                  style={{ minWidth: 120, marginTop: 8 }}
+                  onClick={handleAddSplit}
+                  disabled={
+                    activeAccount.balance <= 0 ||
+                    !newSplitName ||
+                    !newSplitAmount ||
+                    !!splitNameError
+                  }
+                >
+                  Add Split
+                </button>
+                {splitNameError && (
+                  <div className="error-message" style={{ color: "#e53935", marginTop: 4 }}>
+                    {splitNameError}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -880,7 +999,6 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
               <tbody>
                 {activeAccount
                   ? paginatedTransactions.map((tx) => {
-                    const split = activeAccount.splits.find((s) => s.id === tx.splitId);
                     return (
                       <tr key={tx.id} className="manual-row">
                         <td>
@@ -894,7 +1012,11 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
                             return `${day}/${month}/${year}, ${hours}:${minutes}`;
                           })()}
                         </td>
-                        <td>{split ? split.name : "Main"}</td>
+                        <td>
+                          {tx.splitId
+                            ? tx.splitName || (activeAccount.splits.find(s => s.id === tx.splitId)?.name || "Split")
+                            : "Main"}
+                        </td>
                         <td>
                           <span
                             className={
