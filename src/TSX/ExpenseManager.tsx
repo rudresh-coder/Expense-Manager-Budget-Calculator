@@ -708,25 +708,25 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
                             <button
                               className="expense-btn"
                               style={{ minWidth: 60, fontSize: 13, marginRight: 4 }}
-                              onClick={() => {
-                                // Save edit (only name)
+                              onClick={async () => {
                                 if (!editSplitName.trim() || !/^[A-Za-z ]+$/.test(editSplitName)) return;
-                                setAccounts(accounts =>
-                                  accounts.map(acc =>
-                                    acc.id !== activeAccount.id
-                                      ? acc
-                                      : {
-                                          ...acc,
-                                          splits: acc.splits.map(s =>
-                                            s.id === split.id
-                                              ? { ...s, name: editSplitName }
-                                              : s
-                                          ),
-                                          unsynced: true,
-                                          modifiedAt: new Date().toISOString(),
-                                        }
-                                  )
+                                const updatedAccounts = accounts.map(acc =>
+                                  acc.id !== activeAccount.id
+                                    ? acc
+                                    : {
+                                        ...acc,
+                                        splits: acc.splits.map(s =>
+                                          s.id === split.id ? { ...s, name: editSplitName } : s
+                                        ),
+                                        unsynced: true,
+                                        modifiedAt: new Date().toISOString(),
+                                      }
                                 );
+                                await saveAccounts(updatedAccounts);
+                                if (navigator.onLine) {
+                                  await syncTransactions();
+                                }
+                                setAccounts(updatedAccounts);
                                 setEditSplitId(null);
                               }}
                             >
@@ -755,21 +755,24 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
                             <button
                               className="expense-btn"
                               style={{ minWidth: 60, fontSize: 13, background: "#e53935", color: "#fff" }}
-                              onClick={() => {
+                              onClick={async () => {
                                 if (!window.confirm("Delete this split?")) return;
-                                setAccounts(accounts =>
-                                  accounts.map(acc =>
-                                    acc.id !== activeAccount.id
-                                      ? acc
-                                      : {
-                                          ...acc,
-                                          balance: acc.balance + split.balance,
-                                          splits: acc.splits.filter(s => s.id !== split.id),
-                                          unsynced: true,
-                                          modifiedAt: new Date().toISOString(),
-                                        }
-                                  )
+                                const updatedAccounts = accounts.map(acc =>
+                                  acc.id !== activeAccount.id
+                                    ? acc
+                                    : {
+                                        ...acc,
+                                        balance: acc.balance + split.balance,
+                                        splits: acc.splits.filter(s => s.id !== split.id),
+                                        unsynced: true,
+                                        modifiedAt: new Date().toISOString(),
+                                      }
                                 );
+                                await saveAccounts(updatedAccounts);
+                                if (navigator.onLine) {
+                                  await syncTransactions();
+                                }
+                                setAccounts(updatedAccounts);
                               }}
                             >
                               Delete
@@ -1014,7 +1017,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
                         </td>
                         <td>
                           {tx.splitId
-                            ? tx.splitName || (activeAccount.splits.find(s => s.id === tx.splitId)?.name || "Split")
+                            ? tx.splitName || "Split"
                             : "Main"}
                         </td>
                         <td>

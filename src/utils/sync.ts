@@ -19,6 +19,7 @@ interface Account {
   transactions: Transaction[];
   unsynced?: boolean | undefined | false;
   modifiedAt?: string; 
+  splitName?: string; 
 }
 
 interface Transaction {
@@ -32,6 +33,7 @@ interface Transaction {
   unsynced?: boolean | undefined | false;
   source?: string;
   modifiedAt?: string; 
+  splitName?: string; 
 }
 
 export const accountsStore = localforage.createInstance({
@@ -91,6 +93,7 @@ export async function syncTransactions() {
         description: String(tx.description || ""),
         date: tx.date,
         splitId: tx.splitId || undefined,
+        splitName: tx.splitName || undefined,
         modifiedAt: tx.modifiedAt || new Date().toISOString(),
         source: tx.source || undefined,
         unsynced: undefined, // Remove unsynced flag

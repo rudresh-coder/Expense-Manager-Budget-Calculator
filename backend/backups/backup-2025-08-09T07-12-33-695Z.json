@@ -1,0 +1,341 @@
+[
+  {
+    "_id": "687f261873b34b23424f760e",
+    "userId": "6873b6fc8cacc88cf7d3ca59",
+    "__v": 46,
+    "accounts": [
+      {
+        "id": "n821qt62it9",
+        "name": "HDFC",
+        "balance": 4000,
+        "splits": [
+          {
+            "id": "rzle3z0d0wc",
+            "name": "taxes",
+            "balance": 802,
+            "_id": "687f27435d84b5e907989fb3"
+          },
+          {
+            "id": "n0biv5r3xtg",
+            "name": "Savings",
+            "balance": 17000,
+            "_id": "687f27435d84b5e907989fb4"
+          },
+          {
+            "id": "63c9zgvq8kf",
+            "name": "offlinetest",
+            "balance": 690,
+            "_id": "6890cf1c4c63db18c4fe14e7"
+          }
+        ],
+        "transactions": [
+          {
+            "id": "7m9uhgogb2g",
+            "splitId": "n0biv5r3xtg",
+            "type": "transfer",
+            "amount": 899,
+            "description": "transfer mother fucker",
+            "date": "2025-07-20T23:34:00.000Z",
+            "source": "manual",
+            "_id": "687f3a555d84b5e90798a65e"
+          },
+          {
+            "id": "t8ekyhv6mm",
+            "splitId": "n0biv5r3xtg",
+            "type": "spend",
+            "amount": 1000,
+            "description": "testing at 100%",
+            "date": "2025-07-17T22:33:00.000Z",
+            "source": "manual",
+            "_id": "6890cf1c4c63db18c4fe14e9"
+          },
+          {
+            "id": "043bd6pjv22",
+            "splitId": "n0biv5r3xtg",
+            "type": "transfer",
+            "amount": 300,
+            "description": "transfer brother",
+            "date": "2025-07-17T13:49:00.000Z",
+            "source": "manual",
+            "_id": "6890cf1c4c63db18c4fe14ea"
+          },
+          {
+            "id": "ksmgaoeapt",
+            "splitId": "n0biv5r3xtg",
+            "type": "spend",
+            "amount": 400,
+            "description": "dinner at a restaurant",
+            "date": "2025-07-16T06:35:00.000Z",
+            "source": "manual",
+            "_id": "688fa8b6c8d9e97be8cc5907"
+          },
+          {
+            "id": "vw57lz6txs",
+            "splitId": "n0biv5r3xtg",
+            "type": "spend",
+            "amount": 300,
+            "description": "emergency",
+            "date": "2025-07-08T23:50:00.000Z",
+            "source": "manual",
+            "_id": "688a1f71f3f0e38559312d62"
+          },
+          {
+            "id": "ir66d9hfse",
+            "splitId": "rzle3z0d0wc",
+            "type": "spend",
+            "amount": 99,
+            "description": "checking if source works",
+            "date": "2025-07-08T03:50:00.000Z",
+            "source": "manual",
+            "_id": "6887349ffe70ad2b00420fb9"
+          },
+          {
+            "id": "a6wlbz4m7ah",
+            "type": "add",
+            "amount": 1,
+            "description": "testing sync on tab 2",
+            "date": "2025-07-08T01:43:00.000Z",
+            "source": "manual",
+            "_id": "68871bd2fe70ad2b00420d04"
+          },
+          {
+            "id": "wcyj7n232un",
+            "splitId": "rzle3z0d0wc",
+            "type": "spend",
+            "amount": 99,
+            "description": "testing sync",
+            "date": "2025-07-08T00:35:00.000Z",
+            "source": "manual",
+            "_id": "68871badfe70ad2b00420c98"
+          },
+          {
+            "id": "u0yvlc5yau",
+            "type": "spend",
+            "amount": 1,
+            "description": "pennies",
+            "date": "2025-07-06T21:34:00.000Z",
+            "source": "manual",
+            "_id": "68867b2a511247459402f4d2"
+          },
+          {
+            "id": "wf54vfz5v3",
+            "splitId": "rzle3z0d0wc",
+            "type": "add",
+            "amount": 1,
+            "description": "bheek",
+            "date": "2025-07-06T19:31:00.000Z",
+            "source": "manual",
+            "_id": "68866d45511247459402e5f5"
+          },
+          {
+            "id": "lfpzajoont",
+            "type": "spend",
+            "amount": 500,
+            "description": "lunch and dinner",
+            "date": "2025-07-06T15:47:00.000Z",
+            "source": "manual",
+            "_id": "6884b427525d73b8d64b35e7"
+          },
+          {
+            "id": "vxvm9x3rzh",
+            "splitId": "n0biv5r3xtg",
+            "type": "transfer",
+            "amount": 99,
+            "description": "bored again indeed",
+            "date": "2025-07-05T19:31:00.000Z",
+            "source": "manual",
+            "_id": "687f31555d84b5e90798a426"
+          },
+          {
+            "id": "wkw0se3eht",
+            "type": "spend",
+            "amount": 10000,
+            "description": "credit card bills",
+            "date": "2025-07-05T05:05:00.000Z",
+            "source": "manual",
+            "_id": "687f2d275d84b5e90798a02c"
+          },
+          {
+            "id": "edx3r8y9u8m",
+            "type": "spend",
+            "amount": 10000,
+            "description": "shopping of clothes",
+            "date": "2025-07-04T12:32:00.000Z",
+            "source": "manual",
+            "_id": "687f2d275d84b5e90798a02d"
+          },
+          {
+            "id": "kzpadcybzfc",
+            "type": "spend",
+            "amount": 1500,
+            "description": "all subscriptions and data recharges",
+            "date": "2025-07-01T06:49:00.000Z",
+            "source": "manual",
+            "_id": "687f27435d84b5e907989fb5"
+          },
+          {
+            "id": "sigaxbrkjh",
+            "type": "spend",
+            "amount": 15000,
+            "description": "rent paid for this month",
+            "date": "2025-07-01T05:35:00.000Z",
+            "source": "manual",
+            "_id": "687f27435d84b5e907989fb6"
+          },
+          {
+            "id": "xgjm5k1wu3",
+            "type": "spend",
+            "amount": 3000,
+            "description": "petrol expense for this month",
+            "date": "2025-07-01T00:35:00.000Z",
+            "source": "manual",
+            "_id": "687f27435d84b5e907989fb7"
+          },
+          {
+            "id": "i9fngt8nnug",
+            "splitId": "n0biv5r3xtg",
+            "type": "spend",
+            "amount": 10000,
+            "description": "emergency",
+            "date": "2025-06-30T23:35:00.000Z",
+            "source": "manual",
+            "_id": "687f27435d84b5e907989fb8"
+          },
+          {
+            "id": "9hh1z12ptr",
+            "splitId": "rzle3z0d0wc",
+            "type": "spend",
+            "amount": 20000,
+            "description": "paid all the taxes for this month",
+            "date": "2025-06-30T20:32:00.000Z",
+            "source": "manual",
+            "_id": "687f27435d84b5e907989fb9"
+          },
+          {
+            "id": "1fdzbpq9ilb",
+            "type": "add",
+            "amount": 99999,
+            "description": "salary",
+            "date": "2025-06-30T19:30:00.000Z",
+            "source": "manual",
+            "_id": "687f27435d84b5e907989fba"
+          },
+          {
+            "id": "72721vbrqxs",
+            "type": "spend",
+            "amount": 2805,
+            "description": "a lots of shopping",
+            "date": "2025-06-01T17:31:00.000Z",
+            "source": "manual",
+            "_id": "688e3356a9037536e21636f9"
+          },
+          {
+            "id": "i1am9sx3w3n",
+            "type": "spend",
+            "amount": 2805,
+            "description": "SHAKARKAND CHAAT 1 300.00 PURVANCHAL SEEKH 1 360.00 NILGIRI GREEN » CURRY & 490.00 ~ BANGALI CHANAR DALNA 1 490.00 CHICKEN ANGARA 1 625.00 ~  PARATHA 3 240.00 GARLIC NAAN 1 90.00 ROTI 3 210.00",
+            "date": "2022-06-01T17:31:00.000Z",
+            "source": "manual",
+            "_id": "688cfc3f6234226c64da7f4c"
+          },
+          {
+            "id": "3cwzfgcbtri",
+            "type": "spend",
+            "amount": 2000,
+            "description": "testing again",
+            "date": "2025-07-22T19:31:00.000Z",
+            "source": "manual",
+            "_id": "6892f511361c94a4463d5fd0"
+          },
+          {
+            "id": "h8npppssw",
+            "type": "add",
+            "amount": 100,
+            "description": "new deposit",
+            "date": "2025-07-21T19:31:00.000Z",
+            "source": "manual",
+            "_id": "6892f511361c94a4463d5fd1"
+          },
+          {
+            "id": "gfub474etir",
+            "splitId": "tlt9sdnrov",
+            "type": "spend",
+            "amount": 100,
+            "description": "not buying the bike",
+            "date": "2025-07-22T20:32:00.000Z",
+            "source": "manual",
+            "_id": "6892f550361c94a4463d607c"
+          },
+          {
+            "id": "32l0v220619",
+            "type": "add",
+            "amount": 3000,
+            "description": "free lancing money",
+            "date": "2025-07-22T23:35:00.000Z",
+            "source": "manual",
+            "_id": "6892f603361c94a4463d6133"
+          },
+          {
+            "id": "s9a49dhs9ym",
+            "splitId": "tlt9sdnrov",
+            "type": "add",
+            "amount": 300,
+            "description": "more money added to buy bike",
+            "date": "2025-07-22T22:34:00.000Z",
+            "source": "manual",
+            "_id": "6892f603361c94a4463d6134"
+          },
+          {
+            "id": "a8w5b62e2us",
+            "splitId": "tlt9sdnrov",
+            "type": "add",
+            "amount": 200,
+            "description": "thought of buying the bike again",
+            "date": "2025-07-22T21:33:00.000Z",
+            "source": "manual",
+            "_id": "6892f603361c94a4463d6135"
+          },
+          {
+            "id": "uvjjh6udgl",
+            "type": "add",
+            "amount": 100,
+            "description": "tip",
+            "date": "2025-07-23T00:36:00.000Z",
+            "source": "manual",
+            "_id": "6892f67a361c94a4463d627f"
+          },
+          {
+            "id": "rnzfqpqih1i",
+            "type": "add",
+            "amount": 100000,
+            "description": "salary of august month",
+            "date": "2025-07-31T19:31:00.000Z",
+            "source": "manual",
+            "_id": "6892f98b361c94a4463d6308"
+          },
+          {
+            "id": "wq9bomga44e",
+            "type": "transfer",
+            "amount": 1001,
+            "description": "re",
+            "date": "2025-07-23T01:37:00.000Z",
+            "source": "manual",
+            "_id": "6893019c361c94a4463d64aa"
+          },
+          {
+            "id": "heynlwbsh1d",
+            "splitId": "n0biv5r3xtg",
+            "type": "transfer",
+            "amount": 500,
+            "description": "new deposit",
+            "date": "2025-08-06T06:59:09.563Z",
+            "source": "manual",
+            "_id": "6893019c361c94a4463d64ab"
+          }
+        ],
+        "_id": "687f27435d84b5e907989fb2"
+      }
+    ],
+    "updatedAt": "2025-08-04T15:17:48.927Z"
+  }
+]
