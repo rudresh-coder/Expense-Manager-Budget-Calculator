@@ -323,8 +323,8 @@ app.get("/api/auth/verify-email", async (req: express.Request, res: express.Resp
   res.json({ message: "Email verified successfully. You can now log in." });
 });
 
-//Get expense data (premium only)
-app.get("/api/expense", auth, checkPremium, async (req, res) => {
+
+app.get("/api/expense", auth, async (req, res) => {
   try {
     const data = await ExpenseManagerData.findOne({ userId: req.user?.id });
 

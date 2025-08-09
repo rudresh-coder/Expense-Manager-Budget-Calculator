@@ -37,14 +37,7 @@ export default function UserProfile({ user, open, onClose }: UserProfileProps) {
             <div className="profile-email">{user.email}</div>
             {user.isPremium && <div className="profile-premium-badge">Premium</div>}
           </div>
-          <div className="profile-banks">
-            <b>Banks Connected:</b> {user.banks.length}
-            <ul>
-              {user.banks.map((bank, i) => (
-                <li key={bank.name + i}>{bank.name}</li>
-              ))}
-            </ul>
-          </div>
+          
           {user.isPremium && user._id && (
             <button
               className="profile-admin-btn cta-btn cta-btn-blue"

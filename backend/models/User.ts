@@ -10,15 +10,6 @@ const userSchema = new mongoose.Schema({
     avatarUrl: { type: String, default: "" },
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String, default: null },
-    bankLinks: [
-        {
-            accountId: String,
-            bankName: String,
-            accessToken: String,
-            paid: { type: Boolean, default: false }, // true if user paid ₹35 for this link
-            linkedAt: Date,
-        }
-    ],
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

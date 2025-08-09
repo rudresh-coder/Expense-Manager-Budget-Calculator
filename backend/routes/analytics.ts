@@ -4,7 +4,7 @@ import { auth } from "../middleware/auth";
 import { checkPremium } from "../middleware/checkPremium";
 const router = express.Router();
 
-router.get("/spending-trends", auth, checkPremium, async (req, res): Promise<void> => {
+router.get("/spending-trends", auth, async (req, res): Promise<void> => {
   const { accountId, month } = req.query; // Add month parameter
   if (!req.user?.id) {
     res.status(401).json({ error: "Unauthorized" });
@@ -46,7 +46,7 @@ router.get("/spending-trends", auth, checkPremium, async (req, res): Promise<voi
   res.json({ trends, availableMonths });
 });
 
-router.get("/income-expense", auth, checkPremium, async (req, res): Promise<void> => {
+router.get("/income-expense", auth, async (req, res): Promise<void> => {
   const { accountId } = req.query;
   if (!req.user?.id) {
     res.status(401).json({ error: "Unauthorized" });

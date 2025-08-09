@@ -71,16 +71,7 @@
     font-size: 0.98rem;
     color: #555;
   }
-  .profile-banks {
-    margin-top: 1.2rem;
-    width: 100%;
-    text-align: left;
-  }
-  .profile-banks ul {
-    margin: 0.5rem 0 0 1.2rem;
-    padding: 0;
-    list-style: disc;
-  }
+
   .profile-sidebar-overlay {
     position: fixed;
     inset: 0;
@@ -127,14 +118,6 @@
   }
 
   body.dark .profile-email {
-    color: #bfa3e6;
-  }
-
-  body.dark .profile-banks {
-    color: #fff;
-  }
-
-  body.dark .profile-banks ul li {
     color: #bfa3e6;
   }
 
