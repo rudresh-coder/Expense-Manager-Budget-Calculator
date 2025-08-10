@@ -573,7 +573,12 @@ app.post("/api/expense", auth, async (req, res) => {
 
 //Example: Upgrade to premium (demo)
 app.post("/api/user/upgrade", auth, async (req: express.Request, res: express.Response) => {
-    await User.findByIdAndUpdate(req.user?.id, { isPremium: true });
+    const now = new Date();
+    const paidMonth = now.toISOString().slice(0, 7); // "YYYY-MM"
+    await User.findByIdAndUpdate(req.user?.id, { 
+      isPremium: true, 
+      $addToSet: { premiumMonths: paidMonth } // add month if not already present
+    });
     logger.info(`User upgraded to premium: ${req.user?.id}`);
     res.json({ message: "Upgraded to premium" });
 });
@@ -616,24 +621,31 @@ cron.schedule("0 2 * * *", async () => {
   // Runs every day at 2 AM
   const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  const freeUsers = await User.find({ isPremium: false });
-  for (const user of freeUsers) {
-    const data = await ExpenseManagerData.findOne({ userId: user._id });
-    if (data && Array.isArray(data.accounts)) {
-      let changed = false;
-      for (const account of data.accounts) {
-        if (Array.isArray(account.transactions)) {
-          const originalLength = account.transactions.length;
-          account.transactions = account.transactions.toObject().filter(
-            (tx: { date: string }) => new Date(tx.date) > oneMonthAgo
-          );
-          if (account.transactions.length !== originalLength) changed = true;
-        }
+const freeUsers = await User.find({ isPremium: false });
+for (const user of freeUsers) {
+  const data = await ExpenseManagerData.findOne({ userId: user._id });
+  if (data && Array.isArray(data.accounts)) {
+    let changed = false;
+    for (const account of data.accounts) {
+      if (Array.isArray(account.transactions)) {
+        const originalLength = account.transactions.length;
+        account.transactions = account.transactions.toObject().filter((tx: { date: string }) => {
+          // Get the month of the transaction in "YYYY-MM" format
+          const txMonth = new Date(tx.date).toISOString().slice(0, 7);
+          // If the user paid for this month, keep forever
+          if (user.premiumMonths && user.premiumMonths.includes(txMonth)) {
+            return true;
+          }
+          // Otherwise, delete if older than 30 days
+          return new Date(tx.date) > oneMonthAgo;
+        });
+        if (account.transactions.length !== originalLength) changed = true;
       }
-      if (changed) await data.save();
     }
+    if (changed) await data.save();
   }
-  logger.info("Old transactions deleted for free users");
+}
+logger.info("Old transactions deleted for free users (except paid months)");
 });
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

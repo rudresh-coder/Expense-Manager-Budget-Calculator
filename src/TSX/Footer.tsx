@@ -5,13 +5,14 @@ import {
   FaUserPlus, FaSignInAlt, FaShieldAlt, FaFileContract, FaChevronDown, FaChevronUp
 } from "react-icons/fa";
 import "../CSS/Footer.css";
-import logo from "../assets/Expense1.png";
+import logoLight from "../assets/LightBG.png";
+import logoDark from "../assets/DarkBG.png";
 
 export default function Footer() {
   const [showSocial, setShowSocial] = useState(false);
   const [showLinks, setShowLinks] = useState(false);
-
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 700);
+  const [dark, setDark] = useState(document.body.classList.contains("dark"));
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 700);
@@ -19,10 +20,24 @@ export default function Footer() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setDark(document.body.classList.contains("dark"));
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <footer className="site-footer">
       <div className="footer-brand" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <img src={logo} alt="Expense Manager Logo" className="footer-logo-img" />
+        <Link to="/">
+          {dark ? (
+            <img src={logoDark} alt="Expense Manager Logo" className="footer-logo-img" />
+          ) : (
+            <img src={logoLight} alt="Expense Manager Logo" className="footer-logo-img" />
+          )}
+        </Link>
         <span className="footer-desc">Take control of your money. Master your budget.</span>
       </div>
       <nav className="footer-links">

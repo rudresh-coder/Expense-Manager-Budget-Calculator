@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     avatarUrl: { type: String, default: "" },
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String, default: null },
+    premiumMonths: { type: [String], default: [] },
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

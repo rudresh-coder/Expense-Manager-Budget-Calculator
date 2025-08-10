@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaMoon, FaSun, FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
-import logo from "../assets/Expense1.png";
+import logoLight from "../assets/LightBG.png";
+import logoDark from "../assets/DarkBG.png";
 import "../CSS/Navbar.css";
 
 type NavbarProps = {
@@ -29,7 +30,11 @@ export default function Navbar({ onUserProfileClick, user }: NavbarProps) {
     <nav className="modern-navbar grid-navbar">
       <div className="navbar-logo">
         <Link to="/">
-          <img src={logo} alt="Expense Manager Logo" />
+        {dark ? (
+          <img src={logoDark} alt="Expense Manager Logo" />
+        ) : (
+          <img src={logoLight} alt="Expense Manager Logo" />
+        )}
         </Link>
       </div>
       {isMobile ? (
