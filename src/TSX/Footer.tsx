@@ -43,7 +43,7 @@ export default function Footer() {
       <nav className="footer-links">
         <div className="footer-links-home">
           <Link to="/"><FaHome style={{ marginRight: 6 }} />Home</Link>
-          <Link to="/pricing"><FaShieldAlt style={{ marginRight: 6 }} />Premium</Link>
+          <Link to="/pricing"><FaShieldAlt style={{ marginRight: 6 }} />Storage</Link>
         </div>
         {isMobile ? (
           <div className="footer-dropdowns">

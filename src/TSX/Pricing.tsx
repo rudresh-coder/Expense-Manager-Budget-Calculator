@@ -9,7 +9,8 @@ const plans = [
             "Budget Calculator: Unlimited",
             "Manual Expense Entry: Database storage (up to 100 transactions/account)",
             "Transactions older than 1 month are automatically deleted",
-            "No bank linking (manual entry only)",
+            "Analytics dashboard",
+            "Export CSV",
             "Ad-supported",
             "Basic totals"
         ],
@@ -18,38 +19,39 @@ const plans = [
         link: "/signup"
     },
     {
-        name: "Premium Monthly",
-        price: "₹99/mo",
+        name: "Monthly Storage",
+        price: "₹79/mo",
         features: [
-            "Unlimited persistent history (database storage, never deleted)",
-            "No transaction limit",
-            "Export (CSV/PDF)",
-            "Ad-free",
-            "1 free bank account link (auto-imported transactions)",
-            "Additional bank links: ₹35/account/month",
-            "Multi-device Sync",
+            "Unlimited transactions for 30 days from purchase",
+            "Permanent storage for those transactions",
+            "No transaction deletion for paid period",
+            "Analytics dashboard",
+            "Export CSV"
         ],
         btnText: "Buy Monthly",
         btnClass: "pricing-btn premium",
         link: "/payment?plan=monthly"
     },
     {
-        name: "Premium Yearly",
+        name: "Yearly Storage",
         price: (
             <>
-                ₹949/yr <span className="badge">Save 20%</span>
-                <div className="pricing-yearly-rate">Effective ₹79/mo</div>
+                ₹499/yr <span className="badge">Save 47%</span>
+                <div className="pricing-yearly-rate">Effective ₹41/mo</div>
             </>
         ),
         features: [
-            "All Premium Monthly features",
-            "Extra badge: Save ₹239 vs monthly",
-            "Eligible for annual promotions"
+            "Unlimited transactions for 1 year from purchase",
+            "Permanent storage for those transactions",
+            "No transaction deletion for paid period",
+            "Analytics dashboard",
+            "Export CSV",
+            "Heavy Discount"
         ],
         btnText: "Buy Yearly",
         btnClass: "pricing-btn premium",
-        link: "/payment?plan-yearly"
-    }
+        link: "/payment?plan=yearly"
+    },
 ];
 
 export default function Pricing() {
@@ -65,14 +67,22 @@ export default function Pricing() {
         <div className="pricing-container">
             <div className="pricing-header">
                 <i className="fas fa-wallet pricing-header-icon" aria-hidden="true"></i>
-                <h1 className="pricing-title">Plans for Every Budget</h1>
+                <h1 className="pricing-title">Choose Your Storage Plan</h1>
                 <div className="pricing-subtitle">
-                    Unlock powerful features and take control of your finances—choose the plan that fits your journey.
+                    Enjoy all features for free. Upgrade anytime for unlimited, permanent transaction history and peace of mind.
                 </div>
             </div>
+
+            <div className="pricing-warning">
+                <div className="pricing-warning-heading">"Warning"</div>
+                <span style={{ fontWeight: 700 }}>Important:</span>
+                {" "}
+                If you do not have an active premium plan, your transactions will be <b>deleted after 30 days</b>.
+            </div>
+
             <div className="pricing-cards-custom">
                 <div className="pricing-card-row-top">
-                    {/* Free and Premium Monthly cards (side by side, now on top) */}
+                    {/* Free and Monthly Storage cards (side by side, now on top) */}
                     {[plans[0], plans[1]].map((plan) => (
                         <div
                             key={plan.name}
@@ -100,9 +110,9 @@ export default function Pricing() {
                     ))}
                 </div>
                 <div className="pricing-card-row-center">
-                    {/* Premium Yearly card (now at the bottom, centered) */}
+                    {/* Yearly Storage card (now at the bottom, centered) */}
                     <div
-                        className="pricing-card premium-yearly"
+                        className="pricing-card yearly-storage"
                         style={{ cursor: plans[2].link.startsWith("/payment") ? "pointer" : "default" }}
                         onClick={() => handleCardClick(plans[2].link)}
                     >
@@ -119,7 +129,8 @@ export default function Pricing() {
                         </button>
                     </div>
                 </div>
+                
             </div>
-        </div>
+         </div>
     );
 }

@@ -573,14 +573,37 @@ app.post("/api/expense", auth, async (req, res) => {
 
 //Example: Upgrade to premium (demo)
 app.post("/api/user/upgrade", auth, async (req: express.Request, res: express.Response) => {
+    const { plan } = req.body; // plan: "monthly" or "yearly"
     const now = new Date();
-    const paidMonth = now.toISOString().slice(0, 7); // "YYYY-MM"
-    await User.findByIdAndUpdate(req.user?.id, { 
-      isPremium: true, 
-      $addToSet: { premiumMonths: paidMonth } // add month if not already present
+
+    let newExpiry: Date;
+    if (plan === "yearly") {
+        newExpiry = new Date(now);
+        newExpiry.setFullYear(now.getFullYear() + 1);
+    } else {
+        // Default to monthly (30 days)
+        newExpiry = new Date(now);
+        newExpiry.setDate(now.getDate() + 30);
+    }
+
+    // If user already has a future expiry, extend from there
+    const user = await User.findById(req.user?.id);
+    if (user && user.storageExpiry && user.storageExpiry > now) {
+        newExpiry = new Date(user.storageExpiry);
+        if (plan === "yearly") {
+            newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+        } else {
+            newExpiry.setDate(newExpiry.getDate() + 30);
+        }
+    }
+
+    await User.findByIdAndUpdate(req.user?.id, {
+        isPremium: true,
+        storageExpiry: newExpiry
     });
-    logger.info(`User upgraded to premium: ${req.user?.id}`);
-    res.json({ message: "Upgraded to premium" });
+
+    logger.info(`User upgraded to premium: ${req.user?.id} until ${newExpiry.toISOString()}`);
+    res.json({ message: "Upgraded to premium", storageExpiry: newExpiry });
 });
 
 // Get user profile
@@ -621,31 +644,30 @@ cron.schedule("0 2 * * *", async () => {
   // Runs every day at 2 AM
   const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-const freeUsers = await User.find({ isPremium: false });
-for (const user of freeUsers) {
-  const data = await ExpenseManagerData.findOne({ userId: user._id });
-  if (data && Array.isArray(data.accounts)) {
-    let changed = false;
-    for (const account of data.accounts) {
-      if (Array.isArray(account.transactions)) {
-        const originalLength = account.transactions.length;
-        account.transactions = account.transactions.toObject().filter((tx: { date: string }) => {
-          // Get the month of the transaction in "YYYY-MM" format
-          const txMonth = new Date(tx.date).toISOString().slice(0, 7);
-          // If the user paid for this month, keep forever
-          if (user.premiumMonths && user.premiumMonths.includes(txMonth)) {
-            return true;
-          }
-          // Otherwise, delete if older than 30 days
-          return new Date(tx.date) > oneMonthAgo;
-        });
-        if (account.transactions.length !== originalLength) changed = true;
+  const users = await User.find({});
+  for (const user of users) {
+    const data = await ExpenseManagerData.findOne({ userId: user._id });
+    if (data && Array.isArray(data.accounts)) {
+      let changed = false;
+      for (const account of data.accounts) {
+        if (Array.isArray(account.transactions)) {
+          const originalLength = account.transactions.length;
+          account.transactions = account.transactions.toObject().filter((tx: { date: string }) => {
+            const txDate = new Date(tx.date);
+            // Keep if transaction is within storageExpiry
+            if (user.storageExpiry && txDate <= user.storageExpiry) {
+              return true;
+            }
+            // Otherwise, delete if older than 30 days
+            return txDate > oneMonthAgo;
+          });
+          if (account.transactions.length !== originalLength) changed = true;
+        }
       }
+      if (changed) await data.save();
     }
-    if (changed) await data.save();
   }
-}
-logger.info("Old transactions deleted for free users (except paid months)");
+  logger.info("Old transactions deleted for users (except within storageExpiry)");
 });
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

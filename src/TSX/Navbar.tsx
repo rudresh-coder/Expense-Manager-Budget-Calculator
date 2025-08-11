@@ -69,7 +69,7 @@ export default function Navbar({ onUserProfileClick, user }: NavbarProps) {
               <div className="navbar-list open">
                 <Link to="/calculator" onClick={() => setMenuOpen(false)} className={location.pathname === "/calculator" ? "active" : ""}>Budget Calculator</Link>
                 <Link to="/expensemanager" onClick={() => setMenuOpen(false)} className={location.pathname === "/expensemanager" ? "active" : ""}>Expense Manager</Link>
-                <Link to="/pricing" onClick={() => setMenuOpen(false)} className={location.pathname === "/pricing" ? "active" : ""}>Premium</Link>
+                <Link to="/pricing" onClick={() => setMenuOpen(false)} className={location.pathname === "/pricing" ? "active" : ""}>Storage</Link>
                 <Link to="/" onClick={() => setMenuOpen(false)} className={location.pathname === "/" ? "active" : ""}>Home</Link>
                 <Link to="/signin" onClick={() => setMenuOpen(false)} className={location.pathname === "/signin" ? "active" : ""}>Login</Link>
                 <Link to="/signup" onClick={() => setMenuOpen(false)} className={location.pathname === "/signup" ? "active" : ""}>Sign Up</Link>
@@ -95,7 +95,7 @@ export default function Navbar({ onUserProfileClick, user }: NavbarProps) {
           <div className="navbar-row">
             <Link to="/calculator" className={location.pathname === "/calculator" ? "active" : ""}>Budget Calculator</Link>
             <Link to="/expensemanager" className={location.pathname === "/expensemanager" ? "active" : ""}>Expense Manager</Link>
-            <Link to="/pricing" className={location.pathname === "/pricing" ? "active" : ""}>Premium</Link>
+            <Link to="/pricing" className={location.pathname === "/pricing" ? "active" : ""}>Storage</Link>
             <button
               className="navbar-toggle"
               onClick={() => setDark((d) => !d)}

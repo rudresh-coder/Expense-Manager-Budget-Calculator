@@ -30,6 +30,59 @@ export default function FinanceParticlesBackground() {
     let animationId: number;
     let mouseX = width / 2;
     let mouseY = height / 2;
+    interface Particle {
+      x: number;
+      y: number;
+      size: number;
+      speed: number;
+      drift: number;
+      icon: string;
+      rotate: number;
+      rotateSpeed: number;
+      opacity: number;
+      blur: number;
+      floatPhase: number;
+      color: string;
+    }
+
+    let particles: Particle[] = [];
+
+    function isDarkMode() {
+      return document.body.classList.contains("dark");
+    }
+
+    function createParticles() {
+      let minSize = 32,
+        maxSize = 64;
+      if (width < 400) {
+        minSize = 14;
+        maxSize = 24;
+      } else if (width < 600) {
+        minSize = 18;
+        maxSize = 28;
+      } else if (width < 700) {
+        minSize = 22;
+        maxSize = 34;
+      } else if (width < 900) {
+        minSize = 26;
+        maxSize = 40;
+      }
+      const particleCount = 22;
+      return Array.from({ length: particleCount }, () => ({
+        x: randomBetween(0, width),
+        y: randomBetween(0, height),
+        size: randomBetween(minSize, maxSize),
+        speed: randomBetween(0.3, 1.1),
+        drift: randomBetween(-0.3, 0.3),
+        icon: ICONS[Math.floor(Math.random() * ICONS.length)],
+        rotate: randomBetween(0, 360),
+        rotateSpeed: randomBetween(-0.2, 0.2),
+        opacity: randomBetween(0.3, 0.7),
+        blur: Math.random() > 0.7 ? 2 : 0,
+        floatPhase: randomBetween(0, Math.PI * 2),
+        color: "",
+      }));
+    }
 
     function resize() {
       width = window.innerWidth;
@@ -38,37 +91,17 @@ export default function FinanceParticlesBackground() {
         canvas.width = width;
         canvas.height = height;
       }
+      particles = createParticles(); // Regenerate particles on resize
     }
+
     resize();
     window.addEventListener("resize", resize);
 
-    // Mouse parallax
     function onMouseMove(e: MouseEvent) {
       mouseX = e.clientX;
       mouseY = e.clientY;
     }
     window.addEventListener("mousemove", onMouseMove);
-
-    // Detect dark mode
-    function isDarkMode() {
-      return document.body.classList.contains("dark");
-    }
-
-    // Particle definition
-    const particles = Array.from({ length: 22 }, () => ({
-      x: randomBetween(0, width),
-      y: randomBetween(0, height),
-      size: randomBetween(32, 64),
-      speed: randomBetween(0.3, 1.1),
-      drift: randomBetween(-0.3, 0.3),
-      icon: ICONS[Math.floor(Math.random() * ICONS.length)],
-      rotate: randomBetween(0, 360),
-      rotateSpeed: randomBetween(-0.2, 0.2),
-      opacity: randomBetween(0.3, 0.7),
-      blur: Math.random() > 0.7 ? 2 : 0,
-      floatPhase: randomBetween(0, Math.PI * 2),
-      color: "",
-    }));
 
     function draw() {
       if (!ctx) return;
@@ -148,7 +181,7 @@ export default function FinanceParticlesBackground() {
         height: "100vh",
         pointerEvents: "none",
         opacity: 0.5,
-        transition: "background 0.3s"
+        transition: "background 0.3s",
       }}
       aria-hidden="true"
     />
