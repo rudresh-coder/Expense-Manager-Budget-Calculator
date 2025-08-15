@@ -653,10 +653,6 @@ app.get("/api/user/profile", auth, async (req, res) => {
   }
 });
 
-app.get("/api/health", (req: express.Request, res: express.Response): void => {
-  res.send("OK");
-});
-
 app.use("/api/admin", auth, adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/auth", generalLimiter);
