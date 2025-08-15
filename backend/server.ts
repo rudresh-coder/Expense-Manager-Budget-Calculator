@@ -41,8 +41,7 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
     origin: [
-      process.env.FRONTEND_URL || "https://expense-manager-budget-calculator.vercel.app",
-      "https://expense-manager-budget-calculator.vercel.app"
+      process.env.FRONTEND_URL || ""
     ],
     credentials: true
   }
@@ -76,9 +75,8 @@ app.use(
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: [
         "'self'",
-        process.env.FRONTEND_URL || "https://expense-manager-budget-calculator.vercel.app",
-        "https://expense-manager-budget-calculator.vercel.app"
-      ],
+        process.env.FRONTEND_URL
+      ].filter((src): src is string => src !== undefined),
       objectSrc: ["'none'"],
       frameSrc: ["'self'"],
       upgradeInsecureRequests: [],
@@ -87,9 +85,8 @@ app.use(
 );
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL || "https://expense-manager-budget-calculator.vercel.app",
-  "https://expense-manager-budget-calculator.vercel.app"
-];
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
