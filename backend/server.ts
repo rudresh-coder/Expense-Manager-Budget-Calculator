@@ -100,6 +100,8 @@ app.use(cors({
   credentials: true
 }));
 
+app.options("*", cors());
+
 app.use(express.json());
 // app.use(mongoSanitize()); 
 
@@ -649,6 +651,10 @@ app.get("/api/user/profile", auth, async (req, res) => {
     logger.error("Profile fetch error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
+});
+
+app.get("/api/health", (req: express.Request, res: express.Response): void => {
+  res.send("OK");
 });
 
 app.use("/api/admin", auth, adminRoutes);
