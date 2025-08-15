@@ -60,7 +60,7 @@ export default function App() {
         return;
       }
       try {
-        const res = await authFetch("http://localhost:5000/api/user/profile", {
+        const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {

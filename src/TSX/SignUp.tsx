@@ -61,7 +61,7 @@ export default function SignUp() {
     }
     setError("");
     try {
-      const res = await authFetch("http://localhost:5000/api/auth/signup", {
+      const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullName, email, password }),

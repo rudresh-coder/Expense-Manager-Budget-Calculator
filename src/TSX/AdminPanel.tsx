@@ -217,14 +217,14 @@ export default function AdminPanel() {
     setLoading(true);
     
     Promise.all([
-      authFetch("http://localhost:5000/api/admin/users", {
+      authFetch(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       }).then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       }),
       
-      authFetch("http://localhost:5000/api/admin/analytics", {
+      authFetch(`${import.meta.env.VITE_API_URL}/api/admin/analytics`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       }).then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -257,7 +257,7 @@ export default function AdminPanel() {
   const handleView = (user: User) => setSelectedUser(user);
   const handleTogglePremium = async (user: User) => {
     try {
-      const res = await authFetch(`http://localhost:5000/api/admin/users/${user._id}/premium`, {
+      const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${user._id}/premium`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -271,7 +271,7 @@ export default function AdminPanel() {
       setMessage(`User ${user.fullName} is now ${!user.isPremium ? "Premium" : "Free"}`);
       
       // Refresh users
-      const usersRes = await authFetch("http://localhost:5000/api/admin/users", {
+      const usersRes = await authFetch(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
       if (usersRes.ok) {
@@ -287,7 +287,7 @@ export default function AdminPanel() {
     if (!window.confirm(`Delete user ${user.fullName}?`)) return;
     
     try {
-      const res = await authFetch(`http://localhost:5000/api/admin/users/${user._id}`, {
+      const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/admin/users/${user._id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
@@ -297,7 +297,7 @@ export default function AdminPanel() {
       setMessage(`User ${user.fullName} deleted`);
       
       // Refresh users
-      const usersRes = await authFetch("http://localhost:5000/api/admin/users", {
+      const usersRes = await authFetch(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
       if (usersRes.ok) {

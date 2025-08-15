@@ -83,7 +83,7 @@ export default function Analytics({ userId }: AnalyticsProps) {
     const queryString = query ? `?${query}` : "";
 
     Promise.all([
-      authFetch(`http://localhost:5000/api/analytics/spending-trends${queryString}`, {
+      authFetch(`${import.meta.env.VITE_API_URL}/api/analytics/spending-trends${queryString}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       }).then(async res => {
         if (!res.ok) {
@@ -92,7 +92,7 @@ export default function Analytics({ userId }: AnalyticsProps) {
         }
         return res.json();
       }),
-      authFetch(`http://localhost:5000/api/analytics/income-expense${queryString}`, {
+      authFetch(`${import.meta.env.VITE_API_URL}/api/analytics/income-expense${queryString}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       }).then(async res => {
         if (!res.ok) {
@@ -101,7 +101,7 @@ export default function Analytics({ userId }: AnalyticsProps) {
         }
         return res.json();
       }),
-      authFetch(`http://localhost:5000/api/expense`, {
+      authFetch(`${import.meta.env.VITE_API_URL}/api/expense`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       }).then(async res => {
         if (!res.ok) {

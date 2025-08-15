@@ -17,7 +17,7 @@ export default function ForgotPassword() {
     setError("");
     setLoading(true);
     try {
-      const res = await authFetch("http://localhost:5000/api/auth/forgot-password", {
+      const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

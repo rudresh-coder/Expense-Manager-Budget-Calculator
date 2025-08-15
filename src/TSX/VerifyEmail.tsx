@@ -17,7 +17,7 @@ export default function VerifyEmail() {
       return;
     }
     authFetch(
-      `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/auth/verify-email?token=${encodeURIComponent(
+      `${import.meta.env.VITE_API_URL || `${import.meta.env.VITE_API_URL}`}/api/auth/verify-email?token=${encodeURIComponent(
         token
       )}&email=${encodeURIComponent(email)}`
     )

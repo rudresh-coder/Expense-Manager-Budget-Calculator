@@ -131,7 +131,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
         setTimeout(() => setSyncStatus("idle"), 5000); // Longer timeout for errors
       }
 
-      const res = await authFetch("http://localhost:5000/api/expense", {
+      const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/expense`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
       if (!res.ok) {
@@ -222,7 +222,7 @@ export default function ExpenseManager({ userId }: ExpenseManagerProps) {
   }, [accounts]);
 
   useEffect(() => {
-    const socket = io("http://localhost:5000", { withCredentials: true });
+    const socket = io(`${import.meta.env.VITE_API_URL}`, { withCredentials: true });
     if (userId) socket.emit("join", userId);
 
     function handleExpenseDataUpdated(newData: { accounts: Account[]; updatedAt: string }) {
