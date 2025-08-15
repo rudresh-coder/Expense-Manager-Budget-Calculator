@@ -5,6 +5,7 @@
   "scripts": {
     "start": "ts-node server.ts",
     "dev": "nodemon server.ts",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "backup": "ts-node backup.ts",
     "restore": "ts-node restore.ts"
