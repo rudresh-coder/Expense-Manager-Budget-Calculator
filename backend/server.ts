@@ -40,7 +40,10 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: [
+      process.env.FRONTEND_URL_PREVIEW || "http://localhost:4173",
+      "http://localhost:4173"
+    ],
     credentials: true
   }
 });
@@ -71,7 +74,11 @@ app.use(
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", process.env.FRONTEND_URL || "'self'"],
+      connectSrc: [
+        "'self'",
+        process.env.FRONTEND_URL_PREVIEW || "http://localhost:4173",
+        "http://localhost:4173"
+      ],
       objectSrc: ["'none'"],
       frameSrc: ["'self'"],
       upgradeInsecureRequests: [],
@@ -79,8 +86,22 @@ app.use(
   })
 );
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:5173",
+  process.env.FRONTEND_URL_PREVIEW || "http://localhost:4173",
+  "http://localhost:5173",
+  "http://localhost:4173"
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173", // Only allow your frontend
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 

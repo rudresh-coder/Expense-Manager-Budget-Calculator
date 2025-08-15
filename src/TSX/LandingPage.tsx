@@ -14,6 +14,9 @@ import budgetingIllustration from "../assets/BudgetTexhniques.png";
 import { FaRegMoneyBillAlt, FaQuestionCircle, FaHeart, FaListOl, FaCheckCircle, FaArrowRight, FaLightbulb, FaBalanceScale, FaCalculator, FaTags, FaRedo, FaRupeeSign, FaEnvelopeOpenText, FaEye, FaBan, FaBrain, FaWallet, FaMoneyBillWave, FaStopCircle } from "react-icons/fa";
 import InfoCircles from "../components/InfoCards";
 import onlineAdsAnimate from "../assets/online-ads-animate.svg";
+import automateSavingsImg from "../assets/automate-savings.jpg";
+import roundupImg from "../assets/roundup.jpg";
+import futureImg from "../assets/future.jpg";
 
 export default function LandingPage() {
   const [open, setOpen] = useState<number | null>(null);
@@ -311,7 +314,7 @@ export default function LandingPage() {
         <RevealOnScroll className="automate-image-outer">
           <div className="automate-image-glass">
             <div className="image-gradient-shadow-wrapper">
-              <img src="src/assets/automate-savings.jpg" alt="Automate Saving" className="automate-image" />
+              <img src={automateSavingsImg} alt="Automate Saving" className="automate-image" />
             </div>
           </div>
         </RevealOnScroll>
@@ -342,7 +345,7 @@ export default function LandingPage() {
         <RevealOnScroll className="roundup-image-outer">
           <div className="roundup-image-glass">
             <div className="image-gradient-shadow-wrapper">
-             <img src="src/assets/roundup.jpg" alt="Round-Up Savings" className="roundup-image" />
+             <img src={roundupImg} alt="Round-Up Savings" className="roundup-image" />
             </div>
           </div>
         </RevealOnScroll>
@@ -373,7 +376,7 @@ export default function LandingPage() {
         <RevealOnScroll className="emergency-image-outer">
           <div className="emergency-image-glass">
             <div className="image-gradient-shadow-wrapper">
-              <img src="src/assets/future.jpg" alt="Emergency Fund" className="emergency-image" />
+              <img src={futureImg} alt="Emergency Fund" className="emergency-image" />
             </div>
           </div>
         </RevealOnScroll>
