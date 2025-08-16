@@ -38,11 +38,15 @@ const logger = winston.createLogger({
 
 const app = express();
 const httpServer = createServer(app);
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "https://expense-manager-budget-calculator.vercel.app"
+].filter((origin): origin is string => typeof origin === "string");
+
 const io = new Server(httpServer, {
   cors: {
-    origin: [
-      process.env.FRONTEND_URL || ""
-    ],
+    origin: allowedOrigins,
     credentials: true
   }
 });
@@ -75,7 +79,8 @@ app.use(
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: [
         "'self'",
-        process.env.FRONTEND_URL
+        process.env.FRONTEND_URL,
+        "https://expense-manager-budget-calculator.vercel.app"
       ].filter((src): src is string => src !== undefined),
       objectSrc: ["'none'"],
       frameSrc: ["'self'"],
@@ -83,10 +88,6 @@ app.use(
     },
   })
 );
-
-const allowedOrigins = [
-  process.env.FRONTEND_URL
-].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -217,7 +218,8 @@ app.post("/api/auth/signup", async (req: express.Request, res: express.Response)
       await user.save();
       logger.info(`User registered: ${email}`);
 
-      const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+      const frontendUrl = process.env.FRONTEND_URL || "https://expense-manager-budget-calculator.vercel.app";
+      const verificationUrl = `${frontendUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
       await sendVerificationEmail(email, verificationUrl);
   
       res.status(201).json({ message: "User registered successfully." });
