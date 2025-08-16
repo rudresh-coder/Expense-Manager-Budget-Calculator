@@ -38,15 +38,12 @@ const logger = winston.createLogger({
 
 const app = express();
 const httpServer = createServer(app);
-
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  "https://expense-manager-budget-calculator.vercel.app"
-].filter((origin): origin is string => typeof origin === "string");
-
 const io = new Server(httpServer, {
   cors: {
-    origin: allowedOrigins,
+    origin: [
+      process.env.FRONTEND_URL || "https://expense-manager-budget-calculator.vercel.app",
+      "https://expense-manager-budget-calculator.vercel.app"
+    ],
     credentials: true
   }
 });
@@ -79,15 +76,20 @@ app.use(
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: [
         "'self'",
-        process.env.FRONTEND_URL,
+        process.env.FRONTEND_URL || "https://expense-manager-budget-calculator.vercel.app",
         "https://expense-manager-budget-calculator.vercel.app"
-      ].filter((src): src is string => src !== undefined),
+      ],
       objectSrc: ["'none'"],
       frameSrc: ["'self'"],
       upgradeInsecureRequests: [],
     },
   })
 );
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "https://expense-manager-budget-calculator.vercel.app",
+  "https://expense-manager-budget-calculator.vercel.app"
+];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -100,8 +102,6 @@ app.use(cors({
   },
   credentials: true
 }));
-
-app.options("*", cors());
 
 app.use(express.json());
 // app.use(mongoSanitize()); 
@@ -218,8 +218,7 @@ app.post("/api/auth/signup", async (req: express.Request, res: express.Response)
       await user.save();
       logger.info(`User registered: ${email}`);
 
-      const frontendUrl = process.env.FRONTEND_URL || "https://expense-manager-budget-calculator.vercel.app";
-      const verificationUrl = `${frontendUrl}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+      const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
       await sendVerificationEmail(email, verificationUrl);
   
       res.status(201).json({ message: "User registered successfully." });
