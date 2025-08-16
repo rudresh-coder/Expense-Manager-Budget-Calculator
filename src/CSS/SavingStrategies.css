@@ -274,7 +274,9 @@
     .automate-image,
     .roundup-image,
     .emergency-image {
-      width: 140px;
+      width: 220px;
+      max-width: 98vw;
+      border-radius: 16px;
     }
   }
   
@@ -310,7 +312,19 @@
     .automate-image,
     .roundup-image,
     .emergency-image {
-      width: 90px;
+      width: 180px;
+      max-width: 98vw;
+      border-radius: 14px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .automate-image,
+    .roundup-image,
+    .emergency-image {
+      width: 140px;
+      max-width: 95vw;
+      border-radius: 12px;
     }
   }
 
