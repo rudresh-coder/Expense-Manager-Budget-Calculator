@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useEffect, useState } from "react";
+import React from "react";
+import { useEffect, useState, Suspense } from "react";
 import LandingPage from "./TSX/LandingPage";
 import SignUp from "./TSX/SignUp";
 import LogIn from "./TSX/LogIn";
 import BudgetCalculator from "./TSX/BudgetCalculator";
 import DebtManagement from "./TSX/DebtManagement";
-import ExpenseManager from "./TSX/ExpenseManager";
 import SmartInvesting from "./TSX/SmartInvesting";
 import BehavioralMindset from "./TSX/BehavioralMindset";
 import AdminPanel from "./TSX/AdminPanel";
@@ -24,6 +24,8 @@ import Analytics from "./TSX/Analytics";
 import FinanceParticlesBackground from "./components/FinanceParticlesBackground";
 import { authFetch } from "./utils/authFetch";
 import { syncTransactions } from "./utils/sync";
+
+const ExpenseManager = React.lazy(() => import('./TSX/ExpenseManager'));
 
 export default function App() {
   const [userProfileOpen, setUserProfileOpen] = useState(false);
@@ -128,7 +130,11 @@ export default function App() {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/signin" element={<LogIn />} />
             <Route path="/calculator" element={<BudgetCalculator />} /> 
-            <Route path="/expensemanager" element={<ExpenseManager userId={user._id} />} />
+            <Route path="/expensemanager" element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <ExpenseManager userId={user._id} />
+              </Suspense>
+            } />
             <Route path="/debtmanagement" element={<DebtManagement />} />
             <Route path="/smartinvesting" element={<SmartInvesting />} />
             <Route path="/behavioralmindset" element={<BehavioralMindset />} />

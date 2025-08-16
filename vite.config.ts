@@ -28,5 +28,18 @@ export default defineConfig({
         ]
       }
     })
-  ]
+  ],
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          chartjs: ['chart.js', 'react-chartjs-2'],
+          mantine: ['@mantine/core', '@mantine/hooks'],
+          lodash: ['lodash'],
+        }
+      }
+    }
+  }
 })

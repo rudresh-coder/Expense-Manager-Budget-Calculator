@@ -659,6 +659,10 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/auth", generalLimiter);
 app.use("/api/password-reset", generalLimiter);
 
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 cron.schedule("0 2 * * *", async () => {
   // Runs every day at 2 AM
   const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
