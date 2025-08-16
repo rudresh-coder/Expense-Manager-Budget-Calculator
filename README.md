@@ -1,54 +1,98 @@
-# React + TypeScript + Vite
+# Xpentia – Expense Manager & Budget Calculator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Live Project:**  
+[https://expense-manager-budget-calculator.vercel.app](https://expense-manager-budget-calculator.vercel.app)
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Overview
 
-## Expanding the ESLint configuration
+Xpentia is a modern, full-stack web app for tracking expenses, managing budgets, analyzing spending, and saving smarter.  
+It supports offline mode, data sync, receipt scanning, analytics, premium features, and more.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Tech Stack
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- **Frontend:**  
+  - React (TypeScript)
+  - Vite
+  - Mantine UI, MUI, Chart.js, React Chart.js 2
+  - Tailwind CSS, custom CSS
+  - React Router
+  - Socket.io-client (real-time sync)
+  - Tesseract.js (receipt OCR)
+  - LocalForage (offline/local storage)
+  - Framer Motion (animations)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **Backend:**  
+  - Node.js (TypeScript)
+  - Express
+  - MongoDB Atlas (cloud database)
+  - Mongoose (ODM)
+  - Socket.io (real-time sync)
+  - Winston (logging)
+  - Helmet (security)
+  - Express-rate-limit, express-mongo-sanitize
+  - Nodemailer (email sending)
+  - JWT (authentication)
+  - bcryptjs (password hashing)
+  - node-cron (scheduled tasks)
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+- **Deployment:**  
+  - Frontend: Vercel  
+  - Backend: Railway
+
+---
+
+## Authentication
+
+- JWT-based authentication for secure API access
+- Email verification on signup
+- Password reset via email
+
+---
+
+## Mailing
+
+- SMTP via Gmail (Nodemailer)
+- Automated emails for verification and password reset
+
+---
+
+## Features
+
+- Expense tracking and analytics
+- Budget calculator
+- Receipt scanning (OCR)
+- Offline mode and local sync
+- Real-time updates via Socket.io
+- Premium plans for advanced features
+- Admin panel for user management
+
+---
+
+## Visit the App
+
+👉 [https://expense-manager-budget-calculator.vercel.app](https://expense-manager-budget-calculator.vercel.app)
+
+---
+
+## How to Use Expense Manager & Budget Calculator
+
+- **Sign up** with your email and verify your account.
+- **Add accounts** to track different banks or wallets.
+- **Record transactions** (add, spend, transfer) and categorize with splits.
+- **Scan receipts** using OCR for fast entry.
+- **Use the Budget Calculator** to plan your monthly income and expenses.
+- **Sync data** across devices and use offline mode when needed.
+- **Upgrade to premium** for unlimited history and advanced analytics.
+- **Export your data** as CSV anytime.
+- **Manage users and data** in the admin panel (for admins).
+
+---
+
+## License
+
+This project is licensed under the MIT License.  
+See the [LICENSE](LICENSE) file for details.
