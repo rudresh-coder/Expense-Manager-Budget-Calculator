@@ -102,7 +102,7 @@ export async function syncTransactions() {
       unsynced: undefined, // Remove unsynced flag
     }));
 
-    const res = await authFetch("http://localhost:5000/api/expense", {
+    const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/expense`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
