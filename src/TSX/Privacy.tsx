@@ -97,7 +97,12 @@ export default function Privacy() {
         We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated effective date. Continued use of the Service constitutes acceptance of the revised policy.
       </RevealOnScroll>
 
-      <RevealOnScroll as="h2">12. Contact Us</RevealOnScroll>
+      <RevealOnScroll as="h2">12. Refund & Cancellation Policy</RevealOnScroll>
+      <RevealOnScroll as="p">
+        You may cancel your premium subscription at any time. Refunds are available within 7 days of purchase if you are not satisfied, provided you have not used premium features extensively. To request a refund, contact us at <a href="mailto:expensemanager991@gmail.com" className="terms-link">expensemanager991@gmail.com</a>. After 7 days, cancellations will stop future billing but no refund will be issued for the current period.
+      </RevealOnScroll>
+
+      <RevealOnScroll as="h2">13. Contact Us</RevealOnScroll>
       <RevealOnScroll as="p">
         If you have any questions or concerns about this Privacy Policy, please contact us at <a href="mailto:expensemanager991@gmail.com" className="terms-link">expensemanager991@gmail.com</a>.
       </RevealOnScroll>

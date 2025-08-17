@@ -110,6 +110,11 @@ export default function Terms() {
       <RevealOnScroll as="p">
         You may request deletion of your account and data at any time by contacting support. Data is retained as long as your account is active or as required by law.
       </RevealOnScroll>
+
+      <RevealOnScroll as="h2">20. Refund & Cancellation Policy</RevealOnScroll>
+      <RevealOnScroll as="p">
+        You may cancel your premium subscription at any time. Refunds are available within 7 days of purchase if you are not satisfied, provided you have not used premium features extensively. To request a refund, contact us at <a href="mailto:expensemanager991@gmail.com" className="terms-link">expensemanager991@gmail.com</a>. After 7 days, cancellations will stop future billing but no refund will be issued for the current period.
+      </RevealOnScroll>
     </div>
   );
 }
