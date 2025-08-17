@@ -69,6 +69,7 @@ It supports offline mode, data sync, receipt scanning, analytics, premium featur
 - Real-time updates via Socket.io
 - Premium plans for advanced features
 - Admin panel for user management
+- Integrated Instamojo payment gateway for secure premium upgrades
 
 ---
 
