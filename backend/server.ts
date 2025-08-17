@@ -22,6 +22,14 @@ import { Server } from 'socket.io';
 import analyticsRoutes from "./routes/analytics";
 // import xss from "xss-clean";
 
+const INSTAMOJO_SECRET = process.env.INSTAMOJO_SECRET;
+
+function verifySignature(payload: any, signature: string) {
+  const data = JSON.stringify(payload);
+  const expected = crypto.createHmac('sha1', INSTAMOJO_SECRET!).update(data).digest('hex');
+  return expected === signature;
+}
+
 dotenv.config();
 
 const logger = winston.createLogger({
@@ -623,6 +631,67 @@ app.post("/api/user/upgrade", auth, async (req: express.Request, res: express.Re
 
     logger.info(`User upgraded to premium: ${req.user?.id} until ${newExpiry.toISOString()}`);
     res.json({ message: "Upgraded to premium", storageExpiry: newExpiry });
+});
+
+// Payment webhook
+app.post("/api/payment/webhook", express.json(), async (req, res) => {
+  try {
+    const payload = req.body;
+    const signature = req.headers["x-instamojo-signature"] as string;
+
+    // Security: Verify Instamojo signature
+    if (!verifySignature(payload, signature)) {
+      logger.error("Invalid Instamojo webhook signature");
+      res.status(400).send("Invalid signature");
+      return;
+    }
+
+    logger.info("Instamojo webhook received:", payload);
+
+    if (payload && payload.payment_status === "Credit" && payload.buyer_email) {
+      const user = await User.findOne({ email: payload.buyer_email });
+      if (!user) {
+        logger.warn(`Webhook: User not found for email ${payload.buyer_email}`);
+        res.status(404).send("User not found");
+        return;
+      }
+
+      // Determine plan
+      let newExpiry = new Date();
+      let planType = "monthly";
+      if (
+        payload.purpose &&
+        typeof payload.purpose === "string" &&
+        payload.purpose.toLowerCase().includes("year")
+      ) {
+        planType = "yearly";
+      } else if (payload.amount && Number(payload.amount) >= 499) {
+        planType = "yearly";
+      }
+
+      if (planType === "yearly") {
+        newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+      } else {
+        newExpiry.setDate(newExpiry.getDate() + 30);
+      }
+
+      user.isPremium = true;
+      user.storageExpiry = newExpiry;
+      await user.save();
+
+      logger.info(
+        `User upgraded to premium (${planType}) via Instamojo: ${user.email} until ${newExpiry.toISOString()}`
+      );
+      res.status(200).send("Webhook processed: premium upgraded");
+      return;
+    }
+
+    logger.warn("Webhook: Payment not credited or missing buyer_email");
+    res.status(400).send("Invalid webhook payload");
+  } catch (error) {
+    logger.error("Error processing webhook:", error);
+    res.status(500).send("Internal server error");
+  }
 });
 
 // Get user profile

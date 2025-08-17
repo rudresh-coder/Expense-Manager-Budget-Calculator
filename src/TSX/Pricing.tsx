@@ -1,5 +1,5 @@
 import "../CSS/Pricing.css";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const plans = [
     {
@@ -30,7 +30,7 @@ const plans = [
         ],
         btnText: "Buy Monthly",
         btnClass: "pricing-btn premium",
-        link: "/payment?plan=monthly"
+        link: "https://www.instamojo.com/@rudreshnaidu_66"
     },
     {
         name: "Yearly Storage",
@@ -50,18 +50,12 @@ const plans = [
         ],
         btnText: "Buy Yearly",
         btnClass: "pricing-btn premium",
-        link: "/payment?plan=yearly"
+        link: "https://www.instamojo.com/@rudreshnaidu_66"
     },
 ];
 
 export default function Pricing() {
     const navigate = useNavigate();
-
-    const handleCardClick = (link: string) => {
-        if (link.startsWith("/payment")) {
-            navigate(link);
-        }
-    };
 
     return (
         <div className="pricing-container">
@@ -83,38 +77,48 @@ export default function Pricing() {
             <div className="pricing-cards-custom">
                 <div className="pricing-card-row-top">
                     {/* Free and Monthly Storage cards (side by side, now on top) */}
-                    {[plans[0], plans[1]].map((plan) => (
-                        <div
-                            key={plan.name}
-                            className={`pricing-card ${plan.name.toLowerCase().replace(" ", "-")}`}
-                            style={{ cursor: plan.link.startsWith("/payment") ? "pointer" : "default" }}
-                            onClick={() => handleCardClick(plan.link)}
+                    <div
+                        className="pricing-card free"
+                        style={{ cursor: "default" }}
+                        onClick={() => navigate(plans[0].link)}
+                    >
+                        <h2>{plans[0].name}</h2>
+                        <div className="pricing-price">{plans[0].price}</div>
+                        <ul className="pricing-card-features">
+                            {plans[0].features.map((feature, i) => (
+                                <li key={i}>{feature}</li>
+                            ))}
+                        </ul>
+                        <button className={plans[0].btnClass} onClick={() => navigate(plans[0].link)}>
+                            {plans[0].btnText}
+                        </button>
+                    </div>
+                    <div
+                        className="pricing-card monthly-storage"
+                        style={{ cursor: "pointer" }}
+                    >
+                        <h2>{plans[1].name}</h2>
+                        <div className="pricing-price">{plans[1].price}</div>
+                        <ul className="pricing-card-features">
+                            {plans[1].features.map((feature, i) => (
+                                <li key={i}>{feature}</li>
+                            ))}
+                        </ul>
+                        <a
+                            href={plans[1].link}
+                            className={plans[1].btnClass}
+                            target="_blank"
+                            rel="noopener noreferrer"
                         >
-                            <h2>{plan.name}</h2>
-                            <div className="pricing-price">{plan.price}</div>
-                            <ul className="pricing-card-features">
-                                {plan.features.map((feature, i) => (
-                                    <li key={i}>{feature}</li>
-                                ))}
-                            </ul>
-                            {plan.link.startsWith("/payment") ? (
-                                <button className={plan.btnClass} onClick={() => handleCardClick(plan.link)}>
-                                    {plan.btnText}
-                                </button>
-                            ) : (
-                                <Link to={plan.link} className={plan.btnClass}>
-                                    {plan.btnText}
-                                </Link>
-                            )}
-                        </div>
-                    ))}
+                            {plans[1].btnText}
+                        </a>
+                    </div>
                 </div>
                 <div className="pricing-card-row-center">
                     {/* Yearly Storage card (now at the bottom, centered) */}
                     <div
                         className="pricing-card yearly-storage"
-                        style={{ cursor: plans[2].link.startsWith("/payment") ? "pointer" : "default" }}
-                        onClick={() => handleCardClick(plans[2].link)}
+                        style={{ cursor: "pointer" }}
                     >
                         <div className="premium-label">Most Popular</div>
                         <h2>{plans[2].name}</h2>
@@ -124,12 +128,16 @@ export default function Pricing() {
                                 <li key={i}>{feature}</li>
                             ))}
                         </ul>
-                        <button className={plans[2].btnClass} onClick={() => handleCardClick(plans[2].link)}>
+                        <a
+                            href={plans[2].link}
+                            className={plans[2].btnClass}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
                             {plans[2].btnText}
-                        </button>
+                        </a>
                     </div>
                 </div>
-                
             </div>
          </div>
     );
