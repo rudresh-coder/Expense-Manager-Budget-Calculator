@@ -6,7 +6,6 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import helmet from "helmet";
-// import mongoSanitize from "express-mongo-sanitize"; 
 import cron from "node-cron";
 import adminRoutes from "./routes/admin";
 import rateLimit from "express-rate-limit";
@@ -658,6 +657,7 @@ app.post("/api/payment/webhook", express.json(), async (req, res) => {
 
       // Determine plan
       let newExpiry = new Date();
+
       let planType = "monthly";
       if (
         payload.purpose &&
