@@ -623,6 +623,10 @@ app.post("/api/user/upgrade", auth, async (req: express.Request, res: express.Re
         }
     }
 
+    if (user) {
+        user.premiumHistory.push({ start: now, end: newExpiry });
+    }
+
     await User.findByIdAndUpdate(req.user?.id, {
         isPremium: true,
         storageExpiry: newExpiry
@@ -747,7 +751,10 @@ cron.schedule("0 2 * * *", async () => {
           account.transactions = account.transactions.toObject().filter((tx: { date: string }) => {
             const txDate = new Date(tx.date);
             // Keep if transaction is within storageExpiry
-            if (user.storageExpiry && txDate <= user.storageExpiry) {
+            if (
+              user.premiumHistory &&
+              user.premiumHistory.some(period => period.start && period.end && txDate >= period.start && txDate <= period.end)
+            ) {
               return true;
             }
             // Otherwise, delete if older than 30 days

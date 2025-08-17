@@ -30,7 +30,7 @@ const plans = [
         ],
         btnText: "Buy Monthly",
         btnClass: "pricing-btn premium",
-        link: "https://www.instamojo.com/@rudreshnaidu_66"
+        link: "https://imjo.in/MZSru7"
     },
     {
         name: "Yearly Storage",
@@ -50,7 +50,7 @@ const plans = [
         ],
         btnText: "Buy Yearly",
         btnClass: "pricing-btn premium",
-        link: "https://www.instamojo.com/@rudreshnaidu_66"
+        link: "https://imjo.in/WCuXzD"
     },
 ];
 

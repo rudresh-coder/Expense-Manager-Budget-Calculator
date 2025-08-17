@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String, default: null },
     premiumMonths: { type: [String], default: [] },
+    premiumHistory: { type: [{ start: Date, end: Date }], default: [] },
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);
