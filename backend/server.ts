@@ -61,15 +61,15 @@ io.on('connection', (socket) => {
   });
 });
 
-if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
-  app.use((req, res, next) => {
-    if (req.headers["x-forwarded-proto"] !== "https") {
-      return res.redirect(301, `https://${req.headers.host}${req.url}`);
-    }
-    next();
-  });
-}
+// if (process.env.NODE_ENV === "production") {
+//   app.set("trust proxy", 1);
+//   app.use((req, res, next) => {
+//     if (req.headers["x-forwarded-proto"] !== "https") {
+//       return res.redirect(301, `https://${req.headers.host}${req.url}`);
+//     }
+//     next();
+//   });
+// }
 
 app.use(helmet());
 
@@ -767,5 +767,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ error: "Internal server error" });
 });
 
-const PORT = process.env.PORT || 5000;
-httpServer.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
+const PORT = process.env.PORT || 8080;
+httpServer.listen(PORT, () => {
+  logger.info(`Server running on port ${PORT}`);
+});
