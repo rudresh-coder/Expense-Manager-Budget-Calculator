@@ -19,6 +19,15 @@ export default function LogIn() {
     setPasswordError("");
     setGeneralError("");
 
+    if (!email) {
+      setEmailError("Email is required");
+      return;
+    }
+    if (!password) {
+      setPasswordError("Password is required");
+      return;
+    }
+
     try {
       const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: "POST",
